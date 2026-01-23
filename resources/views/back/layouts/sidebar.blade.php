@@ -37,7 +37,6 @@
                 'cahier-des-charges' => ['icon' => 'fa-book', 'label' => 'Cahiers des charges']
             ];
 
-            // Valeurs dynamiques pour l'activité et la société en cours
             $currentActivity = request()->route('activity') ?? array_key_first($activites);
             $currentSociety  = request()->route('society') ?? array_key_first($societes);
         @endphp
@@ -89,10 +88,11 @@
 
             <!-- ESPACES DE TRAVAIL -->
             <div class="nav-item dropdown">
-                <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                    <i class="fa fa-project-diagram me-2"></i>ESPACES DE TRAVAIL
+                <a href="#" class="nav-link dropdown-toggle d-flex justify-content-between align-items-center" data-bs-toggle="dropdown">
+                    <span><i class="fa fa-project-diagram me-2"></i>ESPACES TRAVAIL</span> 
+                   
                 </a>
-                <div class="dropdown-menu bg-transparent border-0">
+                <div class="dropdown-menu bg-transparent border-0 w-100">
                     @foreach($activites as $actKey => $actLabel)
                         <h6 class="dropdown-header">
                             <i class="fa fa-tasks me-2"></i>{{ $actLabel }}
@@ -131,6 +131,16 @@
                     @endforeach
                 </div>
             </div>
+
+            <!-- CORBEILLE -->
+            <a href="#" class="nav-item nav-link">
+                <i class="fa fa-trash me-2"></i>Corbeille
+            </a>
+
+            <!-- PARAMÈTRES -->
+            <a href="#" class="nav-item nav-link">
+                <i class="fa fa-cog me-2"></i>Paramètres
+            </a>
 
             <!-- Widgets / Forms / Tables / Charts -->
             <a href="#" class="nav-item nav-link"><i class="fa fa-th me-2"></i>Widgets</a>
