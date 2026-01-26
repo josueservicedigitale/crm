@@ -3,7 +3,7 @@
     <nav class="navbar bg-light navbar-light">
 
         <!-- Brand -->
-        <a href="{{ route('dashboard') }}" class="navbar-brand mx-4 mb-3">
+        <a href="{{ route('home.dashboard') }}" class="navbar-brand mx-4 mb-3">
             <h3 class="text-primary"><i class="fa fa-hashtag me-2"></i>DASHMIN</h3>
         </a>
 
@@ -25,26 +25,27 @@
             ];
 
             $societes = [
-                'nova' => 'Énergie Nova',
-                'house' => 'MyHouse Solutions'
+                'energie_nova' => 'Énergie Nova',  // ← CHANGER 'nova' en 'energie_nova'
+                'myhouse' => 'MyHouse Solutions'   // ← CHANGER 'house' en 'myhouse'
             ];
 
             $documentTypes = [
                 'devis' => ['icon' => 'fa-file-invoice', 'label' => 'Devis'],
                 'facture' => ['icon' => 'fa-file-invoice-dollar', 'label' => 'Factures'],
-                'attestation' => ['icon' => 'fa-certificate', 'label' => 'Attestations'],
+                'attestation_realisation' => ['icon' => 'fa-certificate', 'label' => 'Attestations réalisation'],  // ← CORRIGER
+                'attestation_signataire' => ['icon' => 'fa-certificate', 'label' => 'Attestations signataire'],    // ← CORRIGER
                 'rapport' => ['icon' => 'fa-chart-line', 'label' => 'Rapports'],
-                'cahier-des-charges' => ['icon' => 'fa-book', 'label' => 'Cahiers des charges']
+                'cahier_des_charges' => ['icon' => 'fa-book', 'label' => 'Cahiers des charges']  // ← CORRIGER
             ];
 
             $currentActivity = request()->route('activity') ?? array_key_first($activites);
-            $currentSociety  = request()->route('society') ?? array_key_first($societes);
+            $currentSociety = request()->route('society') ?? array_key_first($societes);
         @endphp
 
         <div class="navbar-nav w-100">
             <!-- Dashboard -->
-            <a href="{{ route('dashboard') }}"
-               class="nav-item nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+            <a href="{{ route('home.dashboard') }}"
+                class="nav-item nav-link {{ request()->routeIs('home.dashboard') ? 'active' : '' }}">
                 <i class="fa fa-tachometer-alt me-2"></i>Dashboard
             </a>
 
@@ -56,7 +57,7 @@
                 <div class="dropdown-menu bg-transparent border-0">
                     @foreach($activites as $key => $label)
                         <a href="{{ route('back.activite.show', ['activite' => $key]) }}"
-                           class="dropdown-item {{ $currentActivity === $key ? 'active' : '' }}">
+                            class="dropdown-item {{ $currentActivity === $key ? 'active' : '' }}">
                             <i class="fa fa-gear me-2"></i>{{ $label }}
                         </a>
                     @endforeach
@@ -75,7 +76,7 @@
                 <div class="dropdown-menu bg-transparent border-0">
                     @foreach($societes as $key => $label)
                         <a href="{{ route('back.societe.show', ['societe' => $key]) }}"
-                           class="dropdown-item {{ $currentSociety === $key ? 'active' : '' }}">
+                            class="dropdown-item {{ $currentSociety === $key ? 'active' : '' }}">
                             <i class="fa fa-building me-2"></i>{{ $label }}
                         </a>
                     @endforeach
@@ -88,9 +89,10 @@
 
             <!-- ESPACES DE TRAVAIL -->
             <div class="nav-item dropdown">
-                <a href="#" class="nav-link dropdown-toggle d-flex justify-content-between align-items-center" data-bs-toggle="dropdown">
-                    <span><i class="fa fa-project-diagram me-2"></i>ESPACES TRAVAIL</span> 
-                   
+                <a href="#" class="nav-link dropdown-toggle d-flex justify-content-between align-items-center"
+                    data-bs-toggle="dropdown">
+                    <span><i class="fa fa-project-diagram me-2"></i>ESPACES TRAVAIL</span>
+
                 </a>
                 <div class="dropdown-menu bg-transparent border-0 w-100">
                     @foreach($activites as $actKey => $actLabel)
@@ -99,7 +101,7 @@
                         </h6>
                         @foreach($societes as $socKey => $socLabel)
                             <a href="{{ route('back.dashboard', ['activity' => $actKey, 'society' => $socKey]) }}"
-                               class="dropdown-item ps-4 {{ $currentActivity === $actKey && $currentSociety === $socKey ? 'active' : '' }}">
+                                class="dropdown-item ps-4 {{ $currentActivity === $actKey && $currentSociety === $socKey ? 'active' : '' }}">
                                 <i class="fa fa-building me-2"></i>{{ $socLabel }}
                             </a>
                         @endforeach
@@ -117,15 +119,18 @@
                     <i class="far fa-file-alt me-2"></i>DOCUMENTS
                 </a>
                 <div class="dropdown-menu bg-transparent border-0">
-                    <a href="{{ route('back.document.list', ['activity' => $currentActivity, 'society' => $currentSociety, 'type' => 'all']) }}" class="dropdown-item">
+                    <a href="{{ route('back.document.list', ['activity' => $currentActivity, 'society' => $currentSociety, 'type' => 'all']) }}"
+                        class="dropdown-item">
                         <i class="fa fa-folder-open me-2"></i>Tous les documents
                     </a>
-                    <a href="{{ route('back.document.create', ['activity' => $currentActivity, 'society' => $currentSociety, 'type' => 'quick']) }}" class="dropdown-item">
+                    <a href="{{ route('back.document.create', ['activity' => $currentActivity, 'society' => $currentSociety, 'type' => 'quick']) }}"
+                        class="dropdown-item">
                         <i class="fa fa-plus-circle me-2"></i>Création rapide
                     </a>
                     <div class="dropdown-divider"></div>
                     @foreach($documentTypes as $typeKey => $type)
-                        <a href="{{ route('back.document.list', ['activity' => $currentActivity, 'society' => $currentSociety, 'type' => $typeKey]) }}" class="dropdown-item">
+                        <a href="{{ route('back.document.list', ['activity' => $currentActivity, 'society' => $currentSociety, 'type' => $typeKey]) }}"
+                            class="dropdown-item">
                             <i class="fa {{ $type['icon'] }} me-2"></i>{{ $type['label'] }}
                         </a>
                     @endforeach

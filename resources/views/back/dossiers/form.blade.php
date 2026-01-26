@@ -23,6 +23,30 @@
     </ul>
 </div>
 
+@section('content')
+<div class="alert alert-danger">
+    <h5>Debug URL:</h5>
+    <ul>
+        <li>URL complète: {{ url()->full() }}</li>
+        <li>Parent ID from URL: {{ request('parent_id') ?? 'Non fourni' }}</li>
+        <li>Parent exists: {{ isset($parent) && $parent ? 'Oui (ID: ' . $parent->id . ')' : 'Non' }}</li>
+        <li>Document exists: {{ isset($document) && $document->id ? 'Oui' : 'Non' }}</li>
+    </ul>
+</div>
+
+@if(!isset($parent) && in_array($type, ['facture', 'attestation_realisation', 'attestation_signataire', 'cahier_des_charges']))
+<div class="alert alert-warning">
+    <h5>Attention !</h5>
+    <p>Aucun devis n'a été sélectionné pour créer ce document.</p>
+    <a href="{{ route('back.document.select-devis', [$activity, $society, $type]) }}" 
+       class="btn btn-warning">
+        Sélectionner un devis
+    </a>
+</div>
+@endif
+
+{{-- Le reste de votre code... --}}
+
 
 
 <div class="container-fluid pt-4 px-4">
@@ -525,7 +549,7 @@
 
 
 <div class="mb-4 d-flex justify-content-between">
-    <a href="{{ route('dashboard') }}" class="btn btn-secondary btn-lg">
+    <a href="{{ route('home.dashboard') }}" class="btn btn-secondary btn-lg">
         Retour
     </a>
    <button type="submit" class="btn btn-primary btn-lg">

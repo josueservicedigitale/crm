@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Symfony\Polyfill\Intl\Normalizer\Normalizer;
 
 class DocumentController extends Controller
 {
@@ -23,195 +24,221 @@ class DocumentController extends Controller
         $this->pdfFillService = $pdfFillService;
     }
 
-  
-   public function dashboard($activity, $society)
-{
-    $views = [
-        'nova' => [
-            'desembouage' => 'back.dossiers.nova.novadesembouageboard',
-            'reequilibrage' => 'back.dossiers.nova.novaboard',
-        ],
-        'house' => [
-            'desembouage' => 'back.dossiers.house.housedesembouageboard',
-            'reequilibrage' => 'back.dossiers.house.houseboard',
-        ],
-    ];
 
-    abort_if(!isset($views[$society][$activity]), 404);
+    public function dashboard($activity, $society)
+    {
+        // Normaliser la société
+        $normalizedSociety = $this->normalizeSociety($society);
 
-    // Statistiques améliorées
-    $stats = [
-        'total' => Document::where('society', $society)
-            ->where('activity', $activity)
-            ->count(),
-        'devis' => Document::where('society', $society)
-            ->where('activity', $activity)
-            ->where('type', 'devis')
-            ->count(),
-        'factures' => Document::where('society', $society)
-            ->where('activity', $activity)
-            ->where('type', 'facture')
-            ->count(),
-        'rapports' => Document::where('society', $society)
-            ->where('activity', $activity)
-            ->where('type', 'rapport')
-            ->count(),
-        'cahiers' => Document::where('society', $society)
-            ->where('activity', $activity)
-            ->where('type', 'cahier_des_charges')
-            ->count(),
-        'attestations' => Document::where('society', $society)
-            ->where('activity', $activity)
-            ->whereIn('type', ['attestation_realisation', 'attestation_signataire'])
-            ->count(),
-        'ce_mois' => Document::where('society', $society)
-            ->where('activity', $activity)
-            ->whereMonth('created_at', now()->month)
-            ->count(),
-        'cette_semaine' => Document::where('society', $society)
-            ->where('activity', $activity)
-            ->where('created_at', '>=', now()->subWeek())
-            ->count(),
-    ];
+        // Utiliser les noms normalisés pour les vues
+        $views = [
+            'energie_nova' => [  // Utiliser le nom normalisé
+                'desembouage' => 'back.dossiers.nova.novadesembouageboard',
+                'reequilibrage' => 'back.dossiers.nova.novaboard',
+            ],
+            'myhouse' => [  // Utiliser le nom normalisé
+                'desembouage' => 'back.dossiers.house.housedesembouageboard',
+                'reequilibrage' => 'back.dossiers.house.houseboard',
+            ],
+        ];
 
-    // Documents récents
-    $recentDocuments = Document::where('society', $society)
-        ->where('activity', $activity)
-        ->latest()
-        ->take(5)
-        ->get();
+        // Vérifier avec le nom normalisé
+        abort_if(!isset($views[$normalizedSociety][$activity]), 404);
 
-    // Meilleurs clients - Utiliser nom_residence ou adresse_travaux comme identifiant
-    // Puisqu'il n'y a pas de colonne client_nom, on utilise nom_residence
-    $topClients = Document::where('society', $society)
-        ->where('activity', $activity)
-        ->whereNotNull('nom_residence') // Utiliser nom_residence au lieu de client_nom
-        ->where('nom_residence', '!=', '') // Exclure les chaînes vides
-        ->selectRaw('nom_residence as client_nom, COUNT(*) as total, SUM(montant_ttc) as total_montant')
-        ->groupBy('nom_residence')
-        ->orderByDesc('total')
-        ->limit(5)
-        ->get();
+        // Toutes les requêtes doivent utiliser le nom normalisé
+        $stats = [
+            'total' => Document::where('society', $normalizedSociety)  // ← ICI
+                ->where('activity', $activity)
+                ->count(),
+            'devis' => Document::where('society', $normalizedSociety)
+                ->where('activity', $activity)
+                ->where('type', 'devis')
+                ->count(),
+            'factures' => Document::where('society', $normalizedSociety)
+                ->where('activity', $activity)
+                ->where('type', 'facture')
+                ->count(),
+            'rapports' => Document::where('society', $normalizedSociety)
+                ->where('activity', $activity)
+                ->where('type', 'rapport')
+                ->count(),
+            'cahiers' => Document::where('society', $normalizedSociety)
+                ->where('activity', $activity)
+                ->where('type', 'cahier_des_charges')
+                ->count(),
+            'attestations' => Document::where('society', $normalizedSociety)
+                ->where('activity', $activity)
+                ->whereIn('type', ['attestation_realisation', 'attestation_signataire'])
+                ->count(),
+            'ce_mois' => Document::where('society', $normalizedSociety)
+                ->where('activity', $activity)
+                ->whereMonth('created_at', now()->month)
+                ->count(),
+            'cette_semaine' => Document::where('society', $normalizedSociety)
+                ->where('activity', $activity)
+                ->where('created_at', '>=', now()->subWeek())
+                ->count(),
+        ];
 
-    // Si nom_residence est vide, utiliser adresse_travaux
-    if ($topClients->isEmpty()) {
-        $topClients = Document::where('society', $society)
+        // Documents récents
+        $recentDocuments = Document::where('society', $normalizedSociety)
             ->where('activity', $activity)
-            ->whereNotNull('adresse_travaux')
-            ->where('adresse_travaux', '!=', '')
-            ->selectRaw('SUBSTRING(adresse_travaux, 1, 50) as client_nom, COUNT(*) as total, SUM(montant_ttc) as total_montant')
-            ->groupBy('adresse_travaux')
+            ->latest()
+            ->take(5)
+            ->get();
+
+        // Meilleurs clients - Utiliser nom_residence ou adresse_travaux comme identifiant
+        // Puisqu'il n'y a pas de colonne client_nom, on utilise nom_residence
+        $topClients = Document::where('society', $normalizedSociety)
+            ->where('activity', $activity)
+            ->whereNotNull('nom_residence') // Utiliser nom_residence au lieu de client_nom
+            ->where('nom_residence', '!=', '') // Exclure les chaînes vides
+            ->selectRaw('nom_residence as client_nom, COUNT(*) as total, SUM(montant_ttc) as total_montant')
+            ->groupBy('nom_residence')
             ->orderByDesc('total')
             ->limit(5)
             ->get();
-    }
 
-    return view($views[$society][$activity], compact(
-        'activity', 'society', 'recentDocuments', 'stats', 'topClients'
-    ));
-}public function allDashboards()
-{
-    Log::info('🌐 Tous les dashboards consultés', ['user_id' => auth()->id()]);
-
-    // Activités disponibles
-    $activites = [
-        'desembouage' => [
-            'nom' => 'Désembouage',
-            'icon' => 'fa-water',
-            'color' => 'primary',
-            'description' => 'Nettoyage et désembouage des circuits de chauffage'
-        ],
-        'reequilibrage' => [
-            'nom' => 'Rééquilibrage',
-            'icon' => 'fa-balance-scale',
-            'color' => 'info',
-            'description' => 'Rééquilibrage des circuits hydrauliques'
-        ]
-    ];
-
-    // Sociétés disponibles
-    $societes = [
-        'nova' => [
-            'nom' => 'Énergie Nova',
-            'icon' => 'fa-building',
-            'color' => 'success',
-            'description' => 'Spécialiste en solutions énergétiques'
-        ],
-        'house' => [
-            'nom' => 'MyHouse Solutions',
-            'icon' => 'fa-home',
-            'color' => 'warning',
-            'description' => 'Solutions résidentielles innovantes'
-        ]
-    ];
-
-    // Statistiques par activité
-    $activitesAvecStats = [];
-    foreach ($activites as $key => $activite) {
-        $activitesAvecStats[$key] = array_merge($activite, [
-            'documents_count' => Document::where('activity', $key)->count()
-        ]);
-    }
-
-    // Statistiques par société
-    $societesAvecStats = [];
-    foreach ($societes as $key => $societe) {
-        $societesAvecStats[$key] = array_merge($societe, [
-            'documents_count' => Document::where('society', $key)->count()
-        ]);
-    }
-
-    // Toutes les combinaisons
-    $combinaisons = [];
-    foreach ($activitesAvecStats as $activiteCode => $activiteInfo) {
-        foreach ($societesAvecStats as $societeCode => $societeInfo) {
-            $combinaisons[] = [
-                'activite_code' => $activiteCode,
-                'activite_nom' => $activiteInfo['nom'],
-                'activite_icon' => $activiteInfo['icon'],
-                'activite_color' => $activiteInfo['color'],
-                'societe_code' => $societeCode,
-                'societe_nom' => $societeInfo['nom'],
-                'societe_icon' => $societeInfo['icon'],
-                'societe_color' => $societeInfo['color'],
-                'documents_count' => Document::where('activity', $activiteCode)
-                    ->where('society', $societeCode)
-                    ->count(),
-                'devis_count' => Document::where('activity', $activiteCode)
-                    ->where('society', $societeCode)
-                    ->where('type', 'devis')
-                    ->count(),
-                'factures_count' => Document::where('activity', $activiteCode)
-                    ->where('society', $societeCode)
-                    ->where('type', 'facture')
-                    ->count(),
-                'rapports_count' => Document::where('activity', $activiteCode)
-                    ->where('society', $societeCode)
-                    ->where('type', 'rapport')
-                    ->count(),
-            ];
+        // Si nom_residence est vide, utiliser adresse_travaux
+        if ($topClients->isEmpty()) {
+            $topClients = Document::where('society', $normalizedSociety)
+                ->where('activity', $activity)
+                ->whereNotNull('adresse_travaux')
+                ->where('adresse_travaux', '!=', '')
+                ->selectRaw('SUBSTRING(adresse_travaux, 1, 50) as client_nom, COUNT(*) as total, SUM(montant_ttc) as total_montant')
+                ->groupBy('adresse_travaux')
+                ->orderByDesc('total')
+                ->limit(5)
+                ->get();
         }
+
+        return view($views[$normalizedSociety][$activity], compact(
+            'activity',
+            'society',
+            'recentDocuments',
+            'stats',
+            'topClients'
+        ));
     }
 
-    // Statistiques globales
-    $statsGlobales = [
-        'total_documents' => Document::count(),
-        'total_activites' => count($activitesAvecStats),
-        'total_societes' => count($societesAvecStats),
-        'total_combinaisons' => count($combinaisons),
-        'documents_ce_mois' => Document::whereMonth('created_at', now()->month)->count(),
-        'documents_semaine' => Document::where('created_at', '>=', now()->subWeek())->count(),
-    ];
+    private function normalizeSociety($society)
+    {
+        $mapping = [
+            'nova' => 'energie_nova',
+            'house' => 'myhouse',
+            'energie_nova' => 'energie_nova',
+            'myhouse' => 'myhouse'
+        ];
 
-    return view('back.all-dashboards', compact(
-        'activites',
-        'societes',
-        'activitesAvecStats',
-        'societesAvecStats',
-        'combinaisons',
-        'statsGlobales'
-    ));
-}
+        return $mapping[$society] ?? $society;
+    }
+
+
+
+
+    public function allDashboards()
+    {
+        Log::info('🌐 Tous les dashboards consultés', ['user_id' => auth()->id()]);
+
+        // Activités disponibles
+        $activites = [
+            'desembouage' => [
+                'nom' => 'Désembouage',
+                'icon' => 'fa-water',
+                'color' => 'primary',
+                'description' => 'Nettoyage et désembouage des circuits de chauffage'
+            ],
+            'reequilibrage' => [
+                'nom' => 'Rééquilibrage',
+                'icon' => 'fa-balance-scale',
+                'color' => 'info',
+                'description' => 'Rééquilibrage des circuits hydrauliques'
+            ]
+        ];
+
+        // Sociétés disponibles
+        $societes = [
+            'nova' => [
+                'nom' => 'Énergie Nova',
+                'icon' => 'fa-building',
+                'color' => 'success',
+                'description' => 'Spécialiste en solutions énergétiques'
+            ],
+            'house' => [
+                'nom' => 'MyHouse Solutions',
+                'icon' => 'fa-home',
+                'color' => 'warning',
+                'description' => 'Solutions résidentielles innovantes'
+            ]
+        ];
+
+        // Statistiques par activité
+        $activitesAvecStats = [];
+        foreach ($activites as $key => $activite) {
+            $activitesAvecStats[$key] = array_merge($activite, [
+                'documents_count' => Document::where('activity', $key)->count()
+            ]);
+        }
+
+        // Statistiques par société
+        $societesAvecStats = [];
+        foreach ($societes as $key => $societe) {
+            $societesAvecStats[$key] = array_merge($societe, [
+                'documents_count' => Document::where('society', $key)->count()
+            ]);
+        }
+
+        // Toutes les combinaisons
+        $combinaisons = [];
+        foreach ($activitesAvecStats as $activiteCode => $activiteInfo) {
+            foreach ($societesAvecStats as $societeCode => $societeInfo) {
+                $combinaisons[] = [
+                    'activite_code' => $activiteCode,
+                    'activite_nom' => $activiteInfo['nom'],
+                    'activite_icon' => $activiteInfo['icon'],
+                    'activite_color' => $activiteInfo['color'],
+                    'societe_code' => $societeCode,
+                    'societe_nom' => $societeInfo['nom'],
+                    'societe_icon' => $societeInfo['icon'],
+                    'societe_color' => $societeInfo['color'],
+                    'documents_count' => Document::where('activity', $activiteCode)
+                        ->where('society', $societeCode)
+                        ->count(),
+                    'devis_count' => Document::where('activity', $activiteCode)
+                        ->where('society', $societeCode)
+                        ->where('type', 'devis')
+                        ->count(),
+                    'factures_count' => Document::where('activity', $activiteCode)
+                        ->where('society', $societeCode)
+                        ->where('type', 'facture')
+                        ->count(),
+                    'rapports_count' => Document::where('activity', $activiteCode)
+                        ->where('society', $societeCode)
+                        ->where('type', 'rapport')
+                        ->count(),
+                ];
+            }
+        }
+
+        // Statistiques globales
+        $statsGlobales = [
+            'total_documents' => Document::count(),
+            'total_activites' => count($activitesAvecStats),
+            'total_societes' => count($societesAvecStats),
+            'total_combinaisons' => count($combinaisons),
+            'documents_ce_mois' => Document::whereMonth('created_at', now()->month)->count(),
+            'documents_semaine' => Document::where('created_at', '>=', now()->subWeek())->count(),
+        ];
+
+        return view('back.all-dashboards', compact(
+            'activites',
+            'societes',
+            'activitesAvecStats',
+            'societesAvecStats',
+            'combinaisons',
+            'statsGlobales'
+        ));
+    }
     // =========================================================================
     // VUES GLOBALES DE DOCUMENTS
     // =========================================================================
@@ -236,13 +263,13 @@ class DocumentController extends Controller
         }
 
         if ($request->filled('search')) {
-        $search = $request->search;
-        $query->where(function($q) use ($search) {
-            $q->where('reference', 'LIKE', "%{$search}%")
-              ->orWhere('nom_residence', 'LIKE', "%{$search}%") // Modifié ici
-              ->orWhere('adresse_travaux', 'LIKE', "%{$search}%");
-        });
-    }
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('reference', 'LIKE', "%{$search}%")
+                    ->orWhere('nom_residence', 'LIKE', "%{$search}%") // Modifié ici
+                    ->orWhere('adresse_travaux', 'LIKE', "%{$search}%");
+            });
+        }
 
         if ($request->filled('date_debut')) {
             $query->whereDate('date', '>=', $request->date_debut);
@@ -265,28 +292,28 @@ class DocumentController extends Controller
         return view('back.documents.index', compact('documents', 'stats'));
     }
 
-public function searchGlobal(Request $request)
-{
-    $request->validate([
-        'search' => 'required|string|min:2'
-    ]);
+    public function searchGlobal(Request $request)
+    {
+        $request->validate([
+            'search' => 'required|string|min:2'
+        ]);
 
-    $search = $request->search;
+        $search = $request->search;
 
-    $documents = Document::with(['user', 'parent'])
-        ->where(function($query) use ($search) {
-            $query->where('reference', 'LIKE', "%{$search}%")
-                ->orWhere('nom_residence', 'LIKE', "%{$search}%") // Modifié ici
-                ->orWhere('adresse_travaux', 'LIKE', "%{$search}%")
-                ->orWhere('ville', 'LIKE', "%{$search}%")
-                ->orWhere('code_postal', 'LIKE', "%{$search}%");
-        })
-        ->latest()
-        ->paginate(20)
-        ->withQueryString();
+        $documents = Document::with(['user', 'parent'])
+            ->where(function ($query) use ($search) {
+                $query->where('reference', 'LIKE', "%{$search}%")
+                    ->orWhere('nom_residence', 'LIKE', "%{$search}%") // Modifié ici
+                    ->orWhere('adresse_travaux', 'LIKE', "%{$search}%")
+                    ->orWhere('ville', 'LIKE', "%{$search}%")
+                    ->orWhere('code_postal', 'LIKE', "%{$search}%");
+            })
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
 
-    return view('back.documents.search', compact('documents', 'search'));
-}
+        return view('back.documents.search', compact('documents', 'search'));
+    }
 
     public function creationRapide()
     {
@@ -322,7 +349,6 @@ public function searchGlobal(Request $request)
     {
         return view('back.dossiers.choose_action', compact('activity', 'society', 'type'));
     }
-
     public function selectDevis($activity, $society, $type)
     {
         abort_if(!in_array($type, [
@@ -331,6 +357,15 @@ public function searchGlobal(Request $request)
             'attestation_signataire',
             'cahier_des_charges'
         ]), 404);
+
+        // NORMALISER ICI
+        $normalizedSociety = $this->normalizeSociety($society);
+
+        $devisList = Document::where([
+            'activity' => $activity,
+            'society' => $normalizedSociety,  // ← CORRIGER
+            'type' => 'devis',
+        ])->latest()->get();
 
         $devisList = Document::where([
             'activity' => $activity,
@@ -355,11 +390,15 @@ public function searchGlobal(Request $request)
 
     public function selectDevisForAttestation($activity, $society)
     {
+        // NORMALISER ICI
+        $normalizedSociety = $this->normalizeSociety($society);
+
         $devisList = Document::where([
             'activity' => $activity,
-            'society' => $society,
+            'society' => $normalizedSociety,  // ← CORRIGER
             'type' => 'devis',
         ])->latest()->get();
+
 
         return view('back.dossiers.select_devis_attestation', compact(
             'devisList',
@@ -370,27 +409,30 @@ public function searchGlobal(Request $request)
 
     public function selectDevisForSignataire($activity, $society)
     {
+        // NORMALISER ICI
+        $normalizedSociety = $this->normalizeSociety($society);
+
         $devisList = Document::where([
             'activity' => $activity,
-            'society' => $society,
+            'society' => $normalizedSociety,  // ← CORRIGER
             'type' => 'devis',
         ])->latest()->get();
-
         return view('back.dossiers.select_devis_attestation_signataire', compact(
             'devisList',
             'activity',
             'society'
         ));
     }
-
     public function selectDevisForCahier($activity, $society)
     {
+        // NORMALISER ICI
+        $normalizedSociety = $this->normalizeSociety($society);
+
         $devisList = Document::where([
             'activity' => $activity,
-            'society' => $society,
+            'society' => $normalizedSociety,  // ← CORRIGER
             'type' => 'devis',
         ])->latest()->get();
-
         return view('back.dossiers.select_devis_cahier', compact(
             'devisList',
             'activity',
@@ -400,12 +442,14 @@ public function searchGlobal(Request $request)
 
     public function selectFactureForRapport($activity, $society)
     {
-        $factures = Document::where('society', $society)
+        // NORMALISER ICI
+        $normalizedSociety = $this->normalizeSociety($society);
+
+        $factures = Document::where('society', $normalizedSociety)  // ← CORRIGER
             ->where('activity', $activity)
             ->where('type', 'facture')
             ->orderByDesc('created_at')
             ->get();
-
         return view('back.dossiers.select_facture_for_rapport', [
             'activity' => $activity,
             'society' => $society,
@@ -420,43 +464,90 @@ public function searchGlobal(Request $request)
 
     public function create($activity, $society, $type)
     {
-        abort_if(
-            in_array($type, ['facture', 'attestation_realisation', 'attestation_signataire']),
-            404
-        );
+        // Normaliser la société
+        $normalizedSociety = $this->normalizeSociety($society);
 
-        // Générer le numéro suivant
-        $lastDocument = Document::where('activity', $activity)
-            ->where('society', $society)
-            ->where('type', $type)
-            ->latest()
-            ->first();
+        $parent = null;
+        $parentId = request('parent_id');
 
-        $numero = $this->generateNextNumber($activity, $society, $type, $lastDocument);
-
-        return view('back.dossiers.form', [
+        // Log pour debug
+        \Log::info('Create document request:', [
             'activity' => $activity,
             'society' => $society,
+            'normalized_society' => $normalizedSociety,  // ← Ajouter ce log
             'type' => $type,
-            'parent' => null,
-            'document' => null,
-            'numero' => $numero,
+            'parent_id' => $parentId,
+            'all_params' => request()->all()
         ]);
+
+        // Si un parent_id est fourni, chercher le document
+        if ($parentId) {
+            $parent = Document::find($parentId);
+
+            if (!$parent) {
+                \Log::error('Parent document not found:', ['parent_id' => $parentId]);
+                return redirect()->back()
+                    ->with('error', 'Document parent non trouvé');
+            }
+
+            // Vérifier avec la société normalisée
+            if ($parent->activity !== $activity || $parent->society !== $normalizedSociety) {
+                \Log::error('Parent document mismatch:', [
+                    'parent' => $parent->activity . '/' . $parent->society,
+                    'requested' => $activity . '/' . $normalizedSociety
+                ]);
+                return redirect()->back()
+                    ->with('error', 'Le document parent ne correspond pas à l\'activité/société sélectionnée');
+            }
+        }
+
+        // Si pas de parent mais qu'on veut créer une facture/attestation
+        if (!$parent && in_array($type, ['facture', 'attestation_realisation', 'attestation_signataire', 'cahier_des_charges', 'rapport'])) {
+            \Log::warning('No parent provided for document type that requires one:', [
+                'type' => $type,
+                'activity' => $activity,
+                'society' => $normalizedSociety  // ← Utiliser normalisé
+            ]);
+
+            // Rediriger vers la sélection du devis
+            return redirect()->route('back.document.select-devis', [
+                'activity' => $activity,
+                'society' => $society,  // ← Garder original pour la route
+                'type' => $type
+            ]);
+        }
+
+        // Récupérer ou créer un document vide
+        $document = new Document();
+        if (isset($parent) && $type === 'facture') {
+            // Pré-remplir avec les données du parent
+            $document->fill($parent->toArray());
+            $document->parent_id = $parent->id;
+        }
+        $view = 'back.dossiers.form';
+        if (!$this->checkViewExists($view)) {
+            $view = 'back.document.form';
+            if (!$this->checkViewExists($view)) {
+                abort(404, "Aucune vue trouvée pour le formulaire de document");
+            }
+        }
+        return view('back.dossiers.form', compact('activity', 'society', 'type', 'document', 'parent'));
     }
 
     public function createFacture($activity, $society, $devisId)
     {
+        // NORMALISER ICI
+        $normalizedSociety = $this->normalizeSociety($society);
+
         $devis = Document::where('id', $devisId)
             ->where('type', 'devis')
             ->firstOrFail();
 
-        // Générer le numéro de facture
         $lastFacture = Document::where('activity', $activity)
-            ->where('society', $society)
+            ->where('society', $normalizedSociety)  // ← CORRIGER
             ->where('type', 'facture')
             ->latest()
             ->first();
-
         $numero = $this->generateNextNumber($activity, $society, 'facture', $lastFacture);
 
         return view('back.dossiers.form', [
@@ -471,12 +562,11 @@ public function searchGlobal(Request $request)
 
     public function createAttestationFromDevis($activity, $society, Document $devis)
     {
-        if ($devis->type !== 'devis') {
-            abort(404);
-        }
+        // NORMALISER ICI
+        $normalizedSociety = $this->normalizeSociety($society);
 
         $lastAttestation = Document::where('activity', $activity)
-            ->where('society', $society)
+            ->where('society', $normalizedSociety)  // ← CORRIGER
             ->where('type', 'attestation_realisation')
             ->latest()
             ->first();
@@ -495,15 +585,15 @@ public function searchGlobal(Request $request)
 
     public function createAttestationSignataireFromDevis($activity, $society, Document $devis)
     {
-        if ($devis->type !== 'devis') {
-            abort(404);
-        }
+        // NORMALISER ICI
+        $normalizedSociety = $this->normalizeSociety($society);
 
         $lastAttestation = Document::where('activity', $activity)
-            ->where('society', $society)
+            ->where('society', $normalizedSociety)  // ← CORRIGER
             ->where('type', 'attestation_signataire')
             ->latest()
             ->first();
+
 
         $numero = $this->generateNextNumber($activity, $society, 'attestation_signataire', $lastAttestation);
 
@@ -519,12 +609,11 @@ public function searchGlobal(Request $request)
 
     public function createCahierDesChargesFromDevis($activity, $society, Document $devis)
     {
-        if ($devis->type !== 'devis') {
-            abort(404);
-        }
+        // NORMALISER ICI
+        $normalizedSociety = $this->normalizeSociety($society);
 
         $lastCahier = Document::where('activity', $activity)
-            ->where('society', $society)
+            ->where('society', $normalizedSociety)  // ← CORRIGER
             ->where('type', 'cahier_des_charges')
             ->latest()
             ->first();
@@ -543,10 +632,13 @@ public function searchGlobal(Request $request)
 
     public function createRapportFromFacture(string $activity, string $society, int $factureId)
     {
+        // NORMALISER ICI
+        $normalizedSociety = $this->normalizeSociety($society);
+
         $facture = Document::findOrFail($factureId);
 
         $lastRapport = Document::where('activity', $activity)
-            ->where('society', $society)
+            ->where('society', $normalizedSociety)  // ← CORRIGER
             ->where('type', 'rapport')
             ->latest()
             ->first();
@@ -575,9 +667,13 @@ public function searchGlobal(Request $request)
 
     public function store(Request $request, $activity, $society, $type)
     {
+        // Normaliser la société
+        $normalizedSociety = $this->normalizeSociety($society);
+
         Log::info('📝 STORE METHOD CALLED', [
             'activity' => $activity,
             'society' => $society,
+            'normalized_society' => $normalizedSociety,
             'type' => $type,
             'user_id' => auth()->id(),
         ]);
@@ -587,13 +683,13 @@ public function searchGlobal(Request $request)
             return back()->withErrors(['error' => 'Le formulaire est vide']);
         }
 
-        return DB::transaction(function () use ($request, $activity, $society, $type) {
+        return DB::transaction(function () use ($request, $activity, $society, $normalizedSociety, $type) {
             $data = $request->all();
 
-            // Gérer l'upload du PDF
+            // Gérer l'upload du PDF - utiliser la société normalisée pour le chemin
             if ($request->hasFile('file_path')) {
                 $file = $request->file('file_path');
-                $path = $file->store("documents/{$society}/{$activity}/{$type}", 'public');
+                $path = $file->store("documents/{$normalizedSociety}/{$activity}/{$type}", 'public');
                 $data['file_path'] = 'storage/' . $path;
                 Log::info('📁 File uploaded', ['file_path' => $data['file_path']]);
             }
@@ -612,9 +708,9 @@ public function searchGlobal(Request $request)
                 }
             }
 
-            // Champs obligatoires
-            $data['reference'] = $data['reference'] ?? Document::generateReference($society, $type);
-            $data['society'] = $society;
+            // Champs obligatoires - utiliser la société normalisée
+            $data['reference'] = $data['reference'] ?? Document::generateReference($normalizedSociety, $type);
+            $data['society'] = $normalizedSociety;  // ← CORRECTION ICI
             $data['activity'] = $activity;
             $data['type'] = $type;
             $data['user_id'] = auth()->id();
@@ -624,11 +720,11 @@ public function searchGlobal(Request $request)
                 $data['numero'] = $data['numero_custom'];
             } elseif (!isset($data['numero'])) {
                 $lastDocument = Document::where('activity', $activity)
-                    ->where('society', $society)
+                    ->where('society', $normalizedSociety)  // ← CORRECTION ICI
                     ->where('type', $type)
                     ->latest()
                     ->first();
-                $data['numero'] = $this->generateNextNumber($activity, $society, $type, $lastDocument);
+                $data['numero'] = $this->generateNextNumber($activity, $normalizedSociety, $type, $lastDocument);
             }
 
             // Filtrer fillable
@@ -637,7 +733,11 @@ public function searchGlobal(Request $request)
 
             // Créer document
             $document = Document::create($filteredData);
-            Log::info('✅ Document created', ['id' => $document->id]);
+            Log::info('✅ Document created', [
+                'id' => $document->id,
+                'society' => $document->society,
+                'reference' => $document->reference
+            ]);
 
             // Générer PDF dynamique
             try {
@@ -646,11 +746,13 @@ public function searchGlobal(Request $request)
                 Log::error('❌ PDF generation failed', ['error' => $pdfError->getMessage()]);
             }
 
+            // Rediriger avec la société d'origine (pas normalisée) pour la route
             return redirect()
                 ->route('back.document.show', [$activity, $society, $type, $document->id])
                 ->with('success', 'Document créé avec succès!');
         });
     }
+
 
     public function update(Request $request, $activity, $society, $type, Document $document)
     {
@@ -709,110 +811,134 @@ public function searchGlobal(Request $request)
     // =========================================================================
     // GESTION DES DOCUMENTS EXISTANTS
     // =========================================================================
-
     public function listDocuments($activity, $society, $type)
-{
-    // Si type = "all", on récupère tous les types
-    if ($type === 'all') {
-        $query = Document::where('activity', $activity)
-            ->where('society', $society);
-    } else {
-        $query = Document::where('activity', $activity)
-            ->where('society', $society)
-            ->where('type', $type);
+    {
+        // NORMALISER ICI
+        $normalizedSociety = $this->normalizeSociety($society);
+
+        // Si type = "all", on récupère tous les types
+        if ($type === 'all') {
+            $query = Document::where('activity', $activity)
+                ->where('society', $normalizedSociety);  // ← CORRECTION: retirer "operator:"
+        } else {
+            $query = Document::where('activity', $activity)
+                ->where('society', $normalizedSociety)  // ← CORRECTION: retirer "operator:"
+                ->where('type', $type);
+        }
+
+        $documents = $query->with(['user', 'parent'])
+            ->latest()
+            ->paginate(20);
+
+        // Statistiques - ADAPTÉES À VOTRE STRUCTURE DE TABLE
+        if ($type === 'all') {
+            $stats = [
+                'total' => Document::where('activity', $activity)
+                    ->where('society', $normalizedSociety)  // ← CORRECTION
+                    ->count(),
+                'devis' => Document::where('activity', $activity)
+                    ->where('society', $normalizedSociety)  // ← CORRECTION
+                    ->where('type', 'devis')
+                    ->count(),
+                'factures' => Document::where('activity', $activity)
+                    ->where('society', $normalizedSociety)  // ← CORRECTION
+                    ->where('type', 'facture')
+                    ->count(),
+                'rapports' => Document::where('activity', $activity)
+                    ->where('society', $normalizedSociety)  // ← CORRECTION
+                    ->where('type', 'rapport')
+                    ->count(),
+                'cahiers' => Document::where('activity', $activity)
+                    ->where('society', $normalizedSociety)  // ← CORRECTION
+                    ->where('type', 'cahier_des_charges')
+                    ->count(),
+                'attestations' => Document::where('activity', $activity)
+                    ->where('society', $normalizedSociety)  // ← CORRECTION
+                    ->whereIn('type', ['attestation_realisation', 'attestation_signataire'])
+                    ->count(),
+            ];
+        } else {
+            // Pour un type spécifique, simplifions sans 'statut'
+            $stats = [
+                'total' => Document::where('activity', $activity)  // ← CORRECTION: retirer "operator:"
+                    ->where('society', $normalizedSociety)
+                    ->where('type', $type)
+                    ->count(),
+                'ce_mois' => Document::where('activity', $activity)
+                    ->where('society', $normalizedSociety)
+                    ->where('type', $type)
+                    ->whereMonth('created_at', now()->month)
+                    ->count(),
+                'cette_semaine' => Document::where('activity', $activity)
+                    ->where('society', $normalizedSociety)
+                    ->where('type', $type)
+                    ->where('created_at', '>=', now()->subWeek())
+                    ->count(),
+            ];
+        }
+
+        return view('back.dossiers.list_documents', compact(
+            'documents',
+            'activity',
+            'society',
+            'type',
+            'stats'
+        ));
+    }
+    public function searchDocument(Request $request, $activity, $society, $type)
+    {
+        $request->validate([
+            'search' => 'required|string|min:2'
+        ]);
+
+        // Définir $search AVANT de l'utiliser
+        $search = $request->search;
+
+        // Normaliser la société
+        $normalizedSociety = $this->normalizeSociety($society);
+
+        $documents = Document::where('activity', $activity)
+            ->where('society', $normalizedSociety)
+            ->where('type', $type)
+            ->where(function ($query) use ($search) {
+                $query->where('reference', 'LIKE', "%{$search}%")
+                    ->orWhere('nom_residence', 'LIKE', "%{$search}%")
+                    ->orWhere('adresse_travaux', 'LIKE', "%{$search}%");
+            })
+            ->with(['user', 'parent'])
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
+
+        return view('back.documents.search-type', compact(
+            'activity',
+            'society',
+            'type',
+            'documents',
+            'search'
+        ));
     }
 
-    $documents = $query->with(['user', 'parent'])
-        ->latest()
-        ->paginate(20);
 
-    // Statistiques - ADAPTÉES À VOTRE STRUCTURE DE TABLE
-    // Note: Votre table n'a pas de colonne 'statut'
-    if ($type === 'all') {
-        $stats = [
-            'total' => Document::where('activity', $activity)
-                ->where('society', $society)
-                ->count(),
-            'devis' => Document::where('activity', $activity)
-                ->where('society', $society)
-                ->where('type', 'devis')
-                ->count(),
-            'factures' => Document::where('activity', $activity)
-                ->where('society', $society)
-                ->where('type', 'facture')
-                ->count(),
-            'rapports' => Document::where('activity', $activity)
-                ->where('society', $society)
-                ->where('type', 'rapport')
-                ->count(),
-            'cahiers' => Document::where('activity', $activity)
-                ->where('society', $society)
-                ->where('type', 'cahier_des_charges')
-                ->count(),
-            'attestations' => Document::where('activity', $activity)
-                ->where('society', $society)
-                ->whereIn('type', ['attestation_realisation', 'attestation_signataire'])
-                ->count(),
-        ];
-    } else {
-        // Pour un type spécifique, simplifions sans 'statut'
-        $stats = [
-            'total' => Document::where('activity', $activity)
-                ->where('society', $society)
-                ->where('type', $type)
-                ->count(),
-            'ce_mois' => Document::where('activity', $activity)
-                ->where('society', $society)
-                ->where('type', $type)
-                ->whereMonth('created_at', now()->month)
-                ->count(),
-            'cette_semaine' => Document::where('activity', $activity)
-                ->where('society', $society)
-                ->where('type', $type)
-                ->where('created_at', '>=', now()->subWeek())
-                ->count(),
-        ];
+    private function checkViewExists($viewName)
+    {
+        $exists = view()->exists($viewName);
+        \Log::info("View check: {$viewName} -> " . ($exists ? 'EXISTS' : 'NOT FOUND'));
+        return $exists;
     }
-
-    return view('back.dossiers.list_documents', compact(
-        'documents', 'activity', 'society', 'type', 'stats'
-    ));
-}
-public function searchDocument(Request $request, $activity, $society, $type)
-{
-    $request->validate([
-        'search' => 'required|string|min:2'
-    ]);
-
-    $search = $request->search;
-
-    $documents = Document::where('activity', $activity)
-        ->where('society', $society)
-        ->where('type', $type)
-        ->where(function($query) use ($search) {
-            $query->where('reference', 'LIKE', "%{$search}%")
-                ->orWhere('nom_residence', 'LIKE', "%{$search}%") // Modifié ici
-                ->orWhere('adresse_travaux', 'LIKE', "%{$search}%");
-        })
-        ->with(['user', 'parent'])
-        ->latest()
-        ->paginate(20)
-        ->withQueryString();
-
-    return view('back.documents.search-type', compact(
-        'activity', 'society', 'type', 'documents', 'search'
-    ));
-}
     public function show($activity, $society, $type, Document $document)
     {
-        // Vérifier que le document correspond aux paramètres
-        if ($document->activity !== $activity || $document->society !== $society || $document->type !== $type) {
+        // NORMALISER ICI
+        $normalizedSociety = $this->normalizeSociety($society);
+
+        // Vérifier avec la société normalisée
+        if ($document->activity !== $activity || $document->society !== $normalizedSociety || $document->type !== $type) {
             abort(404);
         }
 
         // Chemin du PDF généré
         $pdfPath = storage_path("app/public/pdf/{$document->society}/{$document->activity}/{$document->type}/{$document->reference}.pdf");
-        
+
         // Si le PDF n'existe pas, le générer
         if (!file_exists($pdfPath)) {
             try {
@@ -823,7 +949,7 @@ public function searchDocument(Request $request, $activity, $society, $type)
                     'message' => $e->getMessage(),
                     'document_id' => $document->id
                 ]);
-                
+
                 return back()->withErrors('Erreur lors de la génération du PDF: ' . $e->getMessage());
             }
         }
@@ -834,26 +960,32 @@ public function searchDocument(Request $request, $activity, $society, $type)
 
     public function preview($activity, $society, $type, Document $document)
     {
-        // Vérifier que le document correspond aux paramètres
-        if ($document->activity !== $activity || $document->society !== $society || $document->type !== $type) {
+        // NORMALISER ICI
+        $normalizedSociety = $this->normalizeSociety($society);
+
+        // Vérifier avec la société normalisée
+        if ($document->activity !== $activity || $document->society !== $normalizedSociety || $document->type !== $type) {
             abort(404);
         }
 
         // Prévisualisation HTML du PDF
         $viewData = $this->preparePdfData($document);
         $view = $this->getPdfView($document);
-        
+
         if (!view()->exists($view)) {
             abort(404, "Template PDF non trouvé: {$view}");
         }
-        
+
         return view($view, $viewData);
     }
 
     public function edit($activity, $society, $type, Document $document)
     {
-        // Vérifier que le document correspond aux paramètres
-        if ($document->activity !== $activity || $document->society !== $society || $document->type !== $type) {
+        // NORMALISER ICI
+        $normalizedSociety = $this->normalizeSociety($society);
+
+        // Vérifier avec la société normalisée
+        if ($document->activity !== $activity || $document->society !== $normalizedSociety || $document->type !== $type) {
             abort(404);
         }
 
@@ -868,9 +1000,12 @@ public function searchDocument(Request $request, $activity, $society, $type)
 
     public function destroy($activity, $society, $type, Document $document)
     {
+        // NORMALISER ICI
+        $normalizedSociety = $this->normalizeSociety($society);
+
         try {
-            // Vérifier que le document correspond aux paramètres
-            if ($document->activity !== $activity || $document->society !== $society || $document->type !== $type) {
+            // Vérifier avec la société normalisée
+            if ($document->activity !== $activity || $document->society !== $normalizedSociety || $document->type !== $type) {
                 abort(404);
             }
 
@@ -919,7 +1054,7 @@ public function searchDocument(Request $request, $activity, $society, $type)
 
         return Storage::disk('public')->download(
             str_replace('storage/', '', $document->file_path),
-            $document->numero . '_' . Str::slug($document->client_nom) . '.' . 
+            $document->numero . '_' . Str::slug($document->client_nom) . '.' .
             pathinfo($document->file_path, PATHINFO_EXTENSION)
         );
     }
@@ -951,9 +1086,11 @@ public function searchDocument(Request $request, $activity, $society, $type)
      */
     public function duplicate($activity, $society, $type, Document $document)
     {
-        // Générer le nouveau numéro
+        // NORMALISER ICI
+        $normalizedSociety = $this->normalizeSociety($society);
+
         $lastDocument = Document::where('activity', $activity)
-            ->where('society', $society)
+            ->where('society', $normalizedSociety)  // ← CORRIGER
             ->where('type', $type)
             ->latest()
             ->first();
@@ -1004,16 +1141,16 @@ public function searchDocument(Request $request, $activity, $society, $type)
 
             // 1. Préparer les données
             $viewData = $this->preparePdfData($document);
-            
+
             // 2. Déterminer la vue Blade selon votre structure
             $view = $this->getPdfView($document);
-            
+
             // 3. Chemin de sortie
             $outputDir = storage_path("app/public/pdf/{$document->society}/{$document->activity}/{$document->type}");
             if (!is_dir($outputDir)) {
                 mkdir($outputDir, 0775, true);
             }
-            
+
             $outputPath = "{$outputDir}/{$document->reference}.pdf";
             $relativePath = "pdf/{$document->society}/{$document->activity}/{$document->type}/{$document->reference}.pdf";
 
@@ -1024,7 +1161,7 @@ public function searchDocument(Request $request, $activity, $society, $type)
 
             // 4. Générer avec le service
             $this->pdfFillService->generate($view, $viewData, $outputPath);
-            
+
             // 5. Mettre à jour la base de données
             $document->update([
                 'file_path' => $relativePath,
@@ -1041,7 +1178,7 @@ public function searchDocument(Request $request, $activity, $society, $type)
                 'trace' => $e->getTraceAsString(),
                 'document_id' => $document->id
             ]);
-            
+
             throw new \RuntimeException("Erreur génération PDF: " . $e->getMessage());
         }
     }
@@ -1049,13 +1186,82 @@ public function searchDocument(Request $request, $activity, $society, $type)
     /**
      * Retourne le chemin de la vue Blade pour le PDF
      */
-    private function getPdfView(Document $document): string
-    {
-        // Correspond à votre structure: pdf/{society}/{activity}/{type}
-        // Exemple: pdf.nova.desembouage.devis
-        return "pdf.{$document->society}.{$document->activity}.{$document->type}";
+private function getPdfView(Document $document): string
+{
+    // Mapping des noms de société pour les templates PDF
+    $pdfSocietyMapping = [
+        'energie_nova' => 'nova',    // Dans l'URL: energie_nova, template: nova
+        'myhouse' => 'house',        // Dans l'URL: myhouse, template: house
+        'nova' => 'nova',           // Compatibilité
+        'house' => 'house'          // Compatibilité
+    ];
+    
+    $templateSociety = $pdfSocietyMapping[$document->society] ?? $document->society;
+    
+    $view = "pdf.{$templateSociety}.{$document->activity}.{$document->type}";
+    
+    // Log pour debug
+    Log::info('📄 PDF View Mapping', [
+        'document_society' => $document->society,
+        'template_society' => $templateSociety,
+        'view' => $view,
+        'view_exists' => view()->exists($view)
+    ]);
+    
+    if (!view()->exists($view)) {
+        // Liste toutes les vues disponibles pour debug
+        $availableViews = [];
+        $basePath = resource_path('views/pdf');
+        
+        foreach (['nova', 'house'] as $societyDir) {
+            foreach (['desembouage', 'reequilibrage'] as $activityDir) {
+                $typesPath = "{$basePath}/{$societyDir}/{$activityDir}";
+                if (is_dir($typesPath)) {
+                    $files = scandir($typesPath);
+                    foreach ($files as $file) {
+                        if (str_ends_with($file, '.blade.php')) {
+                            $type = str_replace('.blade.php', '', $file);
+                            $availableViews[] = "pdf.{$societyDir}.{$activityDir}.{$type}";
+                        }
+                    }
+                }
+            }
+        }
+        
+        Log::error('❌ PDF template not found', [
+            'requested_view' => $view,
+            'available_views' => $availableViews
+        ]);
+        
+        throw new \Exception("Template PDF non trouvé: {$view}. Disponibles: " . implode(', ', $availableViews));
     }
-
+    
+    return $view;
+}
+private function getAvailablePdfViews()
+{
+    $views = [];
+    
+    // Scanner les dossiers PDF
+    $basePath = resource_path('views/pdf');
+    
+    foreach (['nova', 'house'] as $society) {
+        foreach (['desembouage', 'reequilibrage'] as $activity) {
+            $typesPath = "{$basePath}/{$society}/{$activity}";
+            if (is_dir($typesPath)) {
+                $files = scandir($typesPath);
+                foreach ($files as $file) {
+                    if (str_ends_with($file, '.blade.php')) {
+                        $type = str_replace('.blade.php', '', $file);
+                        $views[] = "pdf.{$society}.{$activity}.{$type}";
+                    }
+                }
+            }
+        }
+    }
+    
+    return $views;
+}
     /**
      * Prépare les données pour le template PDF
      */
@@ -1063,13 +1269,13 @@ public function searchDocument(Request $request, $activity, $society, $type)
     {
         // Récupérer toutes les données du document
         $documentData = $document->toArray();
-        
+
         // Fusionner hiérarchiquement avec les parents
         $documentData = $this->mergeParentData($document, $documentData);
-        
+
         // Formater les données
         $documentData = $this->formatDocumentData($documentData);
-        
+
         // Ajouter des données calculées
         $documentData = $this->addCalculatedData($documentData);
 
@@ -1090,20 +1296,20 @@ public function searchDocument(Request $request, $activity, $society, $type)
     private function mergeParentData(Document $document, array $data): array
     {
         $current = $document;
-        
+
         while ($current->parent) {
             $parentData = $current->parent->toArray();
-            
+
             // Fusionner sans écraser les valeurs existantes
             foreach ($parentData as $key => $value) {
                 if (!isset($data[$key]) || empty($data[$key])) {
                     $data[$key] = $value;
                 }
             }
-            
+
             $current = $current->parent;
         }
-        
+
         return $data;
     }
 
@@ -1121,19 +1327,21 @@ public function searchDocument(Request $request, $activity, $society, $type)
                     $data[$key . '_formatted'] = $value;
                 }
             }
-            
+
             // Formater les montants
-            if (str_contains($key, 'montant') || 
-                str_contains($key, 'prix') || 
+            if (
+                str_contains($key, 'montant') ||
+                str_contains($key, 'prix') ||
                 str_contains($key, 'total') ||
-                in_array($key, ['prime_cee', 'reste_a_charge', 'tva', 'ht', 'ttc'])) {
-                
+                in_array($key, ['prime_cee', 'reste_a_charge', 'tva', 'ht', 'ttc'])
+            ) {
+
                 if (is_numeric($value)) {
                     $data[$key . '_formatted'] = number_format($value, 2, ',', ' ') . ' €';
                 }
             }
         }
-        
+
         return $data;
     }
 
@@ -1150,20 +1358,20 @@ public function searchDocument(Request $request, $activity, $society, $type)
                 $data['reste_a_charge_formatted'] = number_format($reste, 2, ',', ' ') . ' €';
             }
         }
-        
+
         // Calcul de la TVA si non défini
         if (isset($data['montant_ht']) && !isset($data['montant_tva'])) {
             $tva = $data['montant_ht'] * 0.20;
             $data['montant_tva'] = $tva;
             $data['montant_tva_formatted'] = number_format($tva, 2, ',', ' ') . ' €';
         }
-        
+
         // Calcul du TTC si HT et TVA sont définis
         if (isset($data['montant_ht']) && isset($data['montant_tva']) && !isset($data['montant_ttc'])) {
             $data['montant_ttc'] = $data['montant_ht'] + $data['montant_tva'];
             $data['montant_ttc_formatted'] = number_format($data['montant_ttc'], 2, ',', ' ') . ' €';
         }
-        
+
         return $data;
     }
 
@@ -1190,7 +1398,7 @@ public function searchDocument(Request $request, $activity, $society, $type)
         $month = date('m');
 
         if ($lastDocument && preg_match('/^' . $prefix . '-\d{4}-\d{2}-(\d+)$/', $lastDocument->numero, $matches)) {
-            $nextNumber = str_pad((int)$matches[1] + 1, 4, '0', STR_PAD_LEFT);
+            $nextNumber = str_pad((int) $matches[1] + 1, 4, '0', STR_PAD_LEFT);
         } else {
             $nextNumber = '0001';
         }
@@ -1227,17 +1435,17 @@ public function searchDocument(Request $request, $activity, $society, $type)
             case 'devis':
                 $rules['validite'] = 'nullable|integer|min:1|max:365';
                 break;
-                
+
             case 'facture':
                 $rules['date_echeance'] = 'nullable|date|after_or_equal:date';
                 $rules['mode_paiement'] = 'nullable|string|in:virement,cheque,carte,especes';
                 break;
-                
+
             case 'rapport':
                 $rules['conclusion'] = 'nullable|string';
                 $rules['recommandations'] = 'nullable|string';
                 break;
-                
+
             case 'attestation_realisation':
             case 'attestation_signataire':
                 $rules['date_realisation'] = 'required|date';

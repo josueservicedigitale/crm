@@ -25,18 +25,22 @@
                             'cahier_des_charges',
                             'rapport'
                         ]))
-                            {{-- Si le type est "rapport", utiliser select-facture --}}
+                            {{-- POUR 'rapport' : route spéciale --}}
                             @if($type === 'rapport')
-                                <a href="{{ route('back.document.select_facture_for_rapport', [$activity, $society]) }}"
+                                <a href="{{ route('back.document.select-facture-for-rapport', [$activity, $society]) }}"
                                 class="btn btn-primary btn-lg w-100">
                                     Créer un rapport
                                 </a>
+                            
+                            {{-- POUR 'cahier_des_charges' : utilise select-devis normal --}}
                             @else
                                 <a href="{{ route('back.document.select-devis', [$activity, $society, $type]) }}"
                                 class="btn btn-primary btn-lg w-100">
                                     Créer {{ str_replace('_', ' ', $type) }}
                                 </a>
                             @endif
+                        
+                        {{-- POUR les autres types (devis, etc.) --}}
                         @else
                             <a href="{{ route('back.document.create', [$activity, $society, $type]) }}"
                             class="btn btn-primary btn-lg w-100">
@@ -44,7 +48,6 @@
                             </a>
                         @endif
                     </div>
-
                 </div>
             </div>
         </div>
@@ -67,8 +70,6 @@
         </div>
     </div>
 
-  
-
     <div class="mt-4">
         <a href="{{ route('back.dashboard', [$activity, $society]) }}"
            class="btn btn-secondary">
@@ -76,4 +77,11 @@
         </a>
     </div>
 </div>
-@endsection
+
+
+
+ 
+
+@endsection   
+
+
