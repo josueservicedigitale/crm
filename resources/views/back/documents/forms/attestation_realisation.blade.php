@@ -1,18 +1,57 @@
 @if(isset($parent))
-    <input type="hidden" name="parent_id" value="{{ $parent->id }}">
-    @include('back.documents.forms.parent_hidden_fields', ['parent' => $parent])
+{{-- liaison avec le devis --}}
+<input type="hidden" name="parent_id" value="{{ $parent->id }}">
 
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-header bg-info text-white">
-            <h5 class="mb-0"><i class="fa fa-check-circle me-2"></i> Attestation de réalisation</h5>
-        </div>
-        <div class="card-body row">
-            {{-- Champs visibles en lecture seule --}}
-            <x-form.input name="reference_devis" label="Référence devis" :value="$parent->reference_devis" readonly/>
-            <x-form.input name="adresse_travaux" label="Adresse des travaux" :value="$parent->adresse_travaux" readonly/>
+{{-- copier TOUTES les données du devis --}}
+@foreach($parent->getAttributes() as $key => $value)
+    @if(!in_array($key, [
+        'id',
+        'reference',
+        'type',
+        'parent_id',
+        'created_at',
+        'updated_at',
+        'file_path'
+    ]))
+        <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+    @endif
+@endforeach
 
-            {{-- Champ éditable --}}
-            <x-form.input type="date" name="date_signature" label="Date de signature" :value="$document->date_signature ?? ''" required/>
-        </div>
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">
+            <i class="fa fa-check-circle me-2"></i>
+            Attestation de réalisation
+        </h5>
     </div>
+
+    <div class="card-body row">
+
+        {{-- champs visibles mais non modifiables --}}
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Référence devis</label>
+            <input type="text" class="form-control"
+                value="{{ $parent->reference_devis }}"
+                readonly>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Adresse des travaux</label>
+            <input type="text" class="form-control"
+                value="{{ $parent->adresse_travaux }}"
+                readonly>
+        </div>
+
+        {{-- SEUL champ éditable --}}
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Date de signature</label>
+            <input type="date"
+                name="date_signature"
+                class="form-control"
+                value="{{ old('date_signature', $document->date_signature ?? '') }}"
+                required>
+        </div>
+
+    </div>
+</div>
 @endif

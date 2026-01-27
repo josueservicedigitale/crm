@@ -106,13 +106,30 @@ Route::middleware('auth')->group(function () {
         ->name('back.document.show');
     Route::get('/back/{activity}/{society}/{type}/{document}/edit', [DocumentController::class, 'edit'])
         ->name('back.document.edit');
-    
+
     Route::put('/back/{activity}/{society}/{type}/{document}', [DocumentController::class, 'update'])
         ->name('back.document.update');
     Route::delete('/back/{activity}/{society}/{type}/{document}', [DocumentController::class, 'destroy'])
         ->name('back.document.destroy');
+    Route::get(
+        '/back/{activity}/{society}/{type}',
+        [DocumentController::class, 'chooseAction']
+    )->name('back.document.choose-action');
+
 });
 
+
+Route::get(
+    '/back/{activity}/{society}/{type}/{document}/download',
+    [DocumentController::class, 'downloadPDF']
+)
+    ->name('back.document.download');
+
+Route::get(
+    '/back/{activity}/{society}/{type}/{document}/regenerate-pdf',
+    [DocumentController::class, 'regeneratePDF']
+)
+    ->name('back.document.regenerate');
 // 6. Routes POST (actions)
 Route::middleware('auth')->group(function () {
     Route::post('/back/{activity}/{society}/{type}/store', [DocumentController::class, 'store'])
@@ -120,6 +137,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/back/{activity}/{society}/{type}/search', [DocumentController::class, 'searchDocument'])
         ->name('back.document.search');
 });
+Route::post('back/{activity}/{society}/{type}/{document}/generate-pdf', [DocumentController::class, 'generatePDF'])
+    ->name('back.document.generate_pdf');
 
 // 7. Routes LIST (en DERNIER - les plus génériques)
 Route::middleware('auth')->group(function () {

@@ -413,6 +413,31 @@
         </div>
     </div>
 </div>
+
+
+
+@foreach($documents as $document)
+<tr>
+    <td>{{ $document->reference_devis ?? $document->id }}</td>
+    <td>{{ $document->type }}</td>
+    <td>{{ $document->created_at->format('d/m/Y') }}</td>
+    <td>
+        @if($document->pdf_path)
+            <a href="{{ Storage::url($document->pdf_path) }}" 
+               target="_blank"
+               class="btn btn-sm btn-info">
+               <i class="fa fa-eye"></i>
+            </a>
+            <a href="{{ route('back.document.download', [$document->activity, $document->society, $document->type, $document->id]) }}"
+               class="btn btn-sm btn-success">
+               <i class="fa fa-download"></i>
+            </a>
+        @else
+            <span class="badge bg-warning">PDF non généré</span>
+        @endif
+    </td>
+</tr>
+@endforeach
 @endsection
 
 @push('styles')
