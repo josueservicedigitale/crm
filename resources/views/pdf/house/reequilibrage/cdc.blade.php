@@ -279,9 +279,11 @@
 
 <body>
     <p class="s1" style="padding-left: 11pt;text-indent: 0pt;text-align: left;"><span><img width="176" height="70"
-                alt="image" src="{{ asset(path: 'assets/img/rehouse/Cdc_files/Image_001.jpg') }}" /></span> <span><img width="211" height="46" alt="image"
-                src="{{ asset(path: 'assets/img/rehouse/Cdc_files/Image_002.jpg') }}" /></span><span class="s2"> </span><span><img width="209" height="48"
-                alt="image" src="{{ asset(path: 'assets/img/rehouse/Cdc_files/Image_003.jpg') }}" /></span></p>
+                alt="image" src="{{ asset(path: 'assets/img/rehouse/Cdc_files/Image_001.jpg') }}" /></span> <span><img
+                width="211" height="46" alt="image"
+                src="{{ asset(path: 'assets/img/rehouse/Cdc_files/Image_002.jpg') }}" /></span><span class="s2">
+        </span><span><img width="209" height="48" alt="image"
+                src="{{ asset(path: 'assets/img/rehouse/Cdc_files/Image_003.jpg') }}" /></span></p>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
     <p style="padding-top: 3pt;padding-left: 5pt;text-indent: 0pt;text-align: justify;">Le dispositif national des
         certificats d’économies d’énergie (CEE) mis en place par le Ministère en charge de l’énergie impose à l’ensemble
@@ -290,75 +292,15 @@
     <p class="s3" style="text-indent: 0pt;text-align: left;"></p>
     <p style="text-indent: 0pt;text-align: left;" />
     <p style="padding-top: 3pt;padding-left: 23pt;text-indent: -17pt;line-height: 129%;text-align: justify;">Dans le
-        cadre de son partenariat avec la société EBS ENERGIE, la société ( M&#39;Y HOUSE ) s’engage à vous apporter :
-        <span><img width="11" height="10" alt="image" src="{{ asset(path: 'assets/img/rehouse/Cdc_files/Image_004.jpg') }}" /></span><span class="s1">
-        </span>une prime d’un montant de <span style=" color: #4F81BC;">7 614,60 €* </span>;</p>
+        cadre de son partenariat avec la société {{ $document->society }}, la société ( {{ $document->activity }} )
+        s’engage à vous apporter :
+        <span><img width="11" height="10" alt="image" src="{{ asset(path: $document->file_path) }}" /></span><span
+            class="s1">
+        </span>une prime d’un montant de <span style=" color: #4F81BC;">{{ $document->prime_cee }} €* </span>;
+    </p>
     <p style="padding-left: 23pt;text-indent: 0pt;line-height: 12pt;text-align: left;"><span class="s3"></span><span
             class="s1"> </span>un bon d’achat pour des produits de consommation courante d’un montant de <span
             style=" color: #4F81BC;">€ </span>;</p>
-    <p style="text-indent: 0pt;text-align: left;"><br /></p>
-    <table style="border-collapse:collapse;margin-left:20.7988pt" cellspacing="0">
-        <tr style="height:13pt">
-            <td style="width:158pt">
-                <p class="s5" style="padding-left: 2pt;text-indent: 0pt;line-height: 10pt;text-align: left;"><span
-                        class="s6"> </span><span class="s7">un prêt bonifié d’un montant de</span></p>
-            </td>
-            <td style="width:128pt">
-                <p class="s7" style="padding-left: 13pt;text-indent: 0pt;line-height: 10pt;text-align: left;">euros
-                    proposé par</p>
-            </td>
-            <td style="width:175pt">
-                <p class="s7" style="padding-left: 43pt;text-indent: 0pt;line-height: 10pt;text-align: left;">au taux
-                    effectif global (TEG) de</p>
-            </td>
-            <td style="width:17pt">
-                <p class="s7" style="padding-left: 7pt;text-indent: 0pt;line-height: 10pt;text-align: left;">%</p>
-            </td>
-        </tr>
-        <tr style="height:13pt">
-            <td style="width:158pt">
-                <p class="s7" style="padding-left: 20pt;text-indent: 0pt;line-height: 11pt;text-align: left;">(valeur de
-                    la bonification =</p>
-            </td>
-            <td style="width:128pt">
-                <p class="s8" style="padding-left: 6pt;text-indent: 0pt;line-height: 11pt;text-align: left;">€<span
-                        style=" color: #000;">)* ;</span></p>
-            </td>
-            <td style="width:175pt">
-                <p style="text-indent: 0pt;text-align: left;"><br /></p>
-            </td>
-            <td style="width:17pt">
-                <p style="text-indent: 0pt;text-align: left;"><br /></p>
-            </td>
-        </tr>
-        <tr style="height:32pt">
-            <td style="width:15pt">
-                <p class="s5" style="padding-top: 3pt;padding-left: 2pt;text-indent: 0pt;text-align: left;"></p>
-                <p class="s5"
-                    style="padding-top: 3pt;padding-left: 2pt;text-indent: 0pt;line-height: 12pt;text-align: left;">
-                </p>
-            </td>
-            <td style="width:271pt">
-                <p class="s7"
-                    style="padding-left: 5pt;padding-right: 11pt;text-indent: 0pt;line-height: 16pt;text-align: left;">
-                    un audit ou conseil personnalisé, sous forme écrite (valeur = un produit ou service offert : [nature
-                    à préciser]</p>
-            </td>
-            <td style="width:111pt">
-                <p class="s8" style="padding-top: 3pt;padding-left: 15pt;text-indent: 0pt;text-align: left;">€ <span
-                        style=" color: #000;">) ;</span></p>
-                <p class="s7"
-                    style="padding-top: 3pt;padding-left: 30pt;text-indent: 0pt;line-height: 11pt;text-align: left;">
-                    d’une valeur de</p>
-            </td>
-            <td style="width:81pt">
-                <p style="text-indent: 0pt;text-align: left;"><br /></p>
-                <p class="s8"
-                    style="padding-top: 7pt;padding-left: 17pt;text-indent: 0pt;line-height: 11pt;text-align: left;">€
-                </p>
-            </td>
-        </tr>
-    </table>
     <p style="padding-top: 3pt;padding-left: 41pt;text-indent: 0pt;text-align: left;">dans le cadre des travaux suivants
         (1 ligne par opération) :</p>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
@@ -387,7 +329,8 @@
                 style="width:128pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
                 <p class="s10"
                     style="padding-top: 3pt;padding-left: 19pt;text-indent: 0pt;line-height: 91%;text-align: left;">
-                    Réglage des organes d’équilibrage d’une installation de chauffage</p>
+                    {{ $document->type }}
+                </p>
                 <p class="s10" style="padding-left: 18pt;text-indent: 0pt;text-align: left;">à eau chaude</p>
             </td>
             <td
@@ -395,7 +338,8 @@
                 <p style="text-indent: 0pt;text-align: left;"><br /></p>
                 <p class="s10"
                     style="padding-top: 8pt;padding-left: 7pt;padding-right: 7pt;text-indent: 0pt;text-align: center;">
-                    BAR-SE-104</p>
+                    {{ $document->reference }}
+                </p>
             </td>
             <td
                 style="width:307pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
@@ -482,9 +426,11 @@
         </tr>
     </table>
     <p style="padding-left: 8pt;text-indent: 0pt;text-align: left;"><span><img width="192" height="77" alt="image"
-                src="{{ asset(path: 'assets/img/rehouse/Cdc_files/Image_006.jpg') }}" /></span> <span><img width="211" height="46" alt="image"
-                src="{{ asset(path: 'assets/img/rehouse/Cdc_files/Image_007.jpg') }}" /></span><span class="s20"> </span><span><img width="209" height="48"
-                alt="image" src="{{ asset(path: 'assets/img/rehouse/Cdc_files/Image_008.jpg') }}" /></span></p>
+                src="{{ asset(path: 'assets/img/rehouse/Cdc_files/Image_006.jpg') }}" /></span> <span><img width="211"
+                height="46" alt="image"
+                src="{{ asset(path: 'assets/img/rehouse/Cdc_files/Image_007.jpg') }}" /></span><span class="s20">
+        </span><span><img width="209" height="48" alt="image"
+                src="{{ asset(path: 'assets/img/rehouse/Cdc_files/Image_008.jpg') }}" /></span></p>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
     <h1 style="padding-top: 3pt;padding-left: 5pt;text-indent: 0pt;text-align: justify;">/!\ <span class="p">Faites
             réaliser plusieurs devis afin de prendre une décision éclairée. Attention, seules les propositions remises

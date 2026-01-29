@@ -347,7 +347,7 @@
     <p style="padding-top: 5pt;padding-left: 32pt;text-indent: 0pt;text-align: left;">Autre ..................</p>
     <p style="padding-top: 5pt;padding-left: 34pt;text-indent: 0pt;text-align: left;">Autre ..................</p>
     <p style="text-indent: 0pt;text-align: left;"><span><img width="794" height="898" alt="image"
-                src="{{ asset(path: 'assets/img/nova/Rapport_files/Image_001.png') }}" /></span></p>
+                src="{{ public_path('assets/img/nova/Rapport_files/Image_001.png') }}" /></span></p>
 </body>
 
 </html>

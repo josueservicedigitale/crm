@@ -117,9 +117,9 @@
     <p style="padding-top: 1pt;padding-left: 2pt;text-indent: 0pt;text-align: left;">SONATE</p>
     <p style="text-indent: 0pt;text-align: left;" />
     <p style="text-indent: 0pt;text-align: left;"><span><img width="64" height="19" alt="image"
-                src="{{ asset('assets/img/nova/attestation_signataire_files/Image_001.png') }}" /></span></p>
+                src="{{ public_path('assets/img/nova/attestation_signataire_files/Image_001.png') }}" /></span></p>
     <p style="text-indent: 0pt;text-align: left;"><span><img width="291" height="37" alt="image"
-                src="{{ asset('assets/img/nova/attestation_signataire_files/Image_002.png') }}" /></span></p>
+                src="{{ public_path('assets/img/nova/attestation_signataire_files/Image_002.png') }}" /></span></p>
     <p style="padding-top: 1pt;padding-left: 5pt;text-indent: 0pt;text-align: left;">« RES » situé à 6, 8 All. des
         Tilleuls, 93110 Rosny-sous-Bois,</p>
     <p style="padding-top: 1pt;padding-left: 5pt;text-indent: 0pt;text-align: left;">dont le numéro
@@ -129,7 +129,7 @@
         ASNIERES-SUR-SEINE dont le numéro de SIRET est le 44261333700033.</p>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
     <p style="text-indent: 0pt;text-align: left;"><span><img width="77" height="19" alt="image"
-                src="{{ asset('assets/img/nova/attestation_signataire_files/Image_003.png') }}" /></span></p>
+                src="{{ public_path('assets/img/nova/attestation_signataire_files/Image_003.png') }}" /></span></p>
     <p class="s3" style="padding-left: 63pt;text-indent: 0pt;text-align: left;">Fait le : 03/10/2025</p>
     <p style="padding-top: 1pt;padding-left: 62pt;text-indent: 0pt;text-align: left;">à ASNIERES-SUR-SEINE</p>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>

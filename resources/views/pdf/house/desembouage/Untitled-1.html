@@ -1,0 +1,656 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Devis {{ $document->reference_devis ?? '' }}</title>
+        <style>
+            /* Styles simplifiés pour DomPDF */
+            body {
+                font-family: "DejaVu Sans", Arial, sans-serif;
+                font-size: 9px;
+                margin: 0;
+                padding: 0;
+                line-height: 1.2;
+            }
+
+            /* Classes de base simplifiées */
+            .green-bg {
+                background-color: #80a150;
+                color: white;
+                padding: 4px 8px;
+                margin: 3px 0;
+                display: inline-block;
+            }
+
+            .devis-title {
+                color: white;
+                font-weight: bold;
+                font-size: 14px;
+            }
+
+            .date {
+                font-size: 10px;
+                color: black;
+            }
+
+            h4 {
+                font-weight: bold;
+                font-size: 9px;
+                margin: 5px 0 2px 0;
+            }
+
+            .text-normal {
+                font-size: 9px;
+                margin: 2px 0;
+            }
+
+            .text-small {
+                font-size: 8px;
+                margin: 2px 0;
+            }
+
+            .text-bold {
+                font-weight: bold;
+            }
+
+            /* Table styling */
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 8px 0;
+            }
+
+            th {
+                background-color: #80a150;
+                color: white;
+                padding: 4px;
+                text-align: left;
+                font-weight: bold;
+                font-size: 10px;
+                border: 1px solid #80a150;
+            }
+
+            td {
+                padding: 4px;
+                border: 1px solid #ddd;
+                vertical-align: top;
+            }
+
+            /* List styling simplifié */
+            ul.simple {
+                list-style-type: none;
+                padding-left: 0;
+                margin: 3px 0;
+            }
+
+            ul.simple li {
+                margin: 2px 0;
+                padding-left: 12px;
+                position: relative;
+            }
+
+            ul.simple li:before {
+                content: "•";
+                position: absolute;
+                left: 0;
+            }
+
+            /* Special lists */
+            ul.diamond li:before {
+                content: "♦";
+            }
+
+            ul.square li:before {
+                content: "▪";
+            }
+
+            /* Sections */
+            .section-spacer {
+                height: 10px;
+            }
+
+            .company-info {
+                margin: 10px 0;
+                padding: 5px;
+            }
+
+            /* Totals section */
+            .totals-container {
+                margin-top: 15px;
+                text-align: right;
+                padding-right: 20px;
+            }
+
+            .total-line {
+                margin: 3px 0;
+            }
+
+            .total-amount {
+                font-weight: bold;
+                color: #828200;
+            }
+
+            /* Image handling */
+            .logo-placeholder {
+                width: 246px;
+                height: 48px;
+                background-color: #f0f0f0;
+                border: 1px solid #ddd;
+                margin: 5px 0;
+                text-align: center;
+                line-height: 48px;
+                color: #666;
+            }
+
+            /* Pour éviter les problèmes de découpage */
+            .keep-together {
+                page-break-inside: avoid;
+            }
+
+            /* Large image */
+            .large-image {
+                max-width: 100%;
+                height: auto;
+                margin: 5px 0;
+            }
+
+            /* Conditions */
+            .conditions {
+                margin: 10px 0;
+                padding: 8px;
+                border: 1px solid #ddd;
+                background-color: #f9f9f9;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Logo simplifié -->
+        <div class="logo-placeholder">[LOGO BBR MAINTENANCE]</div>
+
+        <!-- Titre du devis -->
+        <div class="section-spacer"></div>
+        <div class="green-bg">
+            <span class="devis-title"
+                >DEVIS {{ $document->reference_devis ?? '' }}</span
+            >
+        </div>
+
+        <p class="date">Date : {{ $document->date_devis ?? date('d/m/Y') }}</p>
+
+        <!-- Informations travaux -->
+        <h4>ADRESSE DES TRAVAUX :</h4>
+        <p class="text-normal">
+            {{ $document->adresse_travaux ?? 'Non spécifié' }}
+        </p>
+
+        <div class="section-spacer"></div>
+
+        <!-- Informations cadastrales -->
+        <h4>
+            Parcelle cadastrale :
+            <span class="text-normal"
+                >{{ $document->parcelle_1 ?? '' }} {{ $document->parcelle_2 ??
+                '' }} {{ $document->parcelle_3 ?? '' }} {{ $document->parcelle_4
+                ?? '' }}</span
+            >
+        </h4>
+
+        <h4>
+            N° immatriculation :
+            <span class="text-normal"
+                >{{ $document->numero_immatriculation ?? '' }}</span
+            >
+        </h4>
+
+        <h4>
+            Nombre bâtiments :
+            <span class="text-normal"
+                >{{ $document->nombre_batiments ?? '' }}</span
+            >
+        </h4>
+
+        <h4>
+            Détails bâtiments :
+            <span class="text-normal"
+                >{{ $document->details_batiments ?? '' }}</span
+            >
+        </h4>
+
+        <h4>
+            Nom de résidence :
+            <span class="text-normal"
+                >{{ $document->nom_residence ?? '' }}</span
+            >
+        </h4>
+
+        <h4>
+            Date travaux :
+            <span class="text-normal"
+                >{{ $document->dates_previsionnelles ?? '' }}</span
+            >
+        </h4>
+
+        <div class="section-spacer"></div>
+
+        <!-- Informations entreprise -->
+        <p class="text-bold" style="font-size: 11px">BBR MAINTENANCE</p>
+        <p class="text-normal">Siret : 93146162800030</p>
+        <p class="text-normal">78 AVENUE DES CHAMPS ELYSEES</p>
+        <p class="text-normal">75008 PARIS</p>
+        <p class="text-normal">Tél : 01 85 09 74 35</p>
+        <p class="text-normal">Mail : tech@bbrmaintenance.fr</p>
+        <p class="text-normal">
+            Représenté par : M.Poulin Thomas Directeur des Services Techniques
+        </p>
+
+        <div class="section-spacer"></div>
+
+        <!-- Tableau principal -->
+        <table class="keep-together">
+            <thead>
+                <tr>
+                    <th>Détail</th>
+                    <th style="width: 50px">Quantité</th>
+                    <th style="width: 70px">P.U HT</th>
+                    <th style="width: 70px">Total HT</th>
+                    <th style="width: 40px">TVA</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <!-- Contenu simplifié -->
+                        <p class="text-small">
+                            <strong
+                                >Désembouage de l'ensemble du système de
+                                distribution</strong
+                            >
+                        </p>
+                        <p class="text-small">
+                            Opération entrant dans le dispositif de prime C.E.E.
+                            (Certificat d'Economie d'Energie)
+                        </p>
+                        <p class="text-small">
+                            Kwh Cumac : {{ $document->wh_cumac ?? '' }}
+                        </p>
+                        <p class="text-small">
+                            Prime CEE : {{ $document->prime_cee ?? '0.00' }} €
+                        </p>
+
+                        <div class="section-spacer"></div>
+
+                        <p class="text-small">
+                            <strong>Matériel(s) fourni(s) par M'Y HOUSE</strong>
+                        </p>
+                        <p class="text-small">
+                            Représentée par Amblar Jean-Christophe, SIRET
+                            89155600300046
+                        </p>
+                        <p class="text-small">
+                            Installation collective de chauffage alimentée par
+                            une chaudière hors condensation
+                        </p>
+                        <p class="text-small">
+                            Puissance chaudière : {{
+                            $document->puissance_chaudiere ?? '' }} Kw
+                        </p>
+                        <p class="text-small">
+                            Nombre logements : {{ $document->nombre_logements ??
+                            '' }}
+                        </p>
+                        <p class="text-small">
+                            Nombre émetteurs : {{ $document->nombre_emetteurs ??
+                            '' }}
+                        </p>
+                        <p class="text-small">
+                            Volume circuit : {{ $document->volume_circuit ?? ''
+                            }} L
+                        </p>
+                        <p class="text-small">Nature du réseau : Acier</p>
+
+                        <div class="section-spacer"></div>
+
+                        <p class="text-bold">DETAIL DE LA PRESTATION</p>
+                        <p class="text-bold">
+                            LE DÉSEMBOUAGE COMPORTE LES ÉTAPES SUCCESSIVES
+                            SUIVANTES :
+                        </p>
+
+                        <p class="text-bold">
+                            A. INJECTION D'UN RÉACTIF DÉSEMBOUANT ET CIRCULATION
+                        </p>
+                        <p class="text-bold">
+                            PREPARATION ET DIAGNOSTIC INITIAL :
+                        </p>
+
+                        <ul class="simple diamond">
+                            <li class="text-small">
+                                Vérification de l'état général de l'installation
+                                de chauffage
+                            </li>
+                            <li class="text-small">
+                                Contrôle de la pression et de l'étanchéité du
+                                circuit
+                            </li>
+                            <li class="text-small">
+                                Test de fonctionnement des vannes et organes de
+                                régulation
+                            </li>
+                            <li class="text-small">
+                                Relevé des températures et pressions de
+                                fonctionnement
+                            </li>
+                            <li class="text-small">
+                                Injection du produit désembouant SENTINEL X800
+                            </li>
+                            <li class="text-small">
+                                Dosage : 1% du volume d'eau de l'installation
+                            </li>
+                            <li class="text-small">
+                                Méthode d'injection : Via un point d'injection
+                                dédié
+                            </li>
+                        </ul>
+
+                        <p class="text-bold">
+                            CIRCULATION AVEC POMPE DE DESEMBOUAGE :
+                        </p>
+                        <ul class="simple diamond">
+                            <li class="text-small">
+                                Équipement utilisé : Pompe de désembouage haute
+                                performance
+                            </li>
+                            <li class="text-small">
+                                Circulation générale 4 heures minimum
+                            </li>
+                            <li class="text-small">
+                                Température de circulation : 50-60°C
+                            </li>
+                            <li class="text-small">
+                                Isolation et traitement de chaque réseau
+                            </li>
+                            <li class="text-small">
+                                Circulation dans les deux sens
+                            </li>
+                            <li class="text-small">
+                                Surveillance : Contrôle visuel de la couleur de
+                                l'eau
+                            </li>
+                        </ul>
+                    </td>
+                    <td style="text-align: center; vertical-align: top">
+                        <p class="text-normal">
+                            {{ $document->nombre_logements ?? '' }}
+                        </p>
+                    </td>
+                    <td style="text-align: right; vertical-align: top">
+                        <p class="text-normal">
+                            {{ $document->prime_cee ?? '0.00' }} €
+                        </p>
+                    </td>
+                    <td style="text-align: center; vertical-align: top">
+                        <p class="text-normal">
+                            {{ $document->prime_cee ?? '0.00' }} €
+                        </p>
+                    </td>
+                    <td style="text-align: center; vertical-align: top">
+                        <p class="text-normal">20 %</p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Deuxième logo -->
+        <div class="logo-placeholder" style="margin-top: 15px">
+            [LOGO SUITE]
+        </div>
+
+        <div class="section-spacer"></div>
+
+        <div class="green-bg">
+            <span class="devis-title"
+                >DEVIS M'YHOUSE-2025-{{ $document->reference_devis ?? ''
+                }}</span
+            >
+        </div>
+
+        <div class="section-spacer"></div>
+
+        <!-- Suite des travaux dans un tableau simplifié -->
+        <table>
+            <tbody>
+                <tr>
+                    <td style="width: 60%">
+                        <p class="text-bold">
+                            B. RINÇAGE DES CIRCUITS À L'EAU CLAIRE
+                        </p>
+                        <p class="text-bold">RINÇAGE GENERAL :</p>
+
+                        <ul class="simple diamond">
+                            <li class="text-small">
+                                Évacuation complète du produit désembouant
+                            </li>
+                            <li class="text-small">
+                                Remplissage progressif à l'eau claire
+                            </li>
+                            <li class="text-small">
+                                Circulation intensive pendant 2 heures minimum
+                            </li>
+                            <li class="text-small">
+                                Contrôle qualité de l'eau
+                            </li>
+                        </ul>
+
+                        <p class="text-bold">SENTINEL X100 INHIBITEUR :</p>
+                        <p class="text-small">
+                            Inhibiteur pour protection du réseau de chauffage
+                        </p>
+
+                        <ul class="simple diamond">
+                            <li class="text-small">
+                                Dosage : 1% du volume d'eau
+                            </li>
+                            <li class="text-small">Aspect : Liquide clair</li>
+                            <li class="text-small">
+                                Densité (20°C) : 1,10 g/ml
+                            </li>
+                            <li class="text-small">
+                                pH (concentré) : Environ 6,4
+                            </li>
+                            <li class="text-small">
+                                Agréé par le ministère de la Santé
+                            </li>
+                        </ul>
+
+                        <p class="text-bold">
+                            C. VÉRIFICATION/INSTALLATION FILTRE ET INJECTION
+                            INHIBITEUR
+                        </p>
+                        <p class="text-bold">
+                            VERIFICATION DU SYSTEME DE FILTRATION EXISTANT :
+                        </p>
+
+                        <ul class="simple square">
+                            <li class="text-small">
+                                Localisation des filtres à boues existants
+                            </li>
+                            <li class="text-small">
+                                Démontage et nettoyage des filtres
+                            </li>
+                            <li class="text-small">Contrôle d'efficacité</li>
+                        </ul>
+
+                        <p class="text-bold">
+                            INJECTION DU REACTIF INHIBITEUR SENTINEL X100 :
+                        </p>
+                        <ul class="simple square">
+                            <li class="text-small">
+                                Dosage : 1% du volume d'eau
+                            </li>
+                            <li class="text-small">
+                                Méthode d'injection dédiée
+                            </li>
+                            <li class="text-small">
+                                Circulation 30 minutes minimum
+                            </li>
+                        </ul>
+
+                        <p class="text-bold">
+                            CONTROLES FINAUX ET MISE EN SERVICE :
+                        </p>
+                        <ul class="simple square">
+                            <li class="text-small">
+                                Test de fonctionnement complet
+                            </li>
+                            <li class="text-small">Relevé des paramètres</li>
+                            <li class="text-small">
+                                Réglages des organes de régulation
+                            </li>
+                            <li class="text-small">Formation du personnel</li>
+                            <li class="text-small">
+                                Remise de la documentation
+                            </li>
+                        </ul>
+
+                        <div class="section-spacer"></div>
+
+                        <p class="text-bold">MATÉRIEL ET ENTREPRISE</p>
+                        <p class="text-small">
+                            Matériel(s) fourni(s) par M'Y HOUSE, 5051 rue du
+                            Pont Long, 64160 Buros
+                        </p>
+                        <p class="text-small">
+                            SIRET 89155600300046, Code APE 4322B
+                        </p>
+                        <p class="text-small">
+                            Représentée par M. Amblar Jean-Christophe
+                        </p>
+                        <p class="text-small">
+                            05 59 60 21 51 contact@myhouse64.fr
+                        </p>
+
+                        <div class="section-spacer"></div>
+
+                        <p class="text-bold">
+                            Durée totale :
+                            <span class="text-normal"
+                                >1 à 2 jours selon la complexité</span
+                            >
+                        </p>
+                        <p class="text-bold">
+                            Garantie :
+                            <span class="text-normal"
+                                >2 ans sur l'intervention</span
+                            >
+                        </p>
+                        <p class="text-bold">
+                            Suivi :
+                            <span class="text-normal"
+                                >Contrôle à 6 mois puis annuellement</span
+                            >
+                        </p>
+
+                        <div class="section-spacer"></div>
+
+                        <p class="text-small">
+                            Qualification
+                            <strong
+                                >Qualisav Spécialité Désembouage N° 32056 - ID
+                                N° S01946</strong
+                            >
+                        </p>
+                    </td>
+                    <td style="width: 40%">
+                        <!-- Colonne vide mais nécessaire pour la structure -->
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Troisième logo -->
+        <div class="logo-placeholder" style="margin-top: 10px">
+            [LOGO FINAL]
+        </div>
+
+        <div class="green-bg" style="margin-top: 10px">
+            <span class="devis-title"
+                >DEVIS M'YHOUSE-2025-{{ $document->reference_devis ?? ''
+                }}</span
+            >
+        </div>
+
+        <!-- Conditions de paiement -->
+        <h3 style="margin-top: 15px">CONDITIONS DE PAIEMENT</h3>
+        <div class="conditions">
+            <p class="text-small">
+                « Les travaux ou prestations objet du présent document donneront
+                lieu à une contribution financière de EBS ENERGIE (SIREN 533 333
+                118)... »
+            </p>
+            <p class="text-small">
+                Le montant de cette contribution financière... est estimé à {{
+                $document->prime_cee ?? '0.00' }} euros.
+            </p>
+        </div>
+
+        <!-- Gestion des déchets -->
+        <h3 style="margin-top: 15px">Gestion des déchets</h3>
+        <div class="logo-placeholder large-image">[IMAGE GESTION DÉCHETS]</div>
+
+        <!-- Signature -->
+        <p class="text-bold" style="margin-top: 15px">
+            Signature, date, cachet commercial & mention « Bon pour accord » :
+        </p>
+        <p class="text-normal">Nom, prénom et fonction du signataire</p>
+
+        <!-- Totaux -->
+        <div class="totals-container">
+            <div class="total-line">
+                <span>Total H.T :</span>
+                <span style="margin-left: 20px"
+                    >{{ $document->montant_ht ?? '0.00' }} €</span
+                >
+            </div>
+
+            <div class="total-line">
+                <span>Total TVA 20% :</span>
+                <span style="margin-left: 20px"
+                    >{{ $document->montant_tva ?? '0.00' }} €</span
+                >
+            </div>
+
+            <div class="total-line">
+                <span>Total TTC :</span>
+                <span style="margin-left: 20px"
+                    >{{ $document->montant_ttc ?? '0.00' }} €</span
+                >
+            </div>
+
+            <div class="total-line">
+                <span>* Prime CEE :</span>
+                <span style="margin-left: 20px"
+                    >- {{ $document->prime_cee ?? '0.00' }} €</span
+                >
+            </div>
+
+            <div class="total-line total-amount">
+                <span>Reste à payer :</span>
+                <span style="margin-left: 20px"
+                    >{{ $document->reste_a_charge ?? '0.00' }} €</span
+                >
+            </div>
+        </div>
+
+        <!-- Mode de paiement et mentions finales -->
+        <p class="text-normal" style="margin-top: 15px">
+            Mode de paiement : Chèques, virement ou espèce
+        </p>
+
+        <p class="text-normal" style="margin-top: 10px">
+            Gestion, évacuation et traitements des déchets de chantier
+            comprenant la main d'œuvre liée à la dépose et au tri, le transport
+            des déchets de chantiers vers un ou plusieurs points de collecte et
+            coûts de traitement.
+        </p>
+    </body>
+</html>

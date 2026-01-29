@@ -236,36 +236,42 @@
 <body>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
     <p style="text-indent: 0pt;text-align: left;"><span>
-            <img src="{{ asset('assets/img/house/Attestation_signataire_files/Image_001.png') }}" alt="Image">
+            <img src="{{ public_path('assets/img/house/Attestation_signataire_files/Image_001.png') }}" alt="Image">
         </span></p>
     <p style="text-indent: 0pt;text-align: left;"><span><img
-                src="{{ asset('assets/img/house/Attestation_signataire_files/Image_002.png') }}" alt="Image"></span></p>
+                src="{{ public_path('assets/img/house/Attestation_signataire_files/Image_002.png') }}"
+                alt="Image"></span></p>
     <p style="text-indent: 0pt;text-align: left;"><span>
-            <img src="{{ asset('assets/img/house/Attestation_signataire_files/Image_003.png') }}" alt="Image"></span>
+            <img src="{{ public_path('assets/img/house/Attestation_signataire_files/Image_003.png') }}"
+                alt="Image"></span>
     </p>
     <p class="s1" style="text-indent: 0pt;line-height: 13pt;text-align: left;">1</p>
     <p style="text-indent: 0pt;text-align: left;" />
     <h1 style="padding-top: 2pt;padding-left: 222pt;text-indent: 0pt;text-align: center;">ATTESTATION OE QUALIT<span
             class="s2">:</span>E <u>DE</u> <u>SIGNATAIRE &nbsp; </u><span class="s2">I</span></h1>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
-    <p style="padding-top: 4pt;padding-left: 38pt;text-indent: 0pt;text-align: left;">Je soussigné M.Poulin Thomas ,
-        agissant en qualité de Directeur des Services Techniques,</p>
+    <p style="padding-top: 4pt;padding-left: 38pt;text-indent: 0pt;text-align: left;">Je soussigné
+        {{ $document->society }},
+        agissant en qualité de {{ $document->activity }},
+    </p>
     <p style="padding-top: 2pt;padding-left: 38pt;text-indent: 0pt;line-height: 120%;text-align: left;">atteste que le
-        bâtiment « RES LA ROLLANDIERE » situé à 30 Avenue de Valence, 38360 Sassenage, le numéro d DES CHAMPS ELYSEES,
-        75008 PARIS dont le numéro de SIRET est le 93146162800030.</p>
+        bâtiment « {{ $document->nom_residence }} » situé à {{ $document->adresse_travaux }}, le numéro d DES CHAMPS
+        ELYSEES,
+        75008 PARIS dont le numéro de SIRET est le {{ $document->numero_immatriculation }}.</p>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
     <p style="text-indent: 0pt;text-align: left;"><span><img width="1" height="48" alt="image"
-                src="{{ asset('assets/img/house/Attestation_signataire_files/Image_004.png') }}" /></span></p>
+                src="{{ public_path('assets/img/house/Attestation_signataire_files/Image_004.png') }}" /></span></p>
     <p class="s4" style="padding-left: 127pt;text-indent: 0pt;line-height: 13pt;text-align: left;">Fait le : <span
-            class="h2">16/10/2025</span></p>
+            class="h2">{{ $document->date_signature }}</span></p>
     <p style="text-indent: 0pt;text-align: left;"><span><img width="356" height="261" alt="image"
-                src="{{ asset('assets/img/house/Attestation_signataire_files/Image_005.png') }}" /></span></p>
+                src="{{ public_path('assets/img/house/Attestation_signataire_files/Image_005.png') }}" /></span></p>
     <h3 style="padding-left: 1pt;text-indent: 0pt;line-height: 12pt;text-align: left;">•Nom et prénom du signataire:
-        Poulin Thomas</h3>
+        {{ $document->society }}
+    </h3>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
-    <p class="s5" style="text-indent: 0pt;text-align: left;">•Qualité _du signataire: <span class="h4">Directeur des
-            Services Techniques</span></p>
+    <p class="s5" style="text-indent: 0pt;text-align: left;">•Qualité _du signataire: <span
+            class="h4">{{ $document->activity }}</span></p>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
     <p class="s6" style="padding-left: 1pt;text-indent: 0pt;line-height: 12pt;text-align: left;">•signature et tampon
         obligatoire</p>
@@ -294,11 +300,13 @@
     <p class="s4" style="padding-left: 127pt;text-indent: 0pt;line-height: 12pt;text-align: left;">à PARIS</p>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
     <p class="s22" style="padding-left: 1pt;text-indent: 0pt;text-align: left;"><span>
-            <img src="{{ asset('assets/img/house/Attestation_signataire_files/Image_006.png') }}" alt="Image"></span>
+            <img src="{{ public_path('assets/img/house/Attestation_signataire_files/Image_006.png') }}"
+                alt="Image"></span>
         <span>
             <img width="8" height="274" alt="image"
-                src="{{ asset('assets/img/house/Attestation_signataire_files/Image_007.png') }}" /></span><span
-            class="s23"> </span></p>
+                src="{{ public_path('assets/img/house/Attestation_signataire_files/Image_007.png') }}" /></span><span
+            class="s23"> </span>
+    </p>
 </body>
 
 </html>

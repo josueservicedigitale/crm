@@ -367,7 +367,7 @@ class DocumentController extends Controller
             'type' => 'devis',
         ])->latest()->get();
 
-    
+
         $view = match ($type) {
             'facture' => 'back.dossiers.select_devis',
             'attestation_realisation' => 'back.dossiers.select_devis_attestation',
@@ -457,193 +457,193 @@ class DocumentController extends Controller
     // CRÉATION DE DOCUMENTS
     // =========================================================================
 
-public function create($activity, $society, $type)
-{
-    // Normaliser la société
-    $normalizedSociety = $this->normalizeSociety($society);
+    public function create($activity, $society, $type)
+    {
+        // Normaliser la société
+        $normalizedSociety = $this->normalizeSociety($society);
 
-    $parent = null;
-    $parentId = request('parent_id');
+        $parent = null;
+        $parentId = request('parent_id');
 
-    Log::info('📝 CREATE METHOD CALLED', [
-        'activity' => $activity,
-        'society' => $society,
-        'normalized_society' => $normalizedSociety,
-        'type' => $type,
-        'parent_id' => $parentId
-    ]);
-
-    // Si un parent_id est fourni, chercher le document
-    if ($parentId) {
-        $parent = Document::find($parentId);
-
-        if (!$parent) {
-            Log::error('Parent document not found:', ['parent_id' => $parentId]);
-            return redirect()->back()
-                ->with('error', 'Document parent non trouvé');
-        }
-
-        // Vérifier avec la société normalisée
-        if ($parent->activity !== $activity || $parent->society !== $normalizedSociety) {
-            Log::error('Parent document mismatch:', [
-                'parent' => $parent->activity . '/' . $parent->society,
-                'requested' => $activity . '/' . $normalizedSociety
-            ]);
-            return redirect()->back()
-                ->with('error', 'Le document parent ne correspond pas à l\'activité/société sélectionnée');
-        }
-    }
-
-    // Si pas de parent mais qu'on veut créer une facture/attestation
-    if (!$parent && in_array($type, ['facture', 'attestation_realisation', 'attestation_signataire', 'cahier_des_charges', 'rapport'])) {
-        Log::warning('No parent provided for document type that requires one:', [
-            'type' => $type,
-            'activity' => $activity,
-            'society' => $normalizedSociety
-        ]);
-
-        // Rediriger vers la sélection du devis
-        return redirect()->route('back.document.select-devis', [
+        Log::info('📝 CREATE METHOD CALLED', [
             'activity' => $activity,
             'society' => $society,
-            'type' => $type
+            'normalized_society' => $normalizedSociety,
+            'type' => $type,
+            'parent_id' => $parentId
         ]);
-    }
 
-    // Créer un document vide
-    $document = new Document();
-    
-    // Pré-remplir avec les données du parent si c'est une facture
-    if (isset($parent) && $type === 'facture') {
-        $document->fill($parent->toArray());
-        $document->parent_id = $parent->id;
-    }
+        // Si un parent_id est fourni, chercher le document
+        if ($parentId) {
+            $parent = Document::find($parentId);
 
-    // Déterminer la vue du formulaire spécifique
-    $templateView = $this->getFormView($type);
+            if (!$parent) {
+                Log::error('Parent document not found:', ['parent_id' => $parentId]);
+                return redirect()->back()
+                    ->with('error', 'Document parent non trouvé');
+            }
 
-    // Vérifier que la vue existe
-    if (!view()->exists($templateView)) {
-        Log::error('Template view not found for create method:', [
-            'template' => $templateView,
-            'type' => $type
-        ]);
-        
-        // Fallback à l'ancien système
-        $fallbackView = 'back.dossiers.form';
-        if (view()->exists($fallbackView)) {
-            Log::warning('Using fallback view for create', ['fallback' => $fallbackView]);
-            return view($fallbackView, compact('activity', 'society', 'type', 'document', 'parent'));
-        }
-        
-        abort(404, "Vue de formulaire non trouvée: {$templateView}");
-    }
-
-    Log::info('✅ Using template view for create', ['template' => $templateView]);
-
-    return view('back.documents.form', [
-        'activity' => $activity,
-        'society' => $society,
-        'type' => $type,
-        'document' => $document,
-        'parent' => $parent,
-        'templateView' => $templateView, // ← TRÈS IMPORTANT !
-    ]);
-}
-
-
-
-private function getFormView($type)
-{
-    // Mapping des types vers les vues
-    $views = [
-        'devis' => 'back.documents.forms.devis',
-        'facture' => 'back.documents.forms.facture',
-        'attestation_realisation' => 'back.documents.forms.attestation_realisation',
-        'attestation_signataire' => 'back.documents.forms.attestation-signataire',
-        'cahier_des_charges' => 'back.documents.forms.cahier-des-charges',
-        'rapport' => 'back.documents.forms.rapport',
-    ];
-
-   $view = $views[$type] ?? 'back.documents.forms.devis';
-    
-    // Vérifier l'existence
-    if (!$this->checkViewExists($view)) {
-        Log::error("View not found: {$view}");
-        return 'back.documents.forms.devis'; // Fallback
-    }
-    
-    return $view;
-}
-
-/**
- * Liste les vues de formulaire disponibles
- */
-private function getAvailableFormViews()
-{
-    $basePath = resource_path('views/back/documents/forms');
-    $views = [];
-    
-    if (is_dir($basePath)) {
-        $files = scandir($basePath);
-        foreach ($files as $file) {
-            if (str_ends_with($file, '.blade.php')) {
-                $type = str_replace('.blade.php', '', $file);
-                $views[] = "back.documents.forms.{$type}";
+            // Vérifier avec la société normalisée
+            if ($parent->activity !== $activity || $parent->society !== $normalizedSociety) {
+                Log::error('Parent document mismatch:', [
+                    'parent' => $parent->activity . '/' . $parent->society,
+                    'requested' => $activity . '/' . $normalizedSociety
+                ]);
+                return redirect()->back()
+                    ->with('error', 'Le document parent ne correspond pas à l\'activité/société sélectionnée');
             }
         }
+
+        // Si pas de parent mais qu'on veut créer une facture/attestation
+        if (!$parent && in_array($type, ['facture', 'attestation_realisation', 'attestation_signataire', 'cahier_des_charges', 'rapport'])) {
+            Log::warning('No parent provided for document type that requires one:', [
+                'type' => $type,
+                'activity' => $activity,
+                'society' => $normalizedSociety
+            ]);
+
+            // Rediriger vers la sélection du devis
+            return redirect()->route('back.document.select-devis', [
+                'activity' => $activity,
+                'society' => $society,
+                'type' => $type
+            ]);
+        }
+
+        // Créer un document vide
+        $document = new Document();
+
+        // Pré-remplir avec les données du parent si c'est une facture
+        if (isset($parent) && $type === 'facture') {
+            $document->fill($parent->toArray());
+            $document->parent_id = $parent->id;
+        }
+
+        // Déterminer la vue du formulaire spécifique
+        $templateView = $this->getFormView($type);
+
+        // Vérifier que la vue existe
+        if (!view()->exists($templateView)) {
+            Log::error('Template view not found for create method:', [
+                'template' => $templateView,
+                'type' => $type
+            ]);
+
+            // Fallback à l'ancien système
+            $fallbackView = 'back.dossiers.form';
+            if (view()->exists($fallbackView)) {
+                Log::warning('Using fallback view for create', ['fallback' => $fallbackView]);
+                return view($fallbackView, compact('activity', 'society', 'type', 'document', 'parent'));
+            }
+
+            abort(404, "Vue de formulaire non trouvée: {$templateView}");
+        }
+
+        Log::info('✅ Using template view for create', ['template' => $templateView]);
+
+        return view('back.documents.form', [
+            'activity' => $activity,
+            'society' => $society,
+            'type' => $type,
+            'document' => $document,
+            'parent' => $parent,
+            'templateView' => $templateView, // ← TRÈS IMPORTANT !
+        ]);
     }
-    
-    return $views;
-}
 
-/**
- * Vérifie si une vue existe (méthode existante que vous avez déjà)
- */
-public function createFacture($activity, $society, $devisId)
-{
-    // Normaliser la société
-    $normalizedSociety = $this->normalizeSociety($society);
 
-    $devis = Document::where('id', $devisId)
-        ->where('type', 'devis')
-        ->firstOrFail();
 
-    $lastFacture = Document::where('activity', $activity)
-        ->where('society', $normalizedSociety)
-        ->where('type', 'facture')
-        ->latest()
-        ->first();
-    
-    $numero = $this->generateNextNumber($activity, $society, 'facture', $lastFacture);
+    private function getFormView($type)
+    {
+        // Mapping des types vers les vues
+        $views = [
+            'devis' => 'back.documents.forms.devis',
+            'facture' => 'back.documents.forms.facture',
+            'attestation_realisation' => 'back.documents.forms.attestation_realisation',
+            'attestation_signataire' => 'back.documents.forms.attestation-signataire',
+            'cahier_des_charges' => 'back.documents.forms.cahier-des-charges',
+            'rapport' => 'back.documents.forms.rapport',
+        ];
 
-    // Créer un document vide pour la facture
-    $document = new Document();
-    $document->parent_id = $devis->id;
-    $document->numero = $numero;
-    
-    // Pré-remplir avec les données du devis
-    $document->fill($devis->toArray());
-    
-    // Réinitialiser certains champs
-    $document->type = 'facture';
-    $document->reference_facture = null;
-    $document->date_facture = null;
-    $document->file_path = null;
+        $view = $views[$type] ?? 'back.documents.forms.devis';
 
-    // Déterminer la vue du formulaire spécifique
-    $templateView = $this->getFormView('facture');
+        // Vérifier l'existence
+        if (!$this->checkViewExists($view)) {
+            Log::error("View not found: {$view}");
+            return 'back.documents.forms.devis'; // Fallback
+        }
 
-    return view('back.documents.form', [
-        'activity' => $activity,
-        'society' => $society,
-        'type' => 'facture',
-        'document' => $document,
-        'parent' => $devis,
-        'templateView' => $templateView,
-        'numero' => $numero, // Optionnel : si vous voulez garder cette info
-    ]);
-}
+        return $view;
+    }
+
+    /**
+     * Liste les vues de formulaire disponibles
+     */
+    private function getAvailableFormViews()
+    {
+        $basePath = resource_path('views/back/documents/forms');
+        $views = [];
+
+        if (is_dir($basePath)) {
+            $files = scandir($basePath);
+            foreach ($files as $file) {
+                if (str_ends_with($file, '.blade.php')) {
+                    $type = str_replace('.blade.php', '', $file);
+                    $views[] = "back.documents.forms.{$type}";
+                }
+            }
+        }
+
+        return $views;
+    }
+
+    /**
+     * Vérifie si une vue existe (méthode existante que vous avez déjà)
+     */
+    public function createFacture($activity, $society, $devisId)
+    {
+        // Normaliser la société
+        $normalizedSociety = $this->normalizeSociety($society);
+
+        $devis = Document::where('id', $devisId)
+            ->where('type', 'devis')
+            ->firstOrFail();
+
+        $lastFacture = Document::where('activity', $activity)
+            ->where('society', $normalizedSociety)
+            ->where('type', 'facture')
+            ->latest()
+            ->first();
+
+        $numero = $this->generateNextNumber($activity, $society, 'facture', $lastFacture);
+
+        // Créer un document vide pour la facture
+        $document = new Document();
+        $document->parent_id = $devis->id;
+        $document->numero = $numero;
+
+        // Pré-remplir avec les données du devis
+        $document->fill($devis->toArray());
+
+        // Réinitialiser certains champs
+        $document->type = 'facture';
+        $document->reference_facture = null;
+        $document->date_facture = null;
+        $document->file_path = null;
+
+        // Déterminer la vue du formulaire spécifique
+        $templateView = $this->getFormView('facture');
+
+        return view('back.documents.form', [
+            'activity' => $activity,
+            'society' => $society,
+            'type' => 'facture',
+            'document' => $document,
+            'parent' => $devis,
+            'templateView' => $templateView,
+            'numero' => $numero, // Optionnel : si vous voulez garder cette info
+        ]);
+    }
 
     public function createAttestationFromDevis($activity, $society, Document $devis)
     {
@@ -657,260 +657,265 @@ public function createFacture($activity, $society, $devisId)
             ->first();
 
         $numero = $this->generateNextNumber($activity, $society, 'attestation_realisation', $lastAttestation);
+        $templateView = $this->getFormView('attestation_realisation');
 
-        return view('back.dossiers.form', [
+        return view('back.documents.form', [
             'activity' => $activity,
             'society' => $society,
             'type' => 'attestation_realisation',
             'parent' => $devis,
             'document' => null,
+            'templateView' => $templateView,
             'numero' => $numero,
         ]);
     }
 
-   public function createAttestationSignataireFromDevis($activity, $society, Document $devis)
-{
-    $normalizedSociety = $this->normalizeSociety($society);
+    public function createAttestationSignataireFromDevis($activity, $society, Document $devis)
+    {
+        $normalizedSociety = $this->normalizeSociety($society);
 
-    $lastAttestation = Document::where('activity', $activity)
-        ->where('society', $normalizedSociety)
-        ->where('type', 'attestation_signataire')
-        ->latest()
-        ->first();
+        $lastAttestation = Document::where('activity', $activity)
+            ->where('society', $normalizedSociety)
+            ->where('type', 'attestation_signataire')
+            ->latest()
+            ->first();
 
-    $numero = $this->generateNextNumber($activity, $society, 'attestation_signataire', $lastAttestation);
+        $numero = $this->generateNextNumber($activity, $society, 'attestation_signataire', $lastAttestation);
 
-    $document = new Document();
-    $document->parent_id = $devis->id;
-    $document->numero = $numero;
-    $document->type = 'attestation_signataire';
-    $document->fill($devis->toArray());
+        $document = new Document();
+        $document->parent_id = $devis->id;
+        $document->numero = $numero;
+        $document->type = 'attestation_signataire';
+        $document->fill($devis->toArray());
 
-    $templateView = $this->getFormView('attestation_signataire');
+        $templateView = $this->getFormView('attestation_signataire');
 
-    return view('back.documents.form', [
-        'activity' => $activity,
-        'society' => $society,
-        'type' => 'attestation_signataire',
-        'parent' => $devis,
-        'document' => $document,
-        'templateView' => $templateView,
-        'numero' => $numero,
-    ]);
-}
+        return view('back.documents.form', [
+            'activity' => $activity,
+            'society' => $society,
+            'type' => 'attestation_signataire',
+            'parent' => $devis,
+            'document' => $document,
+            'templateView' => $templateView,
+            'numero' => $numero,
+        ]);
+    }
 
-   public function createCahierDesChargesFromDevis($activity, $society, Document $devis)
-{
-    $normalizedSociety = $this->normalizeSociety($society);
+    public function createCahierDesChargesFromDevis($activity, $society, Document $devis)
+    {
+        $normalizedSociety = $this->normalizeSociety($society);
 
-    $lastCahier = Document::where('activity', $activity)
-        ->where('society', $normalizedSociety)
-        ->where('type', 'cahier_des_charges')
-        ->latest()
-        ->first();
+        $lastCahier = Document::where('activity', $activity)
+            ->where('society', $normalizedSociety)
+            ->where('type', 'cahier_des_charges')
+            ->latest()
+            ->first();
 
-    $numero = $this->generateNextNumber($activity, $society, 'cahier_des_charges', $lastCahier);
+        $numero = $this->generateNextNumber($activity, $society, 'cahier_des_charges', $lastCahier);
 
-    $document = new Document();
-    $document->parent_id = $devis->id;
-    $document->numero = $numero;
-    $document->type = 'cahier_des_charges';
-    $document->fill($devis->toArray());
+        $document = new Document();
+        $document->parent_id = $devis->id;
+        $document->numero = $numero;
+        $document->type = 'cahier_des_charges';
+        $document->fill($devis->toArray());
 
-    $templateView = $this->getFormView('cahier_des_charges');
+        $templateView = $this->getFormView('cahier_des_charges');
 
-    return view('back.documents.form', [
-        'activity' => $activity,
-        'society' => $society,
-        'type' => 'cahier_des_charges',
-        'parent' => $devis,
-        'document' => $document,
-        'templateView' => $templateView,
-        'numero' => $numero,
-    ]);
-}
-public function createRapportFromFacture(string $activity, string $society, int $factureId)
-{
-    $normalizedSociety = $this->normalizeSociety($society);
+        return view('back.documents.form', [
+            'activity' => $activity,
+            'society' => $society,
+            'type' => 'cahier_des_charges',
+            'parent' => $devis,
+            'document' => $document,
+            'templateView' => $templateView,
+            'numero' => $numero,
+        ]);
+    }
+    public function createRapportFromFacture(string $activity, string $society, int $factureId)
+    {
+        $normalizedSociety = $this->normalizeSociety($society);
 
-    $facture = Document::findOrFail($factureId);
+        $facture = Document::findOrFail($factureId);
 
-    $lastRapport = Document::where('activity', $activity)
-        ->where('society', $normalizedSociety)
-        ->where('type', 'rapport')
-        ->latest()
-        ->first();
+        $lastRapport = Document::where('activity', $activity)
+            ->where('society', $normalizedSociety)
+            ->where('type', 'rapport')
+            ->latest()
+            ->first();
 
-    $numero = $this->generateNextNumber($activity, $society, 'rapport', $lastRapport);
+        $numero = $this->generateNextNumber($activity, $society, 'rapport', $lastRapport);
 
-    $document = new Document();
-    $document->type = 'rapport';
-    $document->society = $society;
-    $document->activity = $activity;
-    $document->parent_id = $facture->id;
-    $document->numero = $numero;
-    $document->fill($facture->toArray());
+        $document = new Document();
+        $document->type = 'rapport';
+        $document->society = $society;
+        $document->activity = $activity;
+        $document->parent_id = $facture->id;
+        $document->numero = $numero;
+        $document->fill($facture->toArray());
 
-    $templateView = $this->getFormView('rapport');
+        $templateView = $this->getFormView('rapport');
 
-    return view('back.documents.form', [
-        'activity' => $activity,
-        'society' => $society,
-        'type' => 'rapport',
-        'parent' => $facture,
-        'document' => $document,
-        'templateView' => $templateView,
-    ]);
-}
+        return view('back.documents.form', [
+            'activity' => $activity,
+            'society' => $society,
+            'type' => 'rapport',
+            'parent' => $facture,
+            'document' => $document,
+            'templateView' => $templateView,
+        ]);
+    }
     // =========================================================================
     // ENREGISTREMENT ET MISE À JOUR
     // =========================================================================
 
 
-public function store(Request $request, $activity, $society, $type)
-{
-    // Normaliser la société
-    $normalizedSociety = $this->normalizeSociety($society);
+    public function store(Request $request, $activity, $society, $type)
+    {
 
-    Log::info('📝 STORE METHOD CALLED', [
-        'activity' => $activity,
-        'society' => $society,
-        'normalized_society' => $normalizedSociety,
-        'type' => $type,
-        'user_id' => auth()->id(),
-    ]);
+    // dd(public_path('assets/img/house/Devis_files/Image_001.jpg'));
 
-    return DB::transaction(function () use ($request, $activity, $society, $normalizedSociety, $type) {
-        $data = $request->all();
+        // Normaliser la société
+        $normalizedSociety = $this->normalizeSociety($society);
 
-        // Champs obligatoires
-        $data['reference'] = $data['reference'] ?? Document::generateReference($normalizedSociety, $type);
-        $data['society'] = $normalizedSociety;
-        $data['activity'] = $activity;
-        $data['type'] = $type;
-        $data['user_id'] = auth()->id();
-
-        // Numérotation
-        if (!isset($data['numero']) && isset($data['numero_custom'])) {
-            $data['numero'] = $data['numero_custom'];
-        } elseif (!isset($data['numero'])) {
-            $lastDocument = Document::where('activity', $activity)
-                ->where('society', $normalizedSociety)
-                ->where('type', $type)
-                ->latest()
-                ->first();
-            $data['numero'] = $this->generateNextNumber($activity, $normalizedSociety, $type, $lastDocument);
-        }
-
-        // Filtrer les champs fillable
-        $model = new Document();
-        $fillable = $model->getFillable();
-        $filteredData = array_intersect_key($data, array_flip($fillable));
-
-        // Créer le document
-        $document = Document::create($filteredData);
-        
-        Log::info('✅ Document created successfully', [
-            'id' => $document->id,
-            'reference' => $document->reference,
-            'type' => $document->type
+        Log::info('📝 STORE METHOD CALLED', [
+            'activity' => $activity,
+            'society' => $society,
+            'normalized_society' => $normalizedSociety,
+            'type' => $type,
+            'user_id' => auth()->id(),
         ]);
 
-        // GÉNÉRER LE PDF IMMÉDIATEMENT
+        return DB::transaction(function () use ($request, $activity, $society, $normalizedSociety, $type) {
+            $data = $request->all();
+
+            // Champs obligatoires
+            $data['reference'] = $data['reference'] ?? Document::generateReference($normalizedSociety, $type);
+            $data['society'] = $normalizedSociety;
+            $data['activity'] = $activity;
+            $data['type'] = $type;
+            $data['user_id'] = auth()->id();
+
+            // Numérotation
+            if (!isset($data['numero']) && isset($data['numero_custom'])) {
+                $data['numero'] = $data['numero_custom'];
+            } elseif (!isset($data['numero'])) {
+                $lastDocument = Document::where('activity', $activity)
+                    ->where('society', $normalizedSociety)
+                    ->where('type', $type)
+                    ->latest()
+                    ->first();
+                $data['numero'] = $this->generateNextNumber($activity, $normalizedSociety, $type, $lastDocument);
+            }
+
+            // Filtrer les champs fillable
+            $model = new Document();
+            $fillable = $model->getFillable();
+            $filteredData = array_intersect_key($data, array_flip($fillable));
+
+            // Créer le document
+            $document = Document::create($filteredData);
+
+            Log::info('✅ Document created successfully', [
+                'id' => $document->id,
+                'reference' => $document->reference,
+                'type' => $document->type
+            ]);
+
+            // GÉNÉRER LE PDF IMMÉDIATEMENT
+            try {
+                $template = $this->getPdfView($document);
+                Log::info('🔄 Génération PDF automatique', [
+                    'document_id' => $document->id,
+                    'template' => $template
+                ]);
+
+                $pdfPath = $this->pdfFillService->generateAndSavePdf($document, $template);
+
+                Log::info('📄 PDF généré automatiquement', [
+                    'document_id' => $document->id,
+                    'pdf_path' => $pdfPath
+                ]);
+
+                // TÉLÉCHARGER DIRECTEMENT LE PDF APRÈS CRÉATION
+                return $this->downloadPDF($activity, $society, $type, $document->id);
+
+            } catch (\Exception $e) {
+                Log::error('❌ Échec génération PDF automatique', [
+                    'document_id' => $document->id,
+                    'error' => $e->getMessage()
+                ]);
+
+                // Si le PDF échoue, rediriger vers la page du document
+                return redirect()
+                    ->route('back.document.show', [
+                        'activity' => $activity,
+                        'society' => $society,
+                        'type' => $type,
+                        'document' => $document->id
+                    ])
+                    ->with('success', 'Document créé mais erreur lors de la génération du PDF.')
+                    ->with('error', $e->getMessage());
+            }
+        });
+    }
+    public function update(Request $request, $activity, $society, $type, Document $document)
+    {
         try {
-            $template = $this->getPdfView($document);
-            Log::info('🔄 Génération PDF automatique', [
-                'document_id' => $document->id,
-                'template' => $template
-            ]);
-            
-            $pdfPath = $this->pdfFillService->generateAndSavePdf($document, $template);
-            
-            Log::info('📄 PDF généré automatiquement', [
-                'document_id' => $document->id,
-                'pdf_path' => $pdfPath
-            ]);
-            
-            // TÉLÉCHARGER DIRECTEMENT LE PDF APRÈS CRÉATION
-            return $this->downloadPDF($activity, $society, $type, $document->id);
-            
-        } catch (\Exception $e) {
-            Log::error('❌ Échec génération PDF automatique', [
-                'document_id' => $document->id,
-                'error' => $e->getMessage()
-            ]);
-            
-            // Si le PDF échoue, rediriger vers la page du document
-            return redirect()
-                ->route('back.document.show', [
-                    'activity' => $activity,
-                    'society' => $society,
-                    'type' => $type,
-                    'document' => $document->id
-                ])
-                ->with('success', 'Document créé mais erreur lors de la génération du PDF.')
-                ->with('error', $e->getMessage());
-        }
-    });
-}
-public function update(Request $request, $activity, $society, $type, Document $document)
-{
-    try {
-        Log::info('📝 Update method called', ['document_id' => $document->id]);
+            Log::info('📝 Update method called', ['document_id' => $document->id]);
 
-        $formData = $request->all();
+            $formData = $request->all();
 
-        // --- Gérer les documents liés ---
-        foreach (['linked_devis', 'linked_facture'] as $linkedField) {
-            if (!empty($formData[$linkedField])) {
-                $linked = Document::where('reference', $formData[$linkedField])->first();
-                if ($linked) {
-                    $linkedData = $linked->only($linked->getFillable());
-                    $formData = array_merge($linkedData, $formData);
+            // --- Gérer les documents liés ---
+            foreach (['linked_devis', 'linked_facture'] as $linkedField) {
+                if (!empty($formData[$linkedField])) {
+                    $linked = Document::where('reference', $formData[$linkedField])->first();
+                    if ($linked) {
+                        $linkedData = $linked->only($linked->getFillable());
+                        $formData = array_merge($linkedData, $formData);
+                    }
                 }
             }
-        }
 
-        // --- Filtrer seulement les champs fillables ---
-        $fillableFields = $document->getFillable();
-        $filteredData = [];
-        foreach ($fillableFields as $field) {
-            if (isset($formData[$field])) {
-                $filteredData[$field] = $formData[$field];
+            // --- Filtrer seulement les champs fillables ---
+            $fillableFields = $document->getFillable();
+            $filteredData = [];
+            foreach ($fillableFields as $field) {
+                if (isset($formData[$field])) {
+                    $filteredData[$field] = $formData[$field];
+                }
             }
-        }
 
-        // --- Mettre à jour le document en base ---
-        $document->update($filteredData);
-        Log::info('✅ Document updated', ['document_id' => $document->id]);
+            // --- Mettre à jour le document en base ---
+            $document->update($filteredData);
+            Log::info('✅ Document updated', ['document_id' => $document->id]);
 
-        // --- Génération du PDF ---
-        try {
-            // Construire le chemin de la vue Blade PDF
-            $template = "pdf.{$society}.{$activity}.{$type}";
+            // --- Génération du PDF ---
+            try {
+                // Construire le chemin de la vue Blade PDF
+                $template = "pdf.{$society}.{$activity}.{$type}";
 
-            // Vérifier si la vue existe
-            if (!view()->exists($template)) {
-                Log::error('❌ Vue PDF non trouvée', ['template' => $template]);
-            } else {
-                // Génération et sauvegarde PDF via le service
-                $pdfPath = $this->pdfFillService->generateAndSavePdf($document, $template);
-                Log::info('✅ PDF généré et sauvegardé', ['file_path' => $pdfPath]);
+                // Vérifier si la vue existe
+                if (!view()->exists($template)) {
+                    Log::error('❌ Vue PDF non trouvée', ['template' => $template]);
+                } else {
+                    // Génération et sauvegarde PDF via le service
+                    $pdfPath = $this->pdfFillService->generateAndSavePdf($document, $template);
+                    Log::info('✅ PDF généré et sauvegardé', ['file_path' => $pdfPath]);
+                }
+            } catch (\Exception $e) {
+                Log::error('❌ Erreur génération PDF', ['error' => $e->getMessage()]);
             }
+
+            return back()->with('success', 'Document mis à jour et PDF généré avec succès');
+
         } catch (\Exception $e) {
-            Log::error('❌ Erreur génération PDF', ['error' => $e->getMessage()]);
+            Log::error('❌ UPDATE DOCUMENT ERROR', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return back()->withErrors('Erreur lors de la mise à jour du document: ' . $e->getMessage());
         }
-
-        return back()->with('success', 'Document mis à jour et PDF généré avec succès');
-
-    } catch (\Exception $e) {
-        Log::error('❌ UPDATE DOCUMENT ERROR', [
-            'message' => $e->getMessage(),
-            'trace' => $e->getTraceAsString(),
-        ]);
-        return back()->withErrors('Erreur lors de la mise à jour du document: ' . $e->getMessage());
     }
-}
 
 
     // =========================================================================
@@ -1031,60 +1036,60 @@ public function update(Request $request, $activity, $society, $type, Document $d
         \Log::info("View check: {$viewName} -> " . ($exists ? 'EXISTS' : 'NOT FOUND'));
         return $exists;
     }
-public function show($activity, $society, $type, Document $document)
-{
-    Log::info('👁️ SHOW METHOD', [
-        'activity' => $activity,
-        'society' => $society,
-        'type' => $type,
-        'document_id' => $document->id,
-        'parent_id' => $document->parent_id
-    ]);
-
-    // Récupérer le parent si nécessaire
-    $parent = null;
-    if ($document->parent_id) {
-        $parent = Document::find($document->parent_id);
-    }
-
-    // Déterminer la vue du formulaire spécifique
-    $templateView = $this->getFormView($type);
-
-    // Vérifier que la vue existe
-    if (!view()->exists($templateView)) {
-        Log::error('Template view not found for show method:', [
-            'template' => $templateView,
+    public function show($activity, $society, $type, Document $document)
+    {
+        Log::info('👁️ SHOW METHOD', [
+            'activity' => $activity,
+            'society' => $society,
             'type' => $type,
-            'document_id' => $document->id
+            'document_id' => $document->id,
+            'parent_id' => $document->parent_id
         ]);
-        
-        // Fallback à l'ancien système si nécessaire
-        $fallbackView = 'back.dossiers.form';
-        if (view()->exists($fallbackView)) {
-            Log::warning('Using fallback view', ['fallback' => $fallbackView]);
-            return view($fallbackView, [
-                'activity' => $activity,
-                'society' => $society,
-                'type' => $type,
-                'document' => $document,
-                'parent' => $parent,
-            ]);
+
+        // Récupérer le parent si nécessaire
+        $parent = null;
+        if ($document->parent_id) {
+            $parent = Document::find($document->parent_id);
         }
-        
-        abort(404, "Vue de formulaire non trouvée: {$templateView}");
+
+        // Déterminer la vue du formulaire spécifique
+        $templateView = $this->getFormView($type);
+
+        // Vérifier que la vue existe
+        if (!view()->exists($templateView)) {
+            Log::error('Template view not found for show method:', [
+                'template' => $templateView,
+                'type' => $type,
+                'document_id' => $document->id
+            ]);
+
+            // Fallback à l'ancien système si nécessaire
+            $fallbackView = 'back.dossiers.form';
+            if (view()->exists($fallbackView)) {
+                Log::warning('Using fallback view', ['fallback' => $fallbackView]);
+                return view($fallbackView, [
+                    'activity' => $activity,
+                    'society' => $society,
+                    'type' => $type,
+                    'document' => $document,
+                    'parent' => $parent,
+                ]);
+            }
+
+            abort(404, "Vue de formulaire non trouvée: {$templateView}");
+        }
+
+        Log::info('✅ Using template view', ['template' => $templateView]);
+
+        return view('back.documents.form', [
+            'activity' => $activity,
+            'society' => $society,
+            'type' => $type,
+            'document' => $document,
+            'parent' => $parent,
+            'templateView' => $templateView, // ← TRÈS IMPORTANT !
+        ]);
     }
-
-    Log::info('✅ Using template view', ['template' => $templateView]);
-
-    return view('back.documents.form', [
-        'activity' => $activity,
-        'society' => $society,
-        'type' => $type,
-        'document' => $document,
-        'parent' => $parent,
-        'templateView' => $templateView, // ← TRÈS IMPORTANT !
-    ]);
-}
 
     public function previewPDF($activity, $society, $type, $document)
     {
@@ -1110,28 +1115,28 @@ public function show($activity, $society, $type, Document $document)
 
         return response()->file($path);
     }
-public function edit($activity, $society, $type, Document $document)
-{
-    // Normaliser la société
-    $normalizedSociety = $this->normalizeSociety($society);
+    public function edit($activity, $society, $type, Document $document)
+    {
+        // Normaliser la société
+        $normalizedSociety = $this->normalizeSociety($society);
 
-    // Vérifier avec la société normalisée
-    if ($document->activity !== $activity || $document->society !== $normalizedSociety || $document->type !== $type) {
-        abort(404);
+        // Vérifier avec la société normalisée
+        if ($document->activity !== $activity || $document->society !== $normalizedSociety || $document->type !== $type) {
+            abort(404);
+        }
+
+        // Déterminer la vue du formulaire spécifique
+        $templateView = $this->getFormView($type);
+
+        return view('back.documents.form', [
+            'activity' => $activity,
+            'society' => $society,
+            'type' => $type,
+            'parent' => $document->parent,
+            'document' => $document,
+            'templateView' => $templateView, // ← IMPORTANT !
+        ]);
     }
-
-    // Déterminer la vue du formulaire spécifique
-    $templateView = $this->getFormView($type);
-
-    return view('back.documents.form', [
-        'activity' => $activity,
-        'society' => $society,
-        'type' => $type,
-        'parent' => $document->parent,
-        'document' => $document,
-        'templateView' => $templateView, // ← IMPORTANT !
-    ]);
-}
     public function destroy($activity, $society, $type, Document $document)
     {
         // NORMALISER ICI
@@ -1180,24 +1185,24 @@ public function edit($activity, $society, $type, Document $document)
     /**
      * Télécharger le fichier joint d'un document
      */
-public function downloadPDF($activity, $society, $type, $documentId)
-{
-    $document = Document::findOrFail($documentId);
-    
-    if (!$document->file_path) {
-        return back()->with('error', 'PDF non disponible');
+    public function downloadPDF($activity, $society, $type, $documentId)
+    {
+        $document = Document::findOrFail($documentId);
+
+        if (!$document->file_path) {
+            return back()->with('error', 'PDF non disponible');
+        }
+
+        $path = storage_path('app/public/' . str_replace('storage/', '', $document->file_path));
+
+        if (!file_exists($path)) {
+            return back()->with('error', 'Fichier PDF introuvable');
+        }
+
+        $filename = "{$type}_{$document->reference}_{$document->society}_{$document->activity}.pdf";
+
+        return response()->download($path, $filename);
     }
-    
-    $path = storage_path('app/public/' . str_replace('storage/', '', $document->file_path));
-    
-    if (!file_exists($path)) {
-        return back()->with('error', 'Fichier PDF introuvable');
-    }
-    
-    $filename = "{$type}_{$document->reference}_{$document->society}_{$document->activity}.pdf";
-    
-    return response()->download($path, $filename);
-}
     /**
      * Changer le statut d'un document
      */
@@ -1271,14 +1276,49 @@ public function downloadPDF($activity, $society, $type, $documentId)
     /**
      * Génère un PDF dynamique à partir d'un template Blade
      */
-  public function generatePDF($activity, $society, $type, Document $document)
-{
-    $template = "pdf.{$society}.{$activity}.{$type}"; // exemple : pdf.myhouse.desembouage.devis
+    public function generatePDF($activity, $society, $type, Document $document)
+    {
+        try {
+            // Déterminer le template
+            $template = "pdf.{$society}.{$activity}.{$type}";
 
-    $document->file_path = $this->pdfService->generateAndSavePdf($document, $template);
+            // Vérifier si le template existe
+            if (!view()->exists($template)) {
+                throw new \Exception("Le template PDF {$template} est introuvable.");
+            }
 
-    return redirect()->back()->with('success', 'PDF généré avec succès !');
-}
+            // Générer le PDF
+            $pdf = Pdf::loadView($template, compact('document'))
+                ->setPaper('a4', 'portrait');
+
+            // Définir un nom de fichier unique
+            $filename = $this->generatePdfFilename($document, $society, $activity, $type);
+
+            // Chemin de stockage
+            $storagePath = "documents/{$society}/{$activity}/{$type}/{$filename}";
+
+            // Créer le dossier s'il n'existe pas
+            if (!Storage::disk('public')->exists(dirname($storagePath))) {
+                Storage::disk('public')->makeDirectory(dirname($storagePath), 0755, true);
+            }
+
+            // Sauvegarder le fichier
+            Storage::disk('public')->put($storagePath, $pdf->output());
+
+            // Mettre à jour le chemin dans le document
+            $document->file_path = "storage/{$storagePath}";
+            $document->save();
+
+            return redirect()->back()->with('success', 'PDF généré et sauvegardé avec succès !');
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la génération du PDF', [
+                'error' => $e->getMessage(),
+                'document_id' => $document->id,
+            ]);
+
+            return redirect()->back()->withErrors('Erreur lors de la génération du PDF : ' . $e->getMessage());
+        }
+    }
 
     /**
      * Version améliorée de generateDocumentPDF avec plus de logs
@@ -1609,7 +1649,7 @@ public function downloadPDF($activity, $society, $type, $documentId)
             'parent_id' => 'nullable|exists:documents,id',
             'fichier_joint' => 'nullable|file|max:10240', // 10MB max
         ];
-
+    
         // Règles spécifiques par type
         switch ($type) {
             case 'devis':
@@ -1617,75 +1657,14 @@ public function downloadPDF($activity, $society, $type, $documentId)
                 break;
 
             case 'facture':
-                $rules['date_echeance'] = 'nullable|date|after_or_equal:date';
-                $rules['mode_paiement'] = 'nullable|string|in:virement,cheque,carte,especes';
+                $rules['date_echeance'] = 'nullable|date';
                 break;
-
-            case 'rapport':
-                $rules['conclusion'] = 'nullable|string';
-                $rules['recommandations'] = 'nullable|string';
-                break;
-
-            case 'attestation_realisation':
-            case 'attestation_signataire':
-                $rules['date_realisation'] = 'required|date';
-                break;
-        }
-
-        // Pour la mise à jour, le numéro n'est pas obligatoire
-        if ($update) {
-            unset($rules['numero']);
         }
 
         return $rules;
     }
-
-    private function determinePdfTemplate($society, $activity, $type)
-    {
-        // Essayer le template spécifique société/activité/type
-        $specificTemplate = "pdf.{$society}.{$activity}.{$type}";
-
-        if (view()->exists($specificTemplate)) {
-            return $specificTemplate;
-        }
-
-        // Essayer le template sans normalisation
-        $rawTemplate = "pdf.{$this->normalizeSociety($society)}.{$activity}.{$type}";
-        if (view()->exists($rawTemplate)) {
-            return $rawTemplate;
-        }
-
-        // Essayer un template générique pour l'activité/type
-        $genericTemplate = "pdf.default.{$activity}.{$type}";
-        if (view()->exists($genericTemplate)) {
-            return $genericTemplate;
-        }
-
-        // Template de dernier recours
-        if (view()->exists("pdf.default.{$type}")) {
-            return "pdf.default.{$type}";
-        }
-
-        // Fallback absolu
-        return 'pdf.default.document';
-    }
-    private function generatePdfFilename($document, $society, $activity, $type)
-    {
-        // Utiliser la référence si disponible
-        $reference = $document->reference_devis ??
-            $document->reference_facture ??
-            $document->reference ??
-            $document->id;
-
-        // Nettoyer la référence pour le nom de fichier
-        $cleanRef = preg_replace('/[^a-zA-Z0-9-_]/', '_', $reference);
-
-        // Ajouter date et timestamp
-        $date = now()->format('Ymd_His');
-
-        return "{$type}_{$cleanRef}_{$society}_{$activity}_{$date}.pdf";
-    }
-
-
-
+    /**
+     * Normaliser le nom de la société
+     */
+ 
 }

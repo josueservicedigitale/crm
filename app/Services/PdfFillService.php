@@ -57,13 +57,13 @@ class PdfFillService
         try {
             // 1️⃣ Préparer TOUTES les données dynamiquement
             $data = $this->prepareDocumentData($document);
-            
+
             // 2️⃣ Vérifier que le template existe
             if (!view()->exists($template)) {
                 Log::error("Template PDF non trouvé : {$template}");
                 throw new \Exception("Template PDF introuvable : {$template}");
             }
-            
+
             // 3️⃣ Nom et chemin du PDF
             $filename = $document->reference . '_' . now()->format('Ymd_His') . '.pdf';
             $folder = "documents/{$document->society}/{$document->activity}/{$document->type}";
@@ -76,14 +76,15 @@ class PdfFillService
 
             // 5️⃣ Générer le PDF avec TOUTES les données
             $pdf = Pdf::loadView($template, $data)
-                      ->setPaper('a4', 'portrait')
-                      ->setOption('defaultFont', 'DejaVu Sans')
-                      ->setOption('isHtml5ParserEnabled', true)
-                      ->setOption('isRemoteEnabled', true);
+                ->setPaper('a4', 'portrait')
+                ->setOption('defaultFont', 'DejaVu Sans')
+                ->setOption('isHtml5ParserEnabled', true)
+                ->setOption('isRemoteEnabled', true)
+                ->setOption('chroot', public_path());
 
             // 6️⃣ Sauvegarder
             Storage::disk('public')->put($fullPath, $pdf->output());
-            
+
             // Vérifier que le fichier est créé
             if (!Storage::disk('public')->exists($fullPath)) {
                 throw new \Exception("Échec de la création du fichier PDF");
@@ -121,12 +122,12 @@ class PdfFillService
     {
         // Récupérer toutes les colonnes du document
         $documentData = $document->toArray();
-        
+
         // Ajouter les relations si elles existent
         if ($document->relationLoaded('user')) {
             $documentData['user'] = $document->user;
         }
-        
+
         if ($document->relationLoaded('parent')) {
             $documentData['parent'] = $document->parent;
             // Fusionner les données du parent si nécessaire
@@ -137,7 +138,7 @@ class PdfFillService
 
         // Formater les données spécifiques
         $formattedData = $this->formatData($documentData);
-        
+
         // Données supplémentaires utiles pour les templates
         $additionalData = [
             'today' => now()->format('d/m/Y'),
@@ -169,10 +170,10 @@ class PdfFillService
     private function formatData(array $data): array
     {
         $formatted = [];
-        
+
         foreach ($data as $key => $value) {
             $formatted[$key] = $value;
-            
+
             // Formater les dates
             if (str_contains($key, 'date') || str_contains($key, 'created') || str_contains($key, 'updated')) {
                 if ($value && !empty($value)) {
@@ -184,7 +185,7 @@ class PdfFillService
                     }
                 }
             }
-            
+
             // Formater les montants
             if (
                 str_contains($key, 'montant') ||
@@ -201,13 +202,13 @@ class PdfFillService
                     $formatted[$key . '_euros'] = number_format(floatval($value), 2, ',', ' ');
                 }
             }
-            
+
             // Formater les booléens
             if (is_bool($value)) {
                 $formatted[$key . '_text'] = $value ? 'Oui' : 'Non';
             }
         }
-        
+
         // Calculs supplémentaires
         if (isset($data['montant_ht']) && !isset($data['montant_ttc'])) {
             $tva = $data['tva'] ?? 20;
@@ -215,7 +216,7 @@ class PdfFillService
             $formatted['montant_ttc_calcule'] = $montantTTC;
             $formatted['montant_ttc_calcule_formatted'] = number_format($montantTTC, 2, ',', ' ') . ' €';
         }
-        
+
         return $formatted;
     }
 
@@ -230,7 +231,7 @@ class PdfFillService
             'house' => 'MyHouse Solutions',
             'myhouse' => 'MyHouse Solutions',
         ];
-        
+
         return $societies[$code] ?? $code;
     }
 
@@ -243,7 +244,7 @@ class PdfFillService
             'desembouage' => 'Désembouage',
             'reequilibrage' => 'Rééquilibrage',
         ];
-        
+
         return $activities[$code] ?? $code;
     }
 
@@ -260,7 +261,7 @@ class PdfFillService
             'attestation_realisation' => 'Attestation de Réalisation',
             'attestation_signataire' => 'Attestation Signataire',
         ];
-        
+
         return $types[$code] ?? $code;
     }
 }

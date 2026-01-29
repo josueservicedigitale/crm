@@ -7,10 +7,48 @@
     <title>cdc</title>
     <meta name="author" content="Florence Olive" />
     <style type="text/css">
+        @page {
+            margin: 20mm;
+        }
+
+        /* Global reset + box-sizing to avoid overflow issues */
         * {
             margin: 0;
             padding: 0;
             text-indent: 0;
+            box-sizing: border-box;
+        }
+
+        /* Container padding to enforce inner margins */
+        .content-container {
+            padding: 6mm;
+            padding-bottom: 25mm;
+        }
+
+        /* Footer and page numbering */
+        .footer {
+            position: fixed;
+            bottom: 10mm;
+            left: 0;
+            right: 0;
+            font-size: 8pt;
+            color: #333;
+            text-align: center;
+            border-top: 1px solid #003366;
+            padding-top: 3mm;
+            width: 100%;
+        }
+
+        .page-number {
+            position: fixed;
+            bottom: 8mm;
+            right: 15mm;
+            font-size: 8pt;
+            color: #003366;
+        }
+
+        .page-number:after {
+            content: "Page " counter(page) " / " counter(pages);
         }
 
         .p,
@@ -288,12 +326,12 @@
 <body>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
     <p style="padding-left: 215pt;text-indent: 0pt;text-align: left;"><span><img width="211" height="46" alt="image"
-                src="{{ asset('assets/img/nova/cdc_files/Image_001.jpg') }}" /></span></p>
+                src="{{ public_path('assets/img/nova/cdc_files/Image_001.jpg') }}" /></span></p>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
     <p style="text-indent: 0pt;text-align: left;"><span><img width="123" height="73" alt="image"
-                src="{{ asset('assets/img/nova/cdc_files/Image_002.png') }}" /></span></p>
+                src="{{ public_path('assets/img/nova/cdc_files/Image_002.png') }}" /></span></p>
     <p style="text-indent: 0pt;text-align: left;"><span><img width="175" height="70" alt="image"
-                src="{{ asset('assets/img/nova/cdc_files/Image_003.jpg') }}" /></span></p>
+                src="{{ public_path('assets/img/nova/cdc_files/Image_003.jpg') }}" /></span></p>
     <p style="padding-top: 3pt;padding-left: 5pt;text-indent: 0pt;text-align: justify;">Le dispositif national des
         certificats d’économies d’énergie (CEE) mis en place par le Ministère en charge de l’énergie impose à l’ensemble
         des fournisseurs d’énergie (électricité, gaz, fioul domestique, chaleur ou froid, carburants automobiles), de
@@ -301,9 +339,9 @@
     <p style="padding-top: 3pt;padding-left: 5pt;text-indent: 0pt;text-align: justify;">Dans le cadre de son partenariat
         avec la société EBS ENERGIE, la société (ENERGIENOVA) s’engage à vous apporter :</p>
     <p style="text-indent: 0pt;text-align: left;"><span><img width="68" height="18" alt="image"
-                src="{{ asset('assets/img/nova/cdc_files/Image_004.png') }}" /></span></p>
+                src="{{ public_path('assets/img/nova/cdc_files/Image_004.png') }}" /></span></p>
     <p style="text-indent: 0pt;text-align: left;"><span><img width="12" height="14" alt="image"
-                src="{{ asset('assets/img/nova/cdc_files/Image_005.jpg') }}" /></span></p>
+                src="{{ public_path('assets/img/nova/cdc_files/Image_005.jpg') }}" /></span></p>
     <p style="padding-top: 3pt;padding-left: 23pt;text-indent: 0pt;text-align: left;"><span class="s1"></span><span
             class="s2"> </span>une prime d’un montant de <span style=" color: #4F81BC;">12 259,80 €* </span>;</p>
     <p style="padding-top: 3pt;padding-left: 23pt;text-indent: 0pt;text-align: left;"><span class="s1"></span><span
@@ -453,7 +491,7 @@
     </ul>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
     <p style="text-indent: 0pt;text-align: left;"><span><img width="64" height="16" alt="image"
-                src="{{ asset('assets/img/nova/cdc_files/Image_006.png') }}" /></span></p>
+                src="{{ public_path('assets/img/nova/cdc_files/Image_006.png') }}" /></span></p>
     <p class="s15" style="padding-left: 23pt;text-indent: 0pt;text-align: left;">*Montant de prime valable 3 mois à
         compter de la date d’édition du devis <span style=" color: #F00;">06/10/2025</span></p>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
@@ -472,9 +510,9 @@
         via EBS ENERGIE ou un prestataire d’EBS ENERGIE conduira au refus de cette prime par EBS ENERGIE.</p>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
     <p style="text-indent: 0pt;text-align: left;"><span><img width="71" height="18" alt="image"
-                src="{{ asset('assets/img/nova/cdc_files/Image_007.png') }}" /></span></p>
+                src="{{ public_path('assets/img/nova/cdc_files/Image_007.png') }}" /></span></p>
     <p style="text-indent: 0pt;text-align: left;"><span><img width="135" height="159" alt="image"
-                src="{{ asset('assets/img/nova/cdc_files/Image_008.png') }}" /></span></p>
+                src="{{ public_path('assets/img/nova/cdc_files/Image_008.png') }}" /></span></p>
     <p class="s17" style="padding-top: 2pt;padding-left: 5pt;text-indent: 0pt;line-height: 113%;text-align: left;">Le
         présent document doit être signé au plus tard quatorze jours après la date d’engagement de l’opération, et en
         tout état de cause avant la date de début des travaux.</p>
@@ -502,10 +540,11 @@
     <p class="s20" style="padding-left: 40pt;text-indent: 0pt;text-align: left;">FORM_CONF_CDC_BAR SE 109_EBS
         Energie_INDIRECT HCDP_2024 09 01</p>
     <p style="padding-left: 25pt;text-indent: 0pt;text-align: left;"><span><img width="192" height="77" alt="image"
-                src="{{ asset('assets/img/nova/cdc_files/Image_009.jpg') }}" /></span> <span><img width="214"
-                height="46" alt="image" src="{{ asset('assets/img/nova/cdc_files/Image_010.jpg') }}" /></span><span
-            class="s21"> </span><span><img width="100" height="60" alt="image"
-                src="{{ asset('assets/img/nova/cdc_files/Image_011.png') }}" /></span></p>
+                src="{{ public_path('assets/img/nova/cdc_files/Image_009.jpg') }}" /></span> <span><img width="214"
+                height="46" alt="image"
+                src="{{ public_path('assets/img/nova/cdc_files/Image_010.jpg') }}" /></span><span class="s21">
+        </span><span><img width="100" height="60" alt="image"
+                src="{{ public_path('assets/img/nova/cdc_files/Image_011.png') }}" /></span></p>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
     <h1 style="padding-top: 3pt;padding-left: 5pt;text-indent: 0pt;text-align: justify;">/!\ <span class="p">Faites
             réaliser plusieurs devis afin de prendre une décision éclairée. Attention, seules les propositions remises
@@ -513,7 +552,7 @@
             offres CEE différentes pour la même opération.</span></h1>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
     <p style="text-indent: 0pt;text-align: left;"><span><img width="699" height="158" alt="image"
-                src="{{ asset('assets/img/nova/cdc_files/Image_012.png') }}" /></span></p>
+                src="{{ public_path('assets/img/nova/cdc_files/Image_012.png') }}" /></span></p>
     <p class="s25" style="padding-top: 2pt;padding-left: 5pt;text-indent: 0pt;text-align: left;"><a
             href="https://www.ebs-energie.com/"
             style=" color: black; font-family:Calibri, sans-serif; font-style: normal; font-weight: normal; text-decoration: underline; font-size: 8pt;"
@@ -544,6 +583,12 @@
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
     <p class="s20" style="padding-top: 3pt;padding-left: 40pt;text-indent: 0pt;text-align: left;">FORM_CONF_CDC_BAR SE
         109_EBS Energie_INDIRECT HCDP_2024 09 01</p>
+    <!-- Footer (commun) -->
+    <div class="footer">
+        ENERGIE NOVA — Tél. : 01 43 92 28 32 — contact@ebs-energie.com
+        <div class="page-number"></div>
+    </div>
+
 </body>
 
 </html>

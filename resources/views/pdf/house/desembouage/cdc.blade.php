@@ -279,11 +279,11 @@
 
 <body>
     <p class="s1" style="padding-left: 11pt;text-indent: 0pt;text-align: left;"><span><img width="176" height="70"
-                alt="image" src="{{ asset('assets/img/house/Cdc_files/Image_001.jpg') }}" /></span> <span><img
+                alt="image" src="{{ public_path('assets/img/house/Cdc_files/Image_001.jpg') }}" /></span> <span><img
                 width="211" height="46" alt="image"
-                src="{{ asset('assets/img/house/Cdc_files/Image_002.jpg') }}" /></span><span class="s2">
+                src="{{ public_path('assets/img/house/Cdc_files/Image_002.jpg') }}" /></span><span class="s2">
         </span><span><img width="209" height="48" alt="image"
-                src="{{ asset('assets/img/house/Cdc_files/Image_003.jpg') }}" /></span></p>
+                src="{{ public_path('assets/img/house/Cdc_files/Image_003.jpg') }}" /></span></p>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
     <p style="padding-top: 3pt;padding-left: 5pt;text-indent: 0pt;text-align: justify;">Le dispositif national des
         certificats d’économies d’énergie (CEE) mis en place par le Ministère en charge de l’énergie impose à l’ensemble
@@ -294,8 +294,8 @@
     <p style="padding-top: 3pt;padding-left: 23pt;text-indent: -17pt;line-height: 129%;text-align: justify;">Dans le
         cadre de son partenariat avec la société EBS ENERGIE, la société ( M&#39;Y HOUSE ) s'engage à vous apporter :
         <span><img width="11" height="10" alt="image"
-                src="{{ asset('assets/img/house/Cdc_files/Image_004.jpg') }}" /></span><span class="s1">
-        </span>une prime d'un montant de <span style=" color: #4F81BC;">10 584,00 €* </span>;
+                src="{{ public_path('assets/img/house/Cdc_files/Image_004.jpg') }}" /></span><span class="s1">
+        </span>une prime d'un montant de <span style=" color: #4F81BC;">{{ $document->prime_cee }} €* </span>;
     </p>
     <p style="padding-left: 23pt;text-indent: 0pt;line-height: 12pt;text-align: left;"><span class="s3"></span><span
             class="s1"> </span>un bon d’achat pour des produits de consommation courante d’un montant de <span
@@ -444,7 +444,7 @@
     </ul>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
     <p class="s15" style="padding-left: 23pt;text-indent: 0pt;text-align: left;">*Montant de prime valable 3 mois à
-        compter de la date d’édition du devis <span style=" color: #F00;">17/10/2025</span></p>
+        compter de la date d’édition du devis <span style=" color: #F00;">{{ $document->date_devis }}</span></p>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
     <p style="padding-left: 5pt;text-indent: 0pt;text-align: justify;">Les montants de prime indiqués ci-dessus sont
         définis selon les fiches d’opérations standardisées disponibles sur le site du Ministère en charge de l’énergie,
@@ -460,9 +460,10 @@
         qualité des travaux sur site ou par contact pourra être demandé. Un refus de ce contrôle sur site ou par contact
         via EBS ENERGIE ou un prestataire d’EBS ENERGIE conduira au refus de cette prime par EBS ENERGIE.</p>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
-    <p style="padding-left: 5pt;text-indent: 0pt;text-align: justify;">Date de cette proposition : 17/10/2025</p>
+    <p style="padding-left: 5pt;text-indent: 0pt;text-align: justify;">Date de cette proposition :
+        {{ $document->date_signature }}</p>
     <p style="text-indent: 0pt;text-align: left;"><span><img width="305" height="135" alt="image"
-                src="{{ asset('assets/img/house/Cdc_files/Image_005.png') }}" /></span></p>
+                src="{{ public_path('assets/img/house/Cdc_files/Image_005.png') }}" /></span></p>
     <p class="s17" style="padding-top: 2pt;padding-left: 5pt;text-indent: 0pt;line-height: 113%;text-align: left;">Le
         présent document doit être signé au plus tard quatorze jours après la date d’engagement de l’opération, et en
         tout état de cause avant la date de début des travaux.</p>
@@ -485,10 +486,11 @@
         </tr>
     </table>
     <p style="padding-left: 8pt;text-indent: 0pt;text-align: left;"><span><img width="192" height="77" alt="image"
-                src="{{ asset('assets/img/house/Cdc_files/Image_006.jpg') }}" /></span> <span><img width="211"
-                height="46" alt="image" src="{{ asset('assets/img/house/Cdc_files/Image_007.jpg') }}" /></span><span
-            class="s20"> </span><span><img width="209" height="48" alt="image"
-                src="{{ asset('assets/img/house/Cdc_files/Image_008.jpg') }}" /></span></p>
+                src="{{ public_path('assets/img/house/Cdc_files/Image_006.jpg') }}" /></span> <span><img width="211"
+                height="46" alt="image"
+                src="{{ public_path('assets/img/house/Cdc_files/Image_007.jpg') }}" /></span><span class="s20">
+        </span><span><img width="209" height="48" alt="image"
+                src="{{ public_path('assets/img/house/Cdc_files/Image_008.jpg') }}" /></span></p>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
     <h1 style="padding-top: 3pt;padding-left: 5pt;text-indent: 0pt;text-align: justify;">/!\ <span class="p">Faites
             réaliser plusieurs devis afin de prendre une décision éclairée. Attention, seules les propositions remises
@@ -496,7 +498,7 @@
             offres CEE différentes pour la même opération.</span></h1>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
     <p style="text-indent: 0pt;text-align: left;"><span><img width="699" height="158" alt="image"
-                src="{{ asset('assets/img/house/Cdc_files/Image_009.png') }}" /></span></p>
+                src="{{ public_path('assets/img/house/Cdc_files/Image_009.png') }}" /></span></p>
     <p class="s24" style="padding-top: 2pt;padding-left: 5pt;text-indent: 0pt;text-align: left;"><a
             href="https://www.ebs-energie.com/"
             style=" color: black; font-family:Calibri, sans-serif; font-style: normal; font-weight: normal; text-decoration: underline; font-size: 8pt;"

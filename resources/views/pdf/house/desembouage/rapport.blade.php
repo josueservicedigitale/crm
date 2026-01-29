@@ -257,16 +257,16 @@
 <body>
     <h4 style="padding-top: 2pt;padding-left: 5pt;text-indent: 0pt;text-align: left;">ADRESSE DE TRAVAUX:</h4>
     <p class="s1" style="padding-top: 7pt;padding-left: 4pt;text-indent: 0pt;line-height: 164%;text-align: left;">30
-        Avenue de Valence 38360 Sassenage</p>
+        {{ $document->adresse_travaux }}</p>
     <p class="s2" style="padding-top: 2pt;padding-left: 4pt;text-indent: 0pt;text-align: left;">N° SIRET :</p>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
     <p class="s2" style="padding-top: 7pt;padding-left: 4pt;text-indent: 0pt;line-height: 166%;text-align: left;">DATE :
         FACTURE N° :</p>
     <p class="s3" style="padding-top: 5pt;padding-left: 6pt;text-indent: 0pt;text-align: left;">93146162800030</p>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
-    <p class="s3" style="padding-left: 6pt;text-indent: 0pt;text-align: left;">23/10/2025</p>
+    <p class="s3" style="padding-left: 6pt;text-indent: 0pt;text-align: left;">{{ $document->date_facture }}</p>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
-    <p class="s3" style="padding-left: 4pt;text-indent: 0pt;text-align: left;">M&#39;YHOUSE-2025-0165</p>
+    <p class="s3" style="padding-left: 4pt;text-indent: 0pt;text-align: left;">M&#39;YHOUSE-2025-{{ $document->reference_facture }}</p>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
     <h1 style="padding-top: 4pt;padding-left: 171pt;text-indent: 0pt;text-align: center;">ATTESTATION DE DÉSEMBOUAGE
     </h1>
@@ -297,17 +297,17 @@
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
     <p style="padding-left: 24pt;text-indent: 0pt;line-height: 10pt;text-align: left;">Puissance nominale</p>
     <p style="padding-left: 24pt;text-indent: 0pt;line-height: 11pt;text-align: left;">du générateur: <span
-            class="s13">600 </span>kW</p>
+            class="s13">{{ $document->puissance_chaudiere }}</span>kW</p>
     <p class="s9" style="padding-top: 7pt;padding-left: 49pt;text-indent: -14pt;text-align: left;">Nombre d’émetteurs
         désemboués</p>
     <p class="s14" style="padding-top: 2pt;padding-left: 22pt;text-indent: 0pt;text-align: left;">Radiateurs : <span
-            style=" color: #000;">420</span></p>
+            style=" color: #000;">{{ $document->nombre_emetteurs }}</span></p>
     <p style="padding-top: 6pt;text-indent: 0pt;text-align: right;">Plancher chauffant : m2</p>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
     <p class="s15" style="padding-top: 9pt;padding-left: 19pt;text-indent: 0pt;text-align: left;">Volume d’eau total du
         circuit</p>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
-    <p class="s13" style="text-indent: 0pt;text-align: right;">4 660 <span class="p">litres</span></p>
+    <p class="s13" style="text-indent: 0pt;text-align: right;">{{ $document->volume_circuit }} <span class="p">litres</span></p>
     <p class="s9" style="padding-top: 6pt;padding-left: 44pt;text-indent: 0pt;text-align: left;">Nature du réseau</p>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
     <p style="padding-top: 9pt;padding-left: 43pt;text-indent: 0pt;text-align: left;">Cuivre</p>
@@ -363,7 +363,8 @@
     <p style="padding-top: 4pt;padding-left: 32pt;text-indent: 0pt;text-align: left;">Autre ..................</p>
     <p style="padding-top: 4pt;padding-left: 34pt;text-indent: 0pt;text-align: left;">Autre ..................</p>
     <p style="text-indent: 0pt;text-align: left;"><span>
-        <img width="794" height="898" alt="image" src="{{ asset(path: 'assets/img/house/Rapport_files/Image_001.png') }}" alt="Image"></span></p>
+            <img width="794" height="898" alt="image"
+                src="{{ asset(path: 'assets/img/house/Rapport_files/Image_001.png') }}" alt="Image"></span></p>
 </body>
 
 </html>

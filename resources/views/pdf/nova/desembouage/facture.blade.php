@@ -426,22 +426,26 @@
     <p style="text-indent: 0pt;text-align: left;" />
     <p style="text-indent: 0pt;text-align: left;">
         <span>
-            <img alt="image" height="28" src="{{ asset('assets/img/nova/Facture_files/Image_001.png') }}" width="248" />
+            <img alt="image" height="28" src="{{ public_path('assets/img/nova/Facture_files/Image_001.png') }}"
+                width="248" />
         </span>
     </p>
     <p style="text-indent: 0pt;text-align: left;">
         <span>
-            <img alt="image" height="14" src="{{ asset('assets/img/nova/Facture_files/Image_002.png') }}" width="55" />
+            <img alt="image" height="14" src="{{ public_path('assets/img/nova/Facture_files/Image_002.png') }}"
+                width="55" />
         </span>
     </p>
     <p style="text-indent: 0pt;text-align: left;">
         <span>
-            <img alt="image" height="14" src="{{ asset('assets/img/nova/Facture_files/Image_003.png') }}" width="55" />
+            <img alt="image" height="14" src="{{ public_path('assets/img/nova/Facture_files/Image_003.png') }}"
+                width="55" />
         </span>
     </p>
     <p style="text-indent: 0pt;text-align: left;">
         <span>
-            <img alt="image" height="26" src="{{ asset('assets/img/nova/Facture_files/Image_004.png') }}" width="213" />
+            <img alt="image" height="26" src="{{ public_path('assets/img/nova/Facture_files/Image_004.png') }}"
+                width="213" />
         </span>
     </p>
     <h3 style="padding-top: 3pt;padding-left: 10pt;text-indent: 0pt;text-align: left;">OBJET : <span
@@ -767,13 +771,13 @@
         </tr>
     </table>
     <p style="text-indent: 0pt;text-align: left;"><span><img width="32" height="43" alt="image"
-                src="{{ asset('assets/img/nova/Facture_files/Image_005.png') }}" /></span></p>
+                src="{{ public_path('assets/img/nova/Facture_files/Image_005.png') }}" /></span></p>
     <p style="text-indent: 0pt;text-align: left;"><span><img width="29" height="14" alt="image"
-                src="{{ asset('assets/img/nova/Facture_files/Image_006.png') }}" /></span></p>
+                src="{{ public_path('assets/img/nova/Facture_files/Image_006.png') }}" /></span></p>
     <p style="text-indent: 0pt;text-align: left;"><span><img width="16" height="14" alt="image"
-                src="{{ asset('assets/img/nova/Facture_files/Image_007.png') }}" /></span></p>
+                src="{{ public_path('assets/img/nova/Facture_files/Image_007.png') }}" /></span></p>
     <p style="text-indent: 0pt;text-align: left;"><span><img width="57" height="29" alt="image"
-                src="{{ asset('assets/img/nova/Facture_files/Image_008.png') }}" /></span></p>
+                src="{{ public_path('assets/img/nova/Facture_files/Image_008.png') }}" /></span></p>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
     <table style="border-collapse:collapse;margin-left:5.125pt" cellspacing="0">
         <tr style="height:13pt">
@@ -1135,13 +1139,15 @@
     <p style="text-indent: 0pt;text-align: left;" />
     <p style="text-indent: 0pt;text-align: left;">
         <span>
-            <img alt="image" height="13" src="{{ asset('assets/img/nova/Facture_files/Image_009.png') }}" width="42" />
+            <img alt="image" height="13" src="{{ public_path('assets/img/nova/Facture_files/Image_009.png') }}"
+                width="42" />
         </span>
     </p>
     <h1 style="text-indent: 0pt;text-align: right;">
         RESTE A CHARGE
         <span>
-            <img alt="image" height="15" src="{{ asset('assets/img/nova/Facture_files/Image_010.png') }}" width="43" />
+            <img alt="image" height="15" src="{{ public_path('assets/img/nova/Facture_files/Image_010.png') }}"
+                width="43" />
         </span>
     </h1>
 </body>

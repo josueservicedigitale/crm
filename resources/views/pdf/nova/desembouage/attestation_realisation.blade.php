@@ -384,13 +384,13 @@
     <p class="s7" style="padding-top: 3pt;padding-left: 9pt;text-indent: 0pt;text-align: left;">Gérant</p>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
     <p style="text-indent: 0pt;text-align: left;"><span><img width="697" height="234" alt="image"
-                src="{{ asset('assets/img/nova/attestation_realisation_files/Image_001.png') }}" /></span></p>
+                src="{{ public_path('assets/img/nova/attestation_realisation_files/Image_001.png') }}" /></span></p>
     <p style="text-indent: 0pt;text-align: left;"><span><img width="206" height="14" alt="image"
-                src="{{ asset('assets/img/nova/attestation_realisation_files/Image_002.png') }}" /></span></p>
+                src="{{ public_path('assets/img/nova/attestation_realisation_files/Image_002.png') }}" /></span></p>
     <p style="text-indent: 0pt;text-align: left;"><span><img width="22" height="14" alt="image"
-                src="{{ asset('assets/img/nova/attestation_realisation_files/Image_003.png') }}" /></span></p>
+                src="{{ public_path('assets/img/nova/attestation_realisation_files/Image_003.png') }}" /></span></p>
     <p style="text-indent: 0pt;text-align: left;"><span><img width="22" height="30" alt="image"
-                src="{{ asset('assets/img/nova/attestation_realisation_files/Image_004.png') }}" /></span></p>
+                src="{{ public_path('assets/img/nova/attestation_realisation_files/Image_004.png') }}" /></span></p>
     <ol id="l1">
         <li data-list-text="1.">
             <p class="s2" style="padding-top: 5pt;padding-left: 19pt;text-indent: -13pt;text-align: left;">InfOrmatIOns
@@ -521,11 +521,14 @@
                 </tr>
             </table>
             <p style="text-indent: 0pt;text-align: left;"><span><img width="27" height="15" alt="image"
-                        src="{{ asset('assets/img/nova/attestation_realisation_files/Image_005.png') }}" /></span></p>
+                        src="{{ public_path('assets/img/nova/attestation_realisation_files/Image_005.png') }}" /></span>
+            </p>
             <p style="text-indent: 0pt;text-align: left;"><span><img width="127" height="15" alt="image"
-                        src="{{ asset('assets/img/nova/attestation_realisation_files/Image_006.png') }}" /></span></p>
+                        src="{{ public_path('assets/img/nova/attestation_realisation_files/Image_006.png') }}" /></span>
+            </p>
             <p style="text-indent: 0pt;text-align: left;"><span><img width="203" height="33" alt="image"
-                        src="{{ asset('assets/img/nova/attestation_realisation_files/Image_007.png') }}" /></span></p>
+                        src="{{ public_path('assets/img/nova/attestation_realisation_files/Image_007.png') }}" /></span>
+            </p>
         </li>
         <li data-list-text="2.">
             <p class="s2" style="padding-top: 11pt;padding-left: 23pt;text-indent: -18pt;text-align: left;">EtapEs dE
@@ -615,7 +618,7 @@
                                 fiche CEE BAR-SE-109</p>
                             <p style="text-indent: 0pt;text-align: left;"><br /></p>
                             <p style="text-indent: 0pt;text-align: left;"><span><img width="157" height="15" alt="image"
-                                        src="{{ asset('assets/img/nova/attestation_realisation_files/Image_008.png') }}" /></span>
+                                        src="{{ public_path('assets/img/nova/attestation_realisation_files/Image_008.png') }}" /></span>
                             </p>
                         </li>
                         <li data-list-text="">
@@ -639,12 +642,13 @@
     </ol>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
     <p style="text-indent: 0pt;text-align: left;"><span><img width="5" height="15" alt="image"
-                src="{{ asset('assets/img/nova/attestation_realisation_files/Image_009.png') }}" /></span></p>
+                src="{{ public_path('assets/img/nova/attestation_realisation_files/Image_009.png') }}" /></span></p>
     <p style="text-indent: 0pt;text-align: left;"><span><img width="76" height="15" alt="image"
-                src="{{ asset('assets/img/nova/attestation_realisation_files/Image_010.png') }}" /></span></p>
+                src="{{ public_path('assets/img/nova/attestation_realisation_files/Image_010.png') }}" /></span></p>
     <p style="padding-top: 8pt;padding-left: 303pt;text-indent: 0pt;text-align: left;">Fait à<span><img width="8"
                 height="15" alt="image"
-                src="{{ asset('assets/img/nova/attestation_realisation_files/Image_011.png') }}" /></span>Paris, le
+                src="{{ public_path('assets/img/nova/attestation_realisation_files/Image_011.png') }}" /></span>Paris,
+        le
         09/10/2025
     </p>
     <p class="s14" style="padding-top: 6pt;padding-left: 303pt;text-indent: 0pt;line-height: 11pt;text-align: left;">M.
@@ -654,7 +658,7 @@
             class="s17">ENERGIE NOVA</span></p>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
     <p style="padding-left: 297pt;text-indent: 0pt;text-align: left;"><span><img width="132" height="156" alt="image"
-                src="{{ asset('assets/img/nova/attestation_realisation_files/Image_012.png') }}" /></span></p>
+                src="{{ public_path('assets/img/nova/attestation_realisation_files/Image_012.png') }}" /></span></p>
 </body>
 
 </html>

@@ -1,629 +1,474 @@
-<!DOCTYPE html
-    PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr" lang="fr">
+<!DOCTYPE html>
+<html lang="fr">
 
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Attestation_realisation</title>
-    <meta name="author" content="Ryo SAEBA" />
-    <style type="text/css">
-        * {
+    <meta charset="UTF-8">
+    <title>Attestation de réalisation d'opération CEE</title>
+    <style>
+        /* Styles optimisés pour DomPDF - Même design que l'original */
+        body {
+            font-family: 'DejaVu Sans', Arial, sans-serif;
+            font-size: 8px;
             margin: 0;
             padding: 0;
-            text-indent: 0;
+            color: black;
         }
 
-        .s1 {
+        /* Titres principaux */
+        .titre-principal {
             color: #80A150;
             font-family: Verdana, sans-serif;
-            font-style: normal;
+            font-size: 16px;
+            text-align: center;
+            margin: 15px 0 5px 0;
             font-weight: normal;
-            text-decoration: none;
-            font-size: 16pt;
         }
 
-        .s2 {
+        .sous-titre-principal {
             color: #000080;
             font-family: Verdana, sans-serif;
-            font-style: normal;
+            font-size: 14px;
+            text-align: center;
+            margin: 3px 0;
             font-weight: normal;
-            text-decoration: none;
-            font-size: 14pt;
         }
 
-        .s3 {
+        /* Informations société */
+        .info-societe {
             color: #80A150;
             font-family: Calibri, sans-serif;
-            font-style: normal;
+            font-size: 8px;
             font-weight: bold;
-            text-decoration: none;
-            font-size: 8pt;
+            margin: 5px 0 3px 8px;
         }
 
-        .p,
-        p {
-            color: black;
+        .info-adresse {
             font-family: Calibri, sans-serif;
-            font-style: normal;
-            font-weight: normal;
-            text-decoration: none;
-            font-size: 8pt;
-            margin: 0pt;
+            font-size: 8px;
+            margin: 2px 0 2px 8px;
+            line-height: 1.2;
         }
 
-        .a,
-        a {
-            color: black;
-            font-family: Calibri, sans-serif;
-            font-style: normal;
-            font-weight: normal;
-            text-decoration: none;
-            font-size: 8pt;
-        }
-
-        .s4 {
-            color: black;
-            font-family: Calibri, sans-serif;
-            font-style: normal;
-            font-weight: normal;
-            text-decoration: none;
-            font-size: 9pt;
-        }
-
-        .s5 {
-            color: #036;
-            font-family: Calibri, sans-serif;
-            font-style: normal;
-            font-weight: bold;
-            text-decoration: none;
-            font-size: 8pt;
-        }
-
-        .s6 {
+        /* Titre section technique */
+        .titre-section-technique {
             color: #00007F;
             font-family: Verdana, sans-serif;
-            font-style: normal;
+            font-size: 14px;
+            margin: 10px 0 8px 19px;
             font-weight: normal;
-            text-decoration: none;
-            font-size: 14pt;
         }
 
-        .s7 {
-            color: black;
+        /* Tableau informations */
+        .tableau-infos {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            border: 1px solid #99CC99;
+        }
+
+        .cellule-label {
+            width: 28%;
+            padding: 4px 8px;
+            border: 1px solid #99CC99;
+            background-color: #f9f9f9;
             font-family: Arial, sans-serif;
-            font-style: normal;
-            font-weight: normal;
-            text-decoration: none;
-            font-size: 8pt;
+            font-size: 8px;
+            vertical-align: middle;
         }
 
-        .s8 {
-            color: black;
+        .cellule-valeur {
+            width: 72%;
+            padding: 4px 8px;
+            border: 1px solid #99CC99;
             font-family: Calibri, sans-serif;
-            font-style: normal;
-            font-weight: normal;
-            text-decoration: none;
-            font-size: 8pt;
+            font-size: 8px;
+            vertical-align: top;
         }
 
-        .s9 {
-            color: black;
+        /* Note conformité */
+        .note-conformite {
             font-family: Calibri, sans-serif;
+            font-size: 8px;
             font-style: italic;
-            font-weight: normal;
-            text-decoration: none;
-            font-size: 8pt;
+            margin: 3px 0 15px 5px;
+            color: #555;
         }
 
-        .s10 {
+        /* Listes numérotées */
+        .liste-numerotee {
+            margin: 10px 0 15px 16px;
+            padding-left: 0;
+            list-style-type: none;
+        }
+
+        .liste-numerotee li {
+            margin: 8px 0;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .liste-numerotee li .numero {
             color: #099;
             font-family: Verdana, sans-serif;
-            font-style: normal;
+            font-size: 12px;
             font-weight: normal;
-            text-decoration: none;
-            font-size: 12pt;
+            position: absolute;
+            left: 0;
+            top: 0;
         }
 
-        .s11 {
-            color: black;
-            font-family: Arial, sans-serif;
-            font-style: normal;
+        .titre-etape {
+            color: #099;
+            font-family: Verdana, sans-serif;
+            font-size: 12px;
             font-weight: normal;
-            text-decoration: none;
-            font-size: 8pt;
+            margin-bottom: 5px;
         }
 
-        .s12 {
+        /* Listes à puces */
+        .liste-puces {
+            list-style-type: none;
+            padding-left: 0;
+            margin: 8px 0;
+        }
+
+        .liste-puces li {
+            margin: 6px 0;
+            padding-left: 18px;
+            position: relative;
+            font-family: Calibri, sans-serif;
+            font-size: 8px;
+            line-height: 1.2;
+        }
+
+        .liste-puces li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            font-size: 10px;
+        }
+
+        /* Images */
+        .image-logo {
+            max-width: 68px;
+            max-height: 85px;
+            margin: 5px 0;
+        }
+
+        .image-logo-grand {
+            max-width: 246px;
+            max-height: 48px;
+            margin: 5px 0;
+        }
+
+        .image-signature {
+            max-width: 279px;
+            max-height: 123px;
+            margin: 10px 0;
+        }
+
+        /* Section certification */
+        .section-certification {
+            margin: 20px 0;
+        }
+
+        .titre-certification {
             color: #80A150;
             font-family: Verdana, sans-serif;
-            font-style: normal;
+            font-size: 14px;
             font-weight: normal;
-            text-decoration: none;
-            font-size: 14pt;
+            margin: 15px 0 10px 23px;
         }
 
-        .s13 {
-            color: black;
-            font-family: "Trebuchet MS", sans-serif;
-            font-style: normal;
-            font-weight: bold;
-            text-decoration: none;
-            font-size: 8pt;
-        }
-
-        h2 {
-            color: black;
+        .texte-certification {
             font-family: Arial, sans-serif;
-            font-style: normal;
-            font-weight: bold;
-            text-decoration: none;
-            font-size: 8pt;
+            font-size: 8px;
+            margin: 8px 0 15px 6px;
+            line-height: 1.3;
         }
 
-        .h1 {
+        .texte-gras {
+            font-weight: bold;
+        }
+
+        .texte-vert {
             color: #80A150;
             font-family: Calibri, sans-serif;
-            font-style: normal;
             font-weight: bold;
-            text-decoration: none;
-            font-size: 9pt;
+            font-size: 9px;
         }
 
-        .s15 {
+        .texte-vert-fonce {
             color: #369C3B;
             font-family: Calibri, sans-serif;
-            font-style: normal;
             font-weight: bold;
-            text-decoration: none;
-            font-size: 9pt;
+            font-size: 9px;
         }
 
-        li {
-            display: block;
+        /* Signature */
+        .section-signature {
+            margin-top: 25px;
+            text-align: right;
+            padding-right: 20px;
         }
 
-        #l1 {
-            padding-left: 0pt;
-            counter-reset: c1 1;
+        .date-signature {
+            font-family: Arial, sans-serif;
+            font-size: 8px;
+            margin-bottom: 10px;
         }
 
-        #l1>li>*:first-child:before {
-            counter-increment: c1;
-            content: counter(c1, decimal)". ";
-            color: #00007F;
-            font-family: Verdana, sans-serif;
-            font-style: normal;
-            font-weight: normal;
-            text-decoration: none;
-            font-size: 14pt;
+        .nom-societe {
+            font-family: Arial, sans-serif;
+            font-size: 8px;
+            font-weight: bold;
+            margin: 5px 0;
         }
 
-        #l1>li:first-child>*:first-child:before {
-            counter-increment: c1 0;
+        .poste-signataire {
+            font-family: Arial, sans-serif;
+            font-size: 8px;
+            margin: 3px 0;
         }
 
-        li {
-            display: block;
+        /* Alignements */
+        .align-left {
+            text-align: left;
         }
 
-        #l2 {
-            padding-left: 0pt;
-            counter-reset: d1 1;
+        .align-center {
+            text-align: center;
         }
 
-        #l2>li>*:first-child:before {
-            counter-increment: d1;
-            content: counter(d1, decimal)". ";
-            color: #099;
-            font-family: Verdana, sans-serif;
-            font-style: normal;
-            font-weight: normal;
-            text-decoration: none;
-            font-size: 12pt;
+        .align-right {
+            text-align: right;
         }
 
-        #l2>li:first-child>*:first-child:before {
-            counter-increment: d1 0;
+        /* Espacements */
+        .espacement-petit {
+            height: 5px;
         }
 
-        #l3 {
-            padding-left: 0pt;
+        .espacement-moyen {
+            height: 10px;
         }
 
-        #l3>li>*:first-child:before {
-            content: " ";
-            color: black;
-            font-family: Wingdings;
-            font-style: normal;
-            font-weight: normal;
-            text-decoration: none;
+        .espacement-grand {
+            height: 15px;
         }
 
-        #l4 {
-            padding-left: 0pt;
-        }
-
-        #l4>li>*:first-child:before {
-            content: " ";
-            color: black;
-            font-family: Wingdings;
-            font-style: normal;
-            font-weight: normal;
-            text-decoration: none;
-        }
-
-        #l5 {
-            padding-left: 0pt;
-        }
-
-        #l5>li>*:first-child:before {
-            content: " ";
-            color: black;
-            font-family: Wingdings;
-            font-style: normal;
-            font-weight: normal;
-            text-decoration: none;
-        }
-
-        li {
-            display: block;
-        }
-
-        #l6 {
-            padding-left: 0pt;
-            counter-reset: e1 3;
-        }
-
-        #l6>li>*:first-child:before {
-            counter-increment: e1;
-            content: counter(e1, decimal)". ";
-            color: #80A150;
-            font-family: Verdana, sans-serif;
-            font-style: normal;
-            font-weight: normal;
-            text-decoration: none;
-            font-size: 14pt;
-        }
-
-        #l6>li:first-child>*:first-child:before {
-            counter-increment: e1 0;
-        }
-
-        #l7 {
-            padding-left: 0pt;
-        }
-
-        #l7>li>*:first-child:before {
-            content: " ";
-            color: black;
-            font-family: Wingdings;
-            font-style: normal;
-            font-weight: normal;
-            text-decoration: none;
-            font-size: 8pt;
-        }
-
-        #l8 {
-            padding-left: 0pt;
-        }
-
-        #l8>li>*:first-child:before {
-            content: " ";
-            color: black;
-            font-family: Wingdings;
-            font-style: normal;
-            font-weight: normal;
-            text-decoration: none;
-            font-size: 8pt;
-        }
-
-        table,
-        tbody {
-            vertical-align: top;
-            overflow: visible;
+        /* Fallback pour images manquantes */
+        .image-fallback {
+            border: 1px solid #ddd;
+            background-color: #f5f5f5;
+            text-align: center;
+            padding: 10px;
+            color: #666;
+            font-size: 8px;
         }
     </style>
 </head>
 
 <body>
-    <p style="text-indent: 0pt;text-align: left;"><br /></p>
-    <p class="s1" style="padding-top: 12pt;padding-left: 57pt;text-indent: 0pt;text-align: center;">attEstatIOn dE
-        réalIsatIOn d&#39;OpératIOn CEE</p>
-    <p class="s2" style="padding-top: 4pt;padding-left: 57pt;text-indent: 0pt;text-align: center;">fIChE bar-sE-109</p>
-    <p class="s2" style="padding-top: 3pt;padding-left: 57pt;text-indent: 0pt;text-align: center;">dEsEmbOuagE dE
-        systEmE dE ChauffagE COllECtIf</p>
-    <p style="padding-left: 7pt;text-indent: 0pt;text-align: left;" />
-    <p style="text-indent: 0pt;text-align: left;"><span><img width="68" height="85" alt="image"
-                src="{{ asset('assets/img/house/Attestation_realisation_files/Image_001.jpg') }}" /></span></p>
-    <p style="text-indent: 0pt;text-align: left;"><span><img width="246" height="48" alt="image"
-                src="{{ asset('assets/img/house/Attestation_realisation_files/Image_002.jpg') }}" /></span></p>
-    <p class="s3" style="padding-top: 3pt;padding-left: 8pt;text-indent: 0pt;text-align: left;">M&#39;YHOUSE</p>
-    <p style="padding-top: 3pt;padding-left: 8pt;text-indent: 0pt;line-height: 10pt;text-align: left;">5051 RUE DU PONT
-        LONG</p>
-    <p style="padding-left: 8pt;text-indent: 0pt;line-height: 10pt;text-align: left;">64160 BUROS</p>
-    <p style="padding-left: 7pt;text-indent: 0pt;line-height: 10pt;text-align: left;">SIRET 89155600300046</p>
-    <p style="text-indent: 0pt;text-align: left;"><br /></p>
-    <p style="padding-left: 7pt;text-indent: 0pt;line-height: 110%;text-align: left;"><a
-            href="mailto:contact@myhouse64.fr" class="a" target="_blank">Représenté par M. Amblar Jean-Christophe, en
-            qualité de Président 05 59 60 21 51 </a><a href="mailto:contact@myhouse64.fr"
-            target="_blank">contact@myhouse64.fr</a></p>
-    <p style="text-indent: 0pt;text-align: left;"><br /></p>
-    <p class="s4" style="padding-left: 7pt;text-indent: 0pt;text-align: left;">Qualification Qualisav Spécialité
-        Désembouage N° 32056 - ID N° S01946</p>
-    <p class="s5" style="padding-top: 3pt;padding-left: 7pt;text-indent: 0pt;text-align: left;">BBR MAINTENANCE</p>
-    <p style="text-indent: 0pt;text-align: left;"><br /></p>
-    <p style="padding-left: 7pt;text-indent: 0pt;line-height: 10pt;text-align: left;">78 AVENUE DES CHAMPS ELYSEES</p>
-    <p style="padding-left: 7pt;text-indent: 0pt;line-height: 10pt;text-align: left;">75008 PARIS</p>
-    <p style="text-indent: 0pt;text-align: left;"><br /></p>
-    <p style="padding-left: 7pt;text-indent: 0pt;line-height: 10pt;text-align: left;">93146162800030</p>
-    <p style="padding-left: 7pt;text-indent: 0pt;line-height: 10pt;text-align: left;"><a
-            href="mailto:tech@bbrmaintenance.fr">tech@bbrmaintenance.fr</a></p>
-    <p style="text-indent: 0pt;text-align: left;"><br /></p>
-    <p style="padding-left: 7pt;text-indent: 0pt;line-height: 10pt;text-align: left;">M.Poulin Thomas</p>
-    <p style="padding-left: 7pt;text-indent: 0pt;line-height: 10pt;text-align: left;">Directeur des Services Techniques
-    </p>
-    <p style="text-indent: 0pt;text-align: left;"><br /></p>
-    <ol id="l1">
-        <li data-list-text="1.">
-            <p class="s6" style="padding-top: 5pt;padding-left: 19pt;text-indent: -13pt;text-align: left;">InfOrmatIOns
-                tEChnIquEs dE l&#39;OpEratIOn</p>
-            <p style="text-indent: 0pt;text-align: left;"><br /></p>
-            <table style="border-collapse:collapse;margin-left:8.40502pt" cellspacing="0">
-                <tr style="height:24pt">
-                    <td
-                        style="width:146pt;border-top-style:solid;border-top-width:1pt;border-top-color:#99CC99;border-left-style:solid;border-left-width:1pt;border-left-color:#99CC99;border-right-style:solid;border-right-width:1pt;border-right-color:#99CC99">
-                        <p style="text-indent: 0pt;text-align: left;"><br /></p>
-                        <p class="s7" style="padding-left: 11pt;text-indent: 0pt;text-align: left;">Adresse du bâtiment
-                        </p>
-                    </td>
-                    <td style="width:376pt;border-top-style:solid;border-top-width:1pt;border-top-color:#99CC99;border-left-style:solid;border-left-width:1pt;border-left-color:#99CC99;border-bottom-style:solid;border-bottom-width:1pt;border-bottom-color:#99CC99;border-right-style:solid;border-right-width:1pt;border-right-color:#99CC99"
-                        rowspan="14">
-                        <p style="text-indent: 0pt;text-align: left;"><br /></p>
-                        <p class="s8" style="padding-left: 3pt;text-indent: 0pt;text-align: left;">30 Avenue de Valence,
-                            38360 Sassenage</p>
-                        <p style="text-indent: 0pt;text-align: left;"><br /></p>
-                        <p class="s8" style="padding-left: 3pt;padding-right: 35pt;text-indent: 0pt;text-align: left;">
-                            Désembouage du système de distribution par boucle d&#39;eau d&#39;une installation
-                            collective de chauffage 120 logements</p>
-                        <p class="s8" style="padding-left: 3pt;text-indent: 0pt;line-height: 9pt;text-align: left;">
-                            Chaudière hors condensation 600 kW</p>
-                        <p class="s8"
-                            style="padding-top: 1pt;padding-left: 3pt;padding-right: 326pt;text-indent: 0pt;text-align: left;">
-                            420 émetteurs Acier</p>
-                        <p class="s8"
-                            style="padding-left: 3pt;padding-right: 350pt;text-indent: 0pt;line-height: 113%;text-align: left;">
-                            4 660 L H1</p>
-                        <p class="s8" style="padding-left: 3pt;padding-right: 252pt;text-indent: 0pt;text-align: left;">
-                            Du 20/10/2025 au 22/10/2025 SENTINEL X800</p>
-                        <p class="s8" style="padding-left: 3pt;padding-right: 327pt;text-indent: 0pt;text-align: left;">
-                            SENTINEL X100 8</p>
-                        <p class="s8"
-                            style="padding-top: 3pt;padding-left: 3pt;padding-right: 64pt;text-indent: 0pt;line-height: 137%;text-align: left;">
-                            Bat A ( 15 Logs ), Bat B ( 15 Logs ), Bat C ( 15 Logs ), Bat D ( 15 Logs ), Bat E ( 15 Logs
-                            ), Bat F ( 15 Logs ), Bat G ( 15 Logs ), Bat H ( 15 Logs )</p>
-                    </td>
-                </tr>
-                <tr style="height:15pt">
-                    <td
-                        style="width:146pt;border-left-style:solid;border-left-width:1pt;border-left-color:#99CC99;border-right-style:solid;border-right-width:1pt;border-right-color:#99CC99">
-                        <p class="s7"
-                            style="padding-top: 5pt;padding-left: 11pt;text-indent: 0pt;line-height: 8pt;text-align: left;">
-                            Nature de l&#39;opération</p>
-                    </td>
-                </tr>
-                <tr style="height:10pt">
-                    <td
-                        style="width:146pt;border-left-style:solid;border-left-width:1pt;border-left-color:#99CC99;border-right-style:solid;border-right-width:1pt;border-right-color:#99CC99">
-                        <p class="s7" style="padding-left: 11pt;text-indent: 0pt;line-height: 8pt;text-align: left;">
-                            Nombre de logements concernés</p>
-                    </td>
-                </tr>
-                <tr style="height:10pt">
-                    <td
-                        style="width:146pt;border-left-style:solid;border-left-width:1pt;border-left-color:#99CC99;border-right-style:solid;border-right-width:1pt;border-right-color:#99CC99">
-                        <p class="s7" style="padding-left: 11pt;text-indent: 0pt;line-height: 8pt;text-align: left;">
-                            Type d&#39;installation de chauffage</p>
-                    </td>
-                </tr>
-                <tr style="height:10pt">
-                    <td
-                        style="width:146pt;border-left-style:solid;border-left-width:1pt;border-left-color:#99CC99;border-right-style:solid;border-right-width:1pt;border-right-color:#99CC99">
-                        <p class="s7" style="padding-left: 11pt;text-indent: 0pt;line-height: 8pt;text-align: left;">
-                            Puissance nominale de la chaudière</p>
-                    </td>
-                </tr>
-                <tr style="height:10pt">
-                    <td
-                        style="width:146pt;border-left-style:solid;border-left-width:1pt;border-left-color:#99CC99;border-right-style:solid;border-right-width:1pt;border-right-color:#99CC99">
-                        <p class="s7" style="padding-left: 11pt;text-indent: 0pt;line-height: 8pt;text-align: left;">
-                            Nombre d&#39;émetteurs désemboués</p>
-                    </td>
-                </tr>
-                <tr style="height:10pt">
-                    <td
-                        style="width:146pt;border-left-style:solid;border-left-width:1pt;border-left-color:#99CC99;border-right-style:solid;border-right-width:1pt;border-right-color:#99CC99">
-                        <p class="s7" style="padding-left: 11pt;text-indent: 0pt;line-height: 8pt;text-align: left;">
-                            Nature du réseau</p>
-                    </td>
-                </tr>
-                <tr style="height:10pt">
-                    <td
-                        style="width:146pt;border-left-style:solid;border-left-width:1pt;border-left-color:#99CC99;border-right-style:solid;border-right-width:1pt;border-right-color:#99CC99">
-                        <p class="s7" style="padding-left: 11pt;text-indent: 0pt;line-height: 8pt;text-align: left;">
-                            Volume d&#39;eau total du circuit</p>
-                    </td>
-                </tr>
-                <tr style="height:10pt">
-                    <td
-                        style="width:146pt;border-left-style:solid;border-left-width:1pt;border-left-color:#99CC99;border-right-style:solid;border-right-width:1pt;border-right-color:#99CC99">
-                        <p class="s7" style="padding-left: 11pt;text-indent: 0pt;line-height: 8pt;text-align: left;">
-                            Zone climatique</p>
-                    </td>
-                </tr>
-                <tr style="height:10pt">
-                    <td
-                        style="width:146pt;border-left-style:solid;border-left-width:1pt;border-left-color:#99CC99;border-right-style:solid;border-right-width:1pt;border-right-color:#99CC99">
-                        <p class="s7" style="padding-left: 11pt;text-indent: 0pt;line-height: 8pt;text-align: left;">
-                            Période d&#39;exécution</p>
-                    </td>
-                </tr>
-                <tr style="height:10pt">
-                    <td
-                        style="width:146pt;border-left-style:solid;border-left-width:1pt;border-left-color:#99CC99;border-right-style:solid;border-right-width:1pt;border-right-color:#99CC99">
-                        <p class="s7" style="padding-left: 11pt;text-indent: 0pt;line-height: 8pt;text-align: left;">
-                            Réactif désembouant utilisé</p>
-                    </td>
-                </tr>
-                <tr style="height:10pt">
-                    <td
-                        style="width:146pt;border-left-style:solid;border-left-width:1pt;border-left-color:#99CC99;border-right-style:solid;border-right-width:1pt;border-right-color:#99CC99">
-                        <p class="s7" style="padding-left: 11pt;text-indent: 0pt;line-height: 8pt;text-align: left;">
-                            Réactif inhibiteur utilisé</p>
-                    </td>
-                </tr>
-                <tr style="height:10pt">
-                    <td
-                        style="width:146pt;border-left-style:solid;border-left-width:1pt;border-left-color:#99CC99;border-right-style:solid;border-right-width:1pt;border-right-color:#99CC99">
-                        <p class="s7" style="padding-left: 11pt;text-indent: 0pt;line-height: 8pt;text-align: left;">
-                            Nombre de bâtiments</p>
-                    </td>
-                </tr>
-                <tr style="height:30pt">
-                    <td
-                        style="width:146pt;border-left-style:solid;border-left-width:1pt;border-left-color:#99CC99;border-bottom-style:solid;border-bottom-width:1pt;border-bottom-color:#99CC99;border-right-style:solid;border-right-width:1pt;border-right-color:#99CC99">
-                        <p class="s7"
-                            style="padding-left: 11pt;padding-right: 8pt;text-indent: 0pt;line-height: 106%;text-align: left;">
-                            Nombre de logements par Batiments</p>
-                    </td>
-                </tr>
-            </table>
+    <!-- Espacement initial -->
+    <div class="espacement-petit"></div>
+
+    <!-- Titres principaux -->
+    <h1 class="titre-principal">ATTESTATION DE RÉALISATION D'OPÉRATION CEE</h1>
+    <p class="sous-titre-principal">FICHE BAR-SE-109</p>
+    <p class="sous-titre-principal">DÉSEMBOUAGE DE SYSTÈME DE CHAUFFAGE COLLECTIF</p>
+
+    <!-- Logos et informations -->
+    <div class="align-left">
+        <img class="image-logo" src="{{ public_path('assets/img/house/Attestation_realisation_files/Image_001.jpg') }}"
+            alt="Logo 1" onerror="this.style.display='none'">
+        <img class="image-logo-grand" src="{{ asset('assets/img/house/Attestation_realisation_files/Image_002.jpg') }}"
+            alt="Logo 2" onerror="this.style.display='none'">
+    </div>
+
+    <!-- Informations société -->
+    <p class="info-societe">{{ $document->society ?? '' }}</p>
+    <p class="info-adresse">{{ $document->adresse_travaux ?? '' }}</p>
+    <p class="info-adresse">{{ $document->parcelle_1 ?? '' }} {{ $document->parcelle_2 ?? '' }}
+        {{ $document->parcelle_3 ?? '' }} {{ $document->parcelle_4 ?? '' }}</p>
+    <p class="info-adresse">SIRET {{ $document->numero_immatriculation ?? '' }}</p>
+    <p class="info-adresse">{{ $document->nom_residence ?? '' }}</p>
+    <p class="info-adresse">{{ $document->details_batiments ?? '' }}</p>
+    <p class="info-adresse">Chaudière hors condensation {{ $document->puissance_chaudiere ?? '' }} kW</p>
+    <p class="info-adresse">{{ $document->nombre_emetteurs ?? '' }} émetteurs {{ $document->zone_climatique ?? '' }}</p>
+    <p class="info-adresse">{{ $document->volume_circuit ?? '' }} L</p>
+    <p class="info-adresse">{{ $document->dates_previsionnelles ?? '' }}</p>
+
+    <!-- Titre section technique -->
+    <p class="titre-section-technique">INFORMATIONS TECHNIQUES DE L'OPÉRATION</p>
+
+    <div class="espacement-petit"></div>
+
+    <!-- Tableau des informations techniques -->
+    <table class="tableau-infos">
+        <tr>
+            <td class="cellule-label">Adresse du bâtiment</td>
+            <td class="cellule-valeur">{{ $document->adresse_travaux ?? '' }}</td>
+        </tr>
+        <tr>
+            <td class="cellule-label">Nature de l'opération</td>
+            <td class="cellule-valeur">
+                Désembouage du système de distribution par boucle d'eau d'une installation collective de chauffage
+                {{ $document->nombre_logements ?? '' }} logements
+            </td>
+        </tr>
+        <tr>
+            <td class="cellule-label">Nombre de logements concernés</td>
+            <td class="cellule-valeur">{{ $document->nombre_logements ?? '' }}</td>
+        </tr>
+        <tr>
+            <td class="cellule-label">Type d'installation de chauffage</td>
+            <td class="cellule-valeur">Chaudière hors condensation {{ $document->puissance_chaudiere ?? '' }} kW</td>
+        </tr>
+        <tr>
+            <td class="cellule-label">Puissance nominale de la chaudière</td>
+            <td class="cellule-valeur">{{ $document->puissance_chaudiere ?? '' }} kW</td>
+        </tr>
+        <tr>
+            <td class="cellule-label">Nombre d'émetteurs désemboués</td>
+            <td class="cellule-valeur">{{ $document->nombre_emetteurs ?? '' }} émetteurs Acier</td>
+        </tr>
+        <tr>
+            <td class="cellule-label">Nature du réseau</td>
+            <td class="cellule-valeur">Acier</td>
+        </tr>
+        <tr>
+            <td class="cellule-label">Volume d'eau total du circuit</td>
+            <td class="cellule-valeur">{{ $document->volume_circuit ?? '' }} L H1</td>
+        </tr>
+        <tr>
+            <td class="cellule-label">Zone climatique</td>
+            <td class="cellule-valeur">H1</td>
+        </tr>
+        <tr>
+            <td class="cellule-label">Période d'exécution</td>
+            <td class="cellule-valeur">{{ $document->dates_previsionnelles ?? '' }} SENTINEL X800</td>
+        </tr>
+        <tr>
+            <td class="cellule-label">Réactif désembouant utilisé</td>
+            <td class="cellule-valeur">SENTINEL X800</td>
+        </tr>
+        <tr>
+            <td class="cellule-label">Réactif inhibiteur utilisé</td>
+            <td class="cellule-valeur">SENTINEL X100 8</td>
+        </tr>
+        <tr>
+            <td class="cellule-label">Nombre de bâtiments</td>
+            <td class="cellule-valeur">{{ $document->nombre_batiments ?? '' }}</td>
+        </tr>
+        <tr>
+            <td class="cellule-label">Nombre de logements par Bâtiments</td>
+            <td class="cellule-valeur">{{ $document->details_batiments ?? '' }}</td>
+        </tr>
+    </table>
+
+    <!-- Note de conformité -->
+    <p class="note-conformite">(Conformément à la procédure standard BAR-SE-109 et au descriptif facture)</p>
+
+    <div class="espacement-moyen"></div>
+
+    <!-- Étapes de réalisation -->
+    <ol class="liste-numerotee">
+        <li>
+            <span class="numero">1.</span>
+            <div>
+                <p class="titre-etape">PRÉPARATION ET INJECTION</p>
+                <ul class="liste-puces">
+                    <li>Diagnostic technique initial (pression, étanchéité, températures)</li>
+                    <li>Injection de SENTINEL X800 (dosage : 1% du volume d'eau)</li>
+                    <li>Circulation générale (4h min. à 50-60°C) et par réseau (2h/sens)</li>
+                </ul>
+            </div>
         </li>
-        <li data-list-text="2.">
-            <p class="s6" style="padding-top: 11pt;padding-left: 23pt;text-indent: -18pt;text-align: left;">EtapEs dE
-                l&#39;OpEratIOn rEalIsE E</p>
+
+        <li>
+            <span class="numero">2.</span>
+            <div>
+                <p class="titre-etape">RINÇAGE ET CONTRÔLE</p>
+                <ul class="liste-puces">
+                    <li>Évacuation complète du désembouant et rinçage intensif (3x volume/réseau)</li>
+                    <li>Remise en pression et purge d'air</li>
+                </ul>
+
+                <div class="espacement-petit"></div>
+
+                <!-- Images étape 2 -->
+                <div class="align-left">
+                    <img class="image-logo"
+                        src="{{ asset('assets/img/house/Attestation_realisation_files/Image_003.jpg') }}"
+                        alt="Image étape 2-1" onerror="this.style.display='none'">
+                    <img class="image-logo-grand"
+                        src="{{ asset('assets/img/house/Attestation_realisation_files/Image_004.jpg') }}"
+                        alt="Image étape 2-2" onerror="this.style.display='none'">
+                </div>
+            </div>
+        </li>
+
+        <li>
+            <span class="numero">3.</span>
+            <div>
+                <p class="titre-etape">PROTECTION ET FINALISATION</p>
+                <ul class="liste-puces">
+                    <li>Vérification/nettoyage des filtres existants</li>
+                    <li>Injection de SENTINEL X100 (dosage : 1% du volume d'eau)</li>
+                    <li>Contrôles finaux et mise en service</li>
+                </ul>
+            </div>
         </li>
     </ol>
-    <p class="s9" style="padding-top: 1pt;padding-left: 5pt;text-indent: 0pt;text-align: left;">(Conformément à la
-        procédure standard BAR-SE-109 et au descriptif facture)</p>
-    <p style="text-indent: 0pt;text-align: left;"><br /></p>
-    <ol id="l2">
-        <li data-list-text="1.">
-            <p class="s10" style="padding-left: 16pt;text-indent: -11pt;text-align: left;">prEparatIOn Et InjECtIOn</p>
-            <ul id="l3">
-                <li data-list-text="">
-                    <p style="padding-top: 11pt;padding-left: 41pt;text-indent: -18pt;text-align: left;">Diagnostic
-                        technique initial (pression, étanchéité, températures)</p>
-                    <p style="text-indent: 0pt;text-align: left;"><br /></p>
-                </li>
-                <li data-list-text="">
-                    <p style="padding-left: 41pt;text-indent: -17pt;text-align: left;">Injection de SENTINEL X800
-                        (dosage : 1% du volume d&#39;eau)</p>
-                    <p style="text-indent: 0pt;text-align: left;"><br /></p>
-                </li>
-                <li data-list-text="">
-                    <p style="padding-left: 41pt;text-indent: -18pt;text-align: left;">Circulation générale (4h min. à
-                        50-60°C) et par réseau (2h/sens)</p>
-                    <p style="text-indent: 0pt;text-align: left;"><br /></p>
-                </li>
-            </ul>
-        </li>
-        <li data-list-text="2.">
-            <p class="s10" style="padding-left: 20pt;text-indent: -14pt;text-align: left;">rInçagE Et COntrOlE</p>
-            <ul id="l4">
-                <li data-list-text="">
-                    <p style="padding-top: 11pt;padding-left: 41pt;text-indent: -18pt;text-align: left;">Évacuation
-                        complète du désembouant et rinçage intensif (3x volume/réseau)</p>
-                </li>
-                <li data-list-text="">
-                    <p style="padding-top: 9pt;padding-left: 41pt;text-indent: -18pt;text-align: left;">Remise en
-                        pression et purge d&#39;air</p>
-                    <p style="text-indent: 0pt;text-align: left;"><br /></p>
-                    <p style="text-indent: 0pt;text-align: left;"><span><img width="68" height="85" alt="image"
-                                src="{{ asset('assets/img/house/Attestation_realisation_files/Image_003.jpg') }}" /></span>
-                    </p>
-                    <p style="text-indent: 0pt;text-align: left;"><span><img width="246" height="48" alt="image"
-                                src="{{ asset('assets/img/house/Attestation_realisation_files/Image_004.jpg') }}" /></span>
-                    </p>
-                </li>
-            </ul>
-        </li>
-        <li data-list-text="3.">
-            <p class="s10" style="padding-top: 5pt;padding-left: 20pt;text-indent: -14pt;text-align: left;">prOtECtIOn
-                Et fInalIsatIOn</p>
-            <ul id="l5">
-                <li data-list-text="">
-                    <p class="s11" style="padding-top: 11pt;padding-left: 41pt;text-indent: -18pt;text-align: left;">
-                        Vérification/nettoyage des filtres existants</p>
-                </li>
-                <li data-list-text="">
-                    <p class="s11" style="padding-top: 9pt;padding-left: 41pt;text-indent: -18pt;text-align: left;">
-                        Injection de SENTINEL X100 (dosage : 1% du volume d&#39;eau)</p>
-                </li>
-                <li data-list-text="">
-                    <p class="s11" style="padding-top: 9pt;padding-left: 41pt;text-indent: -18pt;text-align: left;">
-                        Contrôles finaux et mise en service</p>
-                </li>
-            </ul>
-        </li>
-    </ol>
-    <p style="text-indent: 0pt;text-align: left;"><br /></p>
-    <ol id="l6">
-        <li data-list-text="3.">
-            <p class="s12" style="padding-left: 23pt;text-indent: -17pt;text-align: left;">CErtIfICatIOn</p>
-            <p class="s11" style="padding-top: 13pt;padding-left: 6pt;text-indent: 0pt;text-align: left;">Je soussigné,
-                <span class="s13">M. </span><b>Amblar Jean-Christophe </b>président de <span
-                    class="h1">M&#39;YHOUSE</span>, atteste que :
-            </p>
-            <p style="text-indent: 0pt;text-align: left;"><br /></p>
-            <ul id="l7">
-                <li data-list-text="">
-                    <p class="s11"
-                        style="padding-top: 8pt;padding-left: 42pt;text-indent: -18pt;line-height: 69%;text-align: left;">
-                        Les travaux de désembouage ont été réalisés conformément aux techniques professionnelles et aux
-                        bonnes pratiques du secteur.</p>
-                    <p style="text-indent: 0pt;text-align: left;"><br /></p>
-                </li>
-                <li data-list-text="">
-                    <p class="s11" style="padding-left: 42pt;text-indent: -18pt;text-align: left;">L&#39;opération est
-                        conforme :</p>
-                    <p style="text-indent: 0pt;text-align: left;"><br /></p>
-                    <ul id="l8">
-                        <li data-list-text="">
-                            <p class="s11"
-                                style="padding-top: 7pt;padding-left: 77pt;text-indent: -18pt;text-align: left;">À la
-                                fiche CEE BAR-SE-109</p>
-                            <p style="text-indent: 0pt;text-align: left;"><br /></p>
-                        </li>
-                        <li data-list-text="">
-                            <p style="padding-left: 77pt;text-indent: -18pt;text-align: left;">Au devis référencé
-                                <b>M&#39;YHOUSE-2025-0165 </b>du <b>17/10/2025</b>
-                            </p>
-                            <p style="text-indent: 0pt;text-align: left;"><br /></p>
-                        </li>
-                        <li data-list-text="">
-                            <p class="s11" style="padding-left: 77pt;text-indent: -18pt;text-align: left;">Aux normes
-                                techniques du ministère de la Transition énergétique.</p>
-                            <p style="text-indent: 0pt;text-align: left;"><br /></p>
-                        </li>
-                    </ul>
-                </li>
-                <li data-list-text="">
-                    <p class="s11" style="padding-left: 42pt;text-indent: -18pt;text-align: left;">Les produits utilisés
-                        (SENTINEL X800/X100) sont agréés par le ministère de la Santé.</p>
-                </li>
-            </ul>
-        </li>
-    </ol>
-    <p style="text-indent: 0pt;text-align: left;"><br /></p>
-    <p class="s11" style="padding-top: 9pt;padding-left: 303pt;text-indent: 0pt;text-align: left;">Fait à Paris, le
-        <span class="p">23/10/2025</span>
-    </p>
-    <h2 style="padding-top: 7pt;padding-left: 303pt;text-indent: 0pt;text-align: left;">M. Amblar Jean-Christophe</h2>
-    <p class="s11" style="padding-left: 303pt;text-indent: 0pt;text-align: left;">Président de <span
-            class="s15">M&#39;YHOUSE</span></p>
-    <p style="text-indent: 0pt;text-align: left;"><br /></p>
-    <p style="padding-left: 247pt;text-indent: 0pt;text-align: left;"><span><img width="279" height="123" alt="image"
-                src="{{ asset('assets/img/house/Attestation_realisation_files/Image_005.png') }}" /></span></p>
+
+    <div class="espacement-moyen"></div>
+
+    <!-- Section certification -->
+    <div class="section-certification">
+        <p class="titre-certification">CERTIFICATION</p>
+
+        <p class="texte-certification">
+            Je soussigné, <span class="texte-gras">M. Amblar Jean-Christophe</span> président de <span
+                class="texte-vert">M'YHOUSE</span>, atteste que :
+        </p>
+
+        <ul class="liste-puces">
+            <li>Les travaux de désembouage ont été réalisés conformément aux techniques professionnelles et aux bonnes
+                pratiques du secteur.</li>
+            <li>
+                L'opération est conforme :
+                <ul class="liste-puces" style="margin-left: 20px;">
+                    <li>À la fiche CEE BAR-SE-109</li>
+                    <li>Au devis référencé <span
+                            class="texte-gras">M'YHOUSE-2025-{{ $document->reference_devis ?? '' }}</span> du <span
+                            class="texte-gras">{{ $document->date_devis ?? '' }}</span></li>
+                    <li>Aux normes techniques du ministère de la Transition énergétique.</li>
+                </ul>
+            </li>
+            <li>Les produits utilisés (SENTINEL X800/X100) sont agréés par le ministère de la Santé.</li>
+        </ul>
+    </div>
+
+    <!-- Signature -->
+    <div class="section-signature">
+        <p class="date-signature">
+            Fait à Paris, le <span class="texte-gras">{{ $document->date_signature ?? '' }}</span>
+        </p>
+
+        <p class="nom-societe">{{ $document->society ?? '' }}</p>
+        <p class="poste-signataire">Président de <span class="texte-vert-fonce">{{ $document->society ?? '' }}</span>
+        </p>
+
+        <div class="espacement-petit"></div>
+
+        <!-- Image signature -->
+        <div class="align-left" style="margin-left: 200px;">
+            <img class="image-signature"
+                src="{{ asset('assets/img/house/Attestation_realisation_files/Image_005.png') }}" alt="Signature"
+                onerror="this.style.display='none'">
+        </div>
+    </div>
 </body>
 
 </html>

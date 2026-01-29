@@ -636,7 +636,7 @@ class Document extends Model
         'reference_facture',
         'user_id',
         'parent_id',
-        // ... tous les autres champs
+        
     ];
 
     // Si vous avez un $guarded, assurez-vous qu'il est vide ou ne contient pas file_path

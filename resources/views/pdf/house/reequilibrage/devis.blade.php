@@ -251,23 +251,24 @@
                 src="{{ asset(path: 'assets/img/rehouse/Devis_files/Image_001.jpg') }}" /></span></p>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
     <p style="padding-left: 9pt;text-indent: 0pt;text-align: left;"><span class="h1"
-            style=" background-color: #81A150;">DEVIS M&#39;YHOUSE-2026-0117 </span></p>
-    <p class="s1" style="padding-top: 2pt;padding-left: 8pt;text-indent: 0pt;text-align: left;">Date : 04/12/2025</p>
+            style=" background-color: #81A150;">DEVIS {{ $document->reference_devis }}</span></p>
+    <p class="s1" style="padding-top: 2pt;padding-left: 8pt;text-indent: 0pt;text-align: left;">Date :
+        {{ $document->date_devis }}</p>
     <h4 style="padding-top: 4pt;padding-left: 8pt;text-indent: 0pt;text-align: left;">ADRESSE DES TRAVAUX :</h4>
-    <p class="s2" style="padding-top: 7pt;padding-left: 8pt;text-indent: 0pt;line-height: 10pt;text-align: left;">37,
-        41, 43 Rue de l&#39;Égalité, 69150 Décines-Charpieu</p>
+    <p class="s2" style="padding-top: 7pt;padding-left: 8pt;text-indent: 0pt;line-height: 10pt;text-align: left;">
+        {{ $document->adresse_travaux }}</p>
     <h4 style="padding-left: 8pt;text-indent: 0pt;line-height: 9pt;text-align: left;">Parcelle cadastrale <span
-            class="s2">: Parcelle 0057 Feuille 000 BE 001</span></h4>
+            class="s2">: {{ $document->parcelle_1 }}</span></h4>
     <h4 style="padding-left: 8pt;text-indent: 0pt;line-height: 9pt;text-align: left;">N° immatriculation : <span
-            class="s2">AB1102888</span></h4>
+            class="s2">{{ $document->numero_immatriculation }}</span></h4>
     <h4 style="padding-left: 8pt;text-indent: 0pt;line-height: 9pt;text-align: left;">Nombre bâtiments : <span
-            class="s2">2 Batiments</span></h4>
+            class="s2">{{ $document->nombre_batiments }}</span></h4>
     <h4 style="padding-left: 8pt;text-indent: 0pt;line-height: 9pt;text-align: left;">Détails bâtiments : <span
-            class="s2">Bat A ( 56 Logs ), Bat B ( 55 Logs )</span></h4>
+            class="s2">{{ $document->details_batiments }}</span></h4>
     <h4 style="padding-left: 8pt;text-indent: 0pt;line-height: 9pt;text-align: left;">Nom de résidence : <span
-            class="s2">RES LE MONT BLANC</span></h4>
+            class="s2">{{ $document->nom_residence }}</span></h4>
     <h4 style="padding-left: 8pt;text-indent: 0pt;line-height: 9pt;text-align: left;">Date travaux : <span
-            class="s2">16/12/2025</span></h4>
+            class="s2">{{ $document->dates_previsionnelles }}</span></h4>
     <h4 style="padding-left: 8pt;text-indent: 0pt;line-height: 10pt;text-align: left;">Date de désembouage : <span
             class="s2">Du 16/10/2025 au 17/10/2025</span></h4>
     <p style="text-indent: 0pt;text-align: left;"><br /></p>
@@ -313,19 +314,24 @@
                     de la fiche BAR-SE-104.</p>
                 <p style="text-indent: 0pt;text-align: left;"><br /></p>
                 <p class="s7" style="padding-top: 6pt;padding-left: 4pt;text-indent: 0pt;text-align: left;">Kwh Cumac :
-                    <b>1 087 800</b></p>
+                    <b>{{ $document->wh_cumac }}</b>
+                </p>
                 <p class="s7" style="padding-top: 2pt;padding-left: 4pt;text-indent: 0pt;text-align: left;">Prime CEE :
-                    <b>7 614,60 </b>€</p>
+                    <b>{{ $document->prime_cee }}</b> €
+                </p>
                 <p class="s7"
                     style="padding-top: 2pt;padding-left: 6pt;padding-right: 58pt;text-indent: -1pt;line-height: 123%;text-align: left;">
                     - Matériel(s) fourni(s) et mis en place par notre société <b>M&#39;Y HOUSE</b>, représentée par
                     Amblar Jean-Christophe, SIRET <b>89155600300046</b></p>
                 <p style="text-indent: 0pt;text-align: left;"><br /></p>
                 <p class="s7" style="padding-left: 4pt;text-indent: 0pt;text-align: left;">Installation collective de
-                    chauffage alimentée par <b>une chaudière hors condensation</b></p>
+                    chauffage alimentée par <b>{{ $document->type }}</b></p>
                 <p class="s7"
                     style="padding-top: 2pt;padding-left: 4pt;padding-right: 183pt;text-indent: 0pt;line-height: 123%;text-align: left;">
-                    Puissance nominale de la chaudière : 540 Kw Nombre de logements concernés : <b>111</b></p>
+                    Puissance nominale de la chaudière : {{ $document->puissance_chaudiere }} Kw Nombre de logements
+                    concernés :
+                    <b>{{ $document->nombre_logements }}</b>
+                </p>
                 <p style="text-indent: 0pt;text-align: left;"><br /></p>
                 <p class="s9" style="padding-left: 3pt;text-indent: 0pt;text-align: left;">DETAIL DE LA PRESTATION</p>
                 <ol id="l1">
@@ -412,12 +418,12 @@
             <td
                 style="width:55pt;border-left-style:solid;border-left-width:2pt;border-right-style:solid;border-right-width:2pt">
                 <p style="text-indent: 0pt;text-align: left;"><br /></p>
-                <p class="s6" style="padding-right: 8pt;text-indent: 0pt;text-align: right;">5 413,22 €</p>
+                <p class="s6" style="padding-right: 8pt;text-indent: 0pt;text-align: right;">{{ $document->montant_ht }} €</p>
             </td>
             <td
                 style="width:55pt;border-left-style:solid;border-left-width:2pt;border-right-style:solid;border-right-width:2pt">
                 <p style="text-indent: 0pt;text-align: left;"><br /></p>
-                <p class="s6" style="padding-right: 9pt;text-indent: 0pt;text-align: right;">5 413,22 €</p>
+                <p class="s6" style="padding-right: 9pt;text-indent: 0pt;text-align: right;">{{ $document->montant_ht}} €</p>
             </td>
             <td
                 style="width:35pt;border-left-style:solid;border-left-width:2pt;border-right-style:solid;border-right-width:2pt">
@@ -434,13 +440,13 @@
             <td
                 style="width:55pt;border-left-style:solid;border-left-width:2pt;border-bottom-style:solid;border-bottom-width:2pt;border-right-style:solid;border-right-width:2pt">
                 <p style="text-indent: 0pt;text-align: left;"><br /></p>
-                <p class="s6" style="padding-top: 7pt;padding-right: 6pt;text-indent: 0pt;text-align: right;">1 804,41 €
+                <p class="s6" style="padding-top: 7pt;padding-right: 6pt;text-indent: 0pt;text-align: right;">{{ $document->montant_ht }} €
                 </p>
             </td>
             <td
                 style="width:55pt;border-left-style:solid;border-left-width:2pt;border-bottom-style:solid;border-bottom-width:2pt;border-right-style:solid;border-right-width:2pt">
                 <p style="text-indent: 0pt;text-align: left;"><br /></p>
-                <p class="s6" style="padding-top: 7pt;padding-right: 7pt;text-indent: 0pt;text-align: right;">1 804,41 €
+                <p class="s6" style="padding-top: 7pt;padding-right: 7pt;text-indent: 0pt;text-align: right;">{{ $document->montant_ht }} €
                 </p>
             </td>
             <td
@@ -481,17 +487,15 @@
         mention « Bon pour accord » :</p>
     <p style="text-indent: 0pt;line-height: 9pt;text-align: left;">Nom, prénom et fonction du signataire</p>
     <p style="text-indent: 0pt;text-align: left;" />
-    <p class="s1" style="text-indent: 0pt;line-height: 10pt;text-align: right;">Total H.T</p>
-    <p class="s1" style="text-indent: 0pt;line-height: 11pt;text-align: right;">Total TVA 5,5%</p>
-    <h3 style="text-indent: 0pt;line-height: 11pt;text-align: right;">Total TTC</h3>
-    <p class="s1" style="text-indent: 0pt;line-height: 11pt;text-align: right;">* Prime CEE</p>
-    <p class="s12" style="padding-left: 3pt;text-indent: 0pt;line-height: 11pt;text-align: left;">Reste à payer</p>
-    <p style="text-indent: 0pt;text-align: left;" />
-    <p class="s2" style="text-indent: 0pt;line-height: 9pt;text-align: right;">7 217,63 €</p>
-    <p class="s2" style="text-indent: 0pt;text-align: right;">396,97 €</p>
-    <h4 style="text-indent: 0pt;text-align: right;">7 614,60 €</h4>
-    <p class="s2" style="text-indent: 0pt;text-align: right;">-7 614,60 €</p>
-    <p class="s13" style="text-indent: 0pt;line-height: 11pt;text-align: right;">0 €</p>
+    <p class="s1" style="text-indent: 0pt;line-height: 10pt;text-align: right;">Total H.T : {{ $document->montant_ht }}
+    </p>
+    <p class="s1" style="text-indent: 0pt;line-height: 11pt;text-align: right;">Total TVA 5,5% :
+        {{ $document->montant_tva }}</p>
+    <h3 style="text-indent: 0pt;line-height: 11pt;text-align: right;">Total TTC : {{ $document->montant_ttc }}</h3>
+    <p class="s1" style="text-indent: 0pt;line-height: 11pt;text-align: right;">* Prime CEE : {{ $document->prime_cee }}
+    </p>
+    <p class="s12" style="padding-left: 3pt;text-indent: 0pt;line-height: 11pt;text-align: left;">Reste à payer :
+        {{ $document->reste_a_charge }}</p>
     <p style="text-indent: 0pt;text-align: left;" />
     <p style="text-indent: 0pt;line-height: 8pt;text-align: left;">Mode de paiement : Chèques, virement ou espèce</p>
     <p style="text-indent: 0pt;text-align: left;" />
