@@ -30,14 +30,21 @@ jai un probleme de mise en page gars
     }
 
     .page {
-      page-break-after: always;
-      position: relative;
-      padding-top: 28mm;
-    }
+  page-break-after: always;
+  position: relative;
+  padding-top: 28mm;
+  
+}
+.page.last-page {
+  page-break-after: auto;
+}
 
-    .page:last-of-type {
-      page-break-after: auto;
-    }
+.page.final-page {
+  page-break-after: auto;
+}
+
+
+    
 
     .header-content {
       display: flex;
@@ -89,17 +96,29 @@ jai un probleme de mise en page gars
       font-weight: bold;
       font-size: 8pt;
     }
-
-    .pdf-header, .pdf-footer {
+.pdf-header, .pdf-footer {
   position: fixed;
-  width: 100%;
-  left: 0;
-  right: 0;
 }
+
+
+
 .pdf-header {
   top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 180mm;   /* 210mm (A4) - 15mm - 15mm ≈ zone centrale */
   height: 25mm;
 }
+
+.pdf-footer {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 180mm;
+  text-align: right;
+  font-size: 8pt;
+}
+
 .pdf-footer {
   bottom: 0;
   text-align: right;
@@ -275,13 +294,78 @@ jai un probleme de mise en page gars
     .supplier-column {
       text-align: right;
     }
+
+
+
+    /* Blocs gris neutres (structure seulement) */
+.gray-block {
+  background-color: #f0f0f0; /* même gris que ton bloc bénéficiaire */
+  padding: 8px 10px;
+  margin-bottom: 6mm;
+  border-radius: 3px;
+}
+
+/* Titres de bloc → utilisent TES classes existantes */
+.block-title {
+  margin-bottom: 3mm;
+}
+
+/* Tableaux financiers sans changer ton style global */
+.invoice-table td,
+.invoice-table th,
+.summary-table td {
+  border: 1px solid #003366; /* identique à tes tableaux */
+  padding: 6px;
+}
+
+/* Zone récapitulatif final */
+.total-summary {
+  background-color: #e6e6e6;
+  padding: 6px;
+  border: 1px solid #003366;
+}
+
+/* Alignement montants */
+.amount {
+  text-align: right;
+}
+
+/* Total final plus visible SANS changer couleur */
+.final-total td {
+  font-weight: bold;
+}
+
+/* Signatures */
+.signature-line {
+  border-bottom: 1px solid #000;
+  height: 18px;
+  margin: 8px 0;
+}
+
+.signature-box {
+  border: 1px solid #000;
+  height: 45px;
+  width: 160px;
+}
+
+/* Note importante */
+.important-note {
+  margin-top: 8mm;
+  text-align: center;
+}
+
+/* Empêche coupure PDF */
+.avoid-break {
+  page-break-inside: avoid;
+}
+
   </style>
 </head>
 
 <body>
 
   <div class="pdf-header">
-    <table width="80%">
+    <table width="70%">
       <tr>
         <td width="33%">
           <img src="{{ public_path('assets/img/nova/Devis_files/Image_002.png') }}" height="45">
@@ -298,9 +382,7 @@ jai un probleme de mise en page gars
 
   <!-- Page 1 -->
   <div class="page">
-
     <div class="page-content">
-      <!-- Bloc Bénéficiaire / Fournisseur - VERSION CORRIGÉE -->
       <!-- Bloc Bénéficiaire / Fournisseur -->
       <table class="beneficiary-supplier-table"
         style="width:100%; background-color:#f0f0f0; table-layout: fixed; border-collapse: collapse;">
@@ -308,13 +390,9 @@ jai un probleme de mise en page gars
           <!-- Bénéficiaire -->
           <td class="beneficiary-column" valign="top" style="width:49%; padding:10px 15px; text-align:left;">
             <strong style="color:#036; font-size:9pt; display:block; margin-bottom:4px;">BENEFICIAIRE</strong>
-            RABATHERM HECS<br>
-            21 RUE D'ANJOU<br>
-            92600 ASNIERES-SUR-SEINE<br>
-            SIRET : 44261333700033<br>
-            Mail : contact@rabatherm-hecs.fr<br>
-            Tél : 01 84 80 90 08<br>
-            Représenté par : M. Offel De Villaucourt Charles
+            {{ $document->society }}<br>
+            {{ $document->activity }}<br>
+            SIRET : {{ $document->reference }}<br>
           </td>
 
           <!-- Espace central -->
@@ -336,28 +414,24 @@ jai un probleme de mise en page gars
         </tr>
       </table>
 
-
       <br>
       <h3>DESCRIPTIF</h3>
       <p class="s2">Désembouage de l'ensemble du système de distribution par boucle d'eau d'une installation de
         chauffage collectif alimentée par une chaudière utilisant un combustible fossile ou alimenté par un réseau de
         chaleur</p>
-      <h3>SITE DES TRAVAUX : <span class="s2">6, 8 All. des Tilleuls, 93110 Rosny-sous-Bois</span></h3>
-      <p class="s2"><span class="s5">NUMÉRO IMMATRICULATION DE COPROPRIÉTÉ</span> <span class="s6">:</span> AA0588830
-        <b>-</b> RES SONATE
+      <h3>SITE DES TRAVAUX : <span class="s2">{{ $document->adresse_travaux }}</span></h3>
+      <p class="s2"><span class="s5">NUMÉRO IMMATRICULATION DE COPROPRIÉTÉ</span> <span class="s6">:</span> {{ $document->numero_immatriculation }}
+        <b>-</b> {{ $document->nom_residence }}
       </p>
-      <p class="s5">ZONE CLIMATIQUE <span class="s2">: H1</span></p>
+      <p class="s5">ZONE CLIMATIQUE <span class="s2">: {{ $document->zone_climatique }}</span></p>
       <p class="s5">PARCELLE CADASTRALE :</p>
-      <p class="s5">1 <span class="s2">Parcelle</span> <span class="s7">2</span></p>
-      <h3>3 <span class="s8">4</span></h3>
+      <p class="s5">{{ $document->parcelle_1 }} <span class="s2">Parcelle</span> <span class="s7">{{ $document->parcelle_2 }}</span></p>
+      <h3>{{ $document->parcelle_3 }} <span class="s8">{{ $document->parcelle_4 }}</span></h3>
       <br>
-      <p class="s5">DATE PREVISIONNELLE DES TRAVAUX <span class="s9">:</span> <span class="s2">Du 07/10/2025 au
-          08/10/2025</span></p>
-      <h3>CONTACT SUR SITE : <a href="mailto:contact@rabatherm-hecs.fr">Gérant M. Offel De Villaucourt Charles 01 84 80
-          90 08 - contact@rabatherm-hecs.fr</a></h3>
+      <p class="s5">DATE PREVISIONNELLE DES TRAVAUX <span class="s9">:</span> <span class="s2">{{ $document->dates_previsionnelles }}</span></p>
       <h3>SECTEUR : <span class="s2">Résidentiel</span></h3>
-      <h3>NOMBRE DE BATIMENTS : <span class="s2">3 Batiments .</span></h3>
-      <h3>DETAILS : <span class="s2">Bat A ( 47 Logs ), Bat B ( 46 Logs ), Bat C ( 46 Logs )</span></h3>
+      <h3>NOMBRE DE BATIMENTS : <span class="s2">{{ $document->nombre_batiments }} Batiments</span></h3>
+      <h3>DETAILS : <span class="s2">{{ $document->details_batiments }}</span></h3>
       <p class="s2">0290 Feuille 000 0T 001</p>
       <br>
       <h3>OBJET : <span class="s2">Opération entrant dans le dispositif de prime C.E.E. (Certificat d'Economie
@@ -394,10 +468,10 @@ jai un probleme de mise en page gars
             <p class="s12">1</p>
           </td>
           <td bgcolor="#FEF3C1">
-            <p class="s12">12 259,80</p>
+            <p class="s12">{{ number_format($document->montant_ht, 2, ',', ' ') }}</p>
           </td>
           <td bgcolor="#FEF3C1">
-            <p class="s12">12 259,80</p>
+            <p class="s12">{{ number_format($document->montant_ht, 2, ',', ' ') }}</p>
           </td>
           <td>
             <p class="s12">20 %</p>
@@ -406,12 +480,9 @@ jai un probleme de mise en page gars
       </table>
     </div>
   </div>
-  
-  <!-- <div class="page-break"></div> -->
 
   <!-- Page 2 -->
   <div class="page">
-
     <div class="page-content">
       <table>
         <tr>
@@ -436,15 +507,15 @@ jai un probleme de mise en page gars
             <p class="s13">CARACTÉRISTIQUES DE L'INSTALLATION</p>
             <p class="s11">INSTALLATION COLLECTIVE DE CHAUFFAGE ALIMENTÉE PAR UNE CHAUDIÈRE HORS CONDENSATION</p>
             <ul>
-              <li>Puissance nominale de la chaudière : 670 kW</li>
-              <li>Nombre de logements concernés : 139</li>
-              <li>Nombre d'émetteurs désemboués : 487</li>
+              <li>Puissance nominale de la chaudière : {{ $document->puissance_chaudiere }} kW</li>
+              <li>Nombre de logements concernés : {{ $document->nombre_logements }}</li>
+              <li>Nombre d'émetteurs désemboués : {{ $document->nombre_emetteurs }}</li>
               <li>Nature du réseau : Acier</li>
-              <li>Volume total du circuit d'eau: 5 396 L</li>
-              <li>Zone climatique : H1</li>
-              <li>Filtres : 14</li>
-              <li>KWH CUMAC : 1 751 400</li>
-              <li>PRIME CEE : 12 259,80 €</li>
+              <li>Volume total du circuit d'eau: {{ $document->volume_circuit }} L</li>
+              <li>Zone climatique : {{ $document->zone_climatique }}</li>
+              <li>Filtres : {{ $document->nombre_filtres }}</li>
+              <li>KWH CUMAC : {{ $document->wh_cumac }}</li>
+              <li>PRIME CEE : {{ number_format($document->prime_cee, 2, ',', ' ') }} €</li>
               <li>NET DE TAXE</li>
             </ul>
             <p class="s13">DÉTAIL DE LA PRESTATION</p>
@@ -489,232 +560,314 @@ jai un probleme de mise en page gars
       </table>
     </div>
   </div>
-  <!-- <div class="page-break"></div> -->
 
   <!-- Page 3 -->
   <div class="page">
-
     <div class="page-content">
       <table>
-        <tr>
-          <td class="table-header">
-            <p class="s10">DETAIL</p>
-          </td>
-          <td class="table-header">
-            <p class="s10">QUANTITE</p>
-          </td>
-          <td class="table-header">
-            <p class="s10">PU HT</p>
-          </td>
-          <td class="table-header">
-            <p class="s10">TOTAL HT</p>
-          </td>
-          <td class="table-header">
-            <p class="s10">TVA</p>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <ol start="2">
-              <li>RINÇAGE DES CIRCUITS À L'EAU CLAIRE
-                <p class="s12">RINÇAGE GENERAL</p>
-                <ul>
-                  <li>Évacuation complète du produit désembouant par les points de purge</li>
-                  <li>Remplissage progressif à l'eau claire du réseau public</li>
-                  <li>Circulation intensive pendant 2 heures minimum</li>
-                  <li>Contrôle qualité : Vérification de la limpidité de l'eau en sortie</li>
-                </ul>
-              </li>
-            </ol>
-            <p class="s12">RINÇAGE RESEAU PAR RESEAU</p>
-            <ul>
-              <li>Isolation de chaque réseau de distribution</li>
-              <li>Rinçage individuel :
-                <ul>
-                  <li>Ouverture des vannes de purge des émetteurs</li>
-                  <li>Circulation d'eau claire jusqu'à obtention d'une eau limpide</li>
-                  <li>Fermeture progressive des purges en commençant par les plus éloignées</li>
-                </ul>
-              </li>
-              <li>Volume de rinçage : Minimum 3 fois le volume de chaque réseau</li>
-              <li>Contrôle final : Test d'absence de résidus et de mousse REMISE EN PRESSION</li>
-              <li>Remplissage complet du circuit à la pression nominale</li>
-              <li>Purge de l'air résiduel sur tous les émetteurs</li>
-              <li>Vérification de l'absence de fuites</li>
-            </ul>
-            <p class="s11">C. VÉRIFICATION/INSTALLATION FILTRE ET INJECTION INHIBITEUR</p>
-            <p class="s12">VERIFICATION DU SYSTEME DE FILTRATION EXISTANT</p>
-            <ul>
-              <li>Localisation des filtres à boues existants sur les circuits de retour</li>
-              <li>Démontage et nettoyage des filtres en place</li>
-              <li>Contrôle d'efficacité : Vérification du maillage et de l'état général INSTALLATION DE FILTRES
-                COMPLEMENTAIRES (SI NECESSAIRE)</li>
-              <li>Positionnement : Sur chaque circuit de retour au générateur</li>
-              <li>Type de filtre : Filtre magnétique séparateur de boues haute performance</li>
-              <li>Raccordement : Avec vannes d'isolement pour maintenance future</li>
-              <li>Accessibilité : Installation permettant un entretien facile INJECTION DU REACTIF INHIBITEUR SENTINEL
-                X100</li>
-              <li>Dosage : 1% du volume d'eau de l'installation</li>
-              <li>Méthode d'injection : Via point d'injection dédié</li>
-              <li>Circulation : Mise en route de la circulation pendant 30 minutes minimum</li>
-              <li>Homogénéisation : Vérification de la répartition uniforme du produit CONTROLES FINAUX ET MISE EN
-                SERVICE</li>
-              <li>Test de fonctionnement complet de l'installation</li>
-              <li>Relevé des paramètres : Température, pression, débit</li>
-              <li>Réglages : Ajustement des organes de régulation</li>
-              <li>Formation : Explication du fonctionnement au personnel technique</li>
-              <li>Documentation : Remise du certificat de désembouage et planning de maintenance</li>
-            </ul>
-            <p class="s13">PRODUITS UTILISÉS</p>
-            <p class="s11">SENTINEL X800 DÉSEMBOUANT</p>
-            <p class="s12">Sentinel X800 Désembouant pour nettoyage d'un réseau de chauffage, Sentinel X800 élimine tous
-              débris, particules de corrosion et dépôts de calcaire des installations de chauffage central.</p>
-            <ul>
-              <li>Dosage : 1% du volume d'eau de l'installation, soit 1 litre pour 100 litres d'eau</li>
-              <li>Aspect : Liquide clair, incolore à jaune pâle</li>
-              <li>Odeur : Légère</li>
-              <li>Densité (25°C) : 1,06 g/ml</li>
-              <li>pH (concentré) : Environ 6,3</li>
-              <li>Point de congélation : -8°C</li>
-              <li>Agréé par le ministère de la Santé</li>
-            </ul>
-          </td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-        </tr>
+        <thead>
+          <tr>
+            <th class="table-header">DÉTAIL</th>
+            <th class="table-header">QUANTITÉ</th>
+            <th class="table-header">PU HT</th>
+            <th class="table-header">TOTAL HT</th>
+            <th class="table-header">TVA</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Article 1 : Désembouage Chimique -->
+          <tr>
+            <td>
+              <p><strong>1. DÉSEMBOUAGE CHIMIQUE DU RÉSEAU</strong></p>
+              <p class="s12">INJECTION DU PRODUIT SENTINEL X800</p>
+              <ul class="s12">
+                <li>Dosage : 1% du volume total du circuit</li>
+                <li>Circulation du produit pendant 6 à 8 heures</li>
+                <li>Contrôle du pH et de l'activité du désembouant</li>
+              </ul>
+            </td>
+            <td>1 Intervention</td>
+            <td></td>
+            <td></td>
+            <td>20%</td>
+          </tr>
+
+          <!-- Article 2 : Rinçage Général -->
+          <tr>
+            <td>
+              <p><strong>2. RINÇAGE DES CIRCUITS À L'EAU CLAIRE</strong></p>
+              <p class="s12">RINÇAGE GÉNÉRAL</p>
+              <ul class="s12">
+                <li>Évacuation complète du produit désembouant</li>
+                <li>Remplissage progressif à l'eau claire</li>
+                <li>Circulation intensive pendant 2 heures minimum</li>
+                <li>Contrôle qualité : Vérification de la limpidité</li>
+              </ul>
+            </td>
+            <td>1 Intervention</td>
+            <td></td>
+            <td></td>
+            <td>20%</td>
+          </tr>
+
+          <!-- Article 3 : Rinçage Réseau par Réseau -->
+          <tr>
+            <td>
+              <p class="s12">RINÇAGE RÉSEAU PAR RÉSEAU</p>
+              <ul class="s12">
+                <li>Isolation et rinçage individuel de chaque réseau</li>
+                <li>Volume de rinçage : Min. 3x le volume de chaque réseau</li>
+                <li>Contrôle final : Test d'absence de résidus</li>
+              </ul>
+            </td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>20%</td>
+          </tr>
+
+          <!-- Article 4 : Remise en Pression -->
+          <tr>
+            <td>
+              <p class="s12">REMISE EN PRESSION</p>
+              <ul class="s12">
+                <li>Remplissage complet à la pression nominale</li>
+                <li>Purge de l'air résiduel sur tous les émetteurs</li>
+                <li>Vérification de l'absence de fuites</li>
+              </ul>
+            </td>
+            <td>1 Intervention</td>
+            <td></td>
+            <td></td>
+            <td>20%</td>
+          </tr>
+
+          <!-- Article 5 : Injection Inhibiteur -->
+          <tr>
+            <td>
+              <p><strong>3. INJECTION INHIBITEUR DE CORROSION SENTINEL X100</strong></p>
+              <ul class="s12">
+                <li>Dosage : 1% du volume d'eau de l'installation</li>
+                <li>Injection via point dédié et circulation pour homogénéisation</li>
+                <li>Produit fourni (voir détail ci-dessous)</li>
+              </ul>
+            </td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>20%</td>
+          </tr>
+
+          <!-- Article 6 : Produit Consommable -->
+          <tr>
+            <td>
+              <p class="s13">PRODUIT INHIBITEUR SENTINEL X100</p>
+              <p class="s12">Inhibiteur de corrosion pour chauffage central. Protège les métaux (acier, fonte, aluminium, cuivre).</p>
+            </td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>20%</td>
+          </tr>
+
+          <!-- Ligne pour Totaux -->
+          <tr class="total-row">
+            <td colspan="3"></td>
+            <td><strong>TOTAL GÉNÉRAL HT</strong></td>
+            <td><strong>{{ number_format($document->montant_ht, 2, ',', ' ') }} €</strong></td>
+          </tr>
+          <tr class="total-row">
+            <td colspan="3"></td>
+            <td><strong>TVA (20%)</strong></td>
+            <td><strong>{{ number_format($document->montant_tva, 2, ',', ' ') }} €</strong></td>
+          </tr>
+          <tr class="total-row">
+            <td colspan="3"></td>
+            <td><strong>TOTAL TTC</strong></td>
+            <td><strong>{{ number_format($document->montant_ttc, 2, ',', ' ') }} €</strong></td>
+          </tr>
+        </tbody>
       </table>
+
+      <!-- Section descriptive détaillée -->
+    
     </div>
   </div>
-  <!-- <div class="page-break"></div> -->
 
+
+  <div class="page">
+    <div class="page-content">
+      </table>
+
+    <div class="technical-description">
+        <p class="s11">C. VÉRIFICATION/INSTALLATION FILTRE ET INJECTION INHIBITEUR</p>
+        <p class="s12">VERIFICATION DU SYSTEME DE FILTRATION EXISTANT</p>
+        <ul>
+          <li>Localisation des filtres à boues existants sur les circuits de retour</li>
+          <li>Démontage et nettoyage des filtres en place</li>
+          <li>Contrôle d'efficacité : Vérification du maillage et de l'état général</li>
+        </ul>
+        <p class="s12">INSTALLATION DE FILTRES COMPLEMENTAIRES (SI NECESSAIRE)</p>
+        <ul>
+          <li>Positionnement : Sur chaque circuit de retour au générateur</li>
+          <li>Type de filtre : Filtre magnétique séparateur de boues haute performance</li>
+          <li>Raccordement : Avec vannes d'isolement pour maintenance future</li>
+          <li>Accessibilité : Installation permettant un entretien facile</li>
+        </ul>
+        <p class="s12">INJECTION DU REACTIF INHIBITEUR SENTINEL X100</p>
+        <ul>
+          <li>Dosage : 1% du volume d'eau de l'installation</li>
+          <li>Méthode d'injection : Via point d'injection dédié</li>
+          <li>Circulation : Mise en route de la circulation pendant 30 minutes minimum</li>
+          <li>Homogénéisation : Vérification de la répartition uniforme du produit</li>
+        </ul>
+        <p class="s12">CONTROLES FINAUX ET MISE EN SERVICE</p>
+        <ul>
+          <li>Test de fonctionnement complet de l'installation</li>
+          <li>Relevé des paramètres : Température, pression, débit</li>
+          <li>Réglages : Ajustement des organes de régulation</li>
+          <li>Formation : Explication du fonctionnement au personnel technique</li>
+          <li>Documentation : Remise du certificat de désembouage et planning de maintenance</li>
+        </ul>
+      </div>
+     </table>
+    </div>
+  </div>
   <!-- Page 4 -->
   <div class="page">
-
     <div class="page-content">
-      <table>
-        <tr>
-          <td class="table-header">
-            <p class="s10">DETAIL</p>
-          </td>
-          <td class="table-header">
-            <p class="s10">QUANTITE</p>
-          </td>
-          <td class="table-header">
-            <p class="s10">PU HT</p>
-          </td>
-          <td class="table-header">
-            <p class="s10">TOTAL HT</p>
-          </td>
-          <td class="table-header">
-            <p class="s10">TVA</p>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <p class="s11">SENTINEL X100 INHIBITEUR</p>
-            <p class="s12">Sentinel X100 Inhibiteur pour protection du réseau de chauffage avec solution aqueuse
-              d'agents inhibiteurs de corrosion et anti-tartre.</p>
-            <ul>
-              <li>Dosage : 1% du volume d'eau de l'installation, soit 1 litre pour 100 litres d'eau</li>
-              <li>Aspect : Liquide clair, incolore à jaune pâle</li>
-              <li>Densité (20°C) : 1,10 g/ml</li>
-              <li>pH (concentré) : Environ 6,4</li>
-              <li>Point de congélation : -2,5°C</li>
-              <li>Agréé par le ministère de la Santé</li>
-            </ul>
-            <p class="s13">MATÉRIEL ET ENTREPRISE</p>
-            <p class="s12">Matériel(s) fourni(s) et mis en place par <b>ENERGIE NOVA</b>, 60 RUE FRANCOIS IER, 75008
-              PARIS ,SIRET 93348779500017, Code APE 7112B.</p>
-            <p class="s12">Représentée par <b>M. Tamoyan Hamlet</b> <a href="mailto:direction@energie-nova.com">,
-                0767847049 direction@energie-nova.com</a></p>
-            <p class="s12">Qualification <b>Qualisav Spécialité Désembouage N° 31376 - ID N° S01810</b></p>
-            <p class="s12">RC Décennale <b>W4737408 contrat n° 25076156863</b></p>
-            <p class="s14">Durée totale de l'intervention <span class="s12">: 1 à 2 jours selon la complexité</span></p>
-            <p class="s14">Garantie <span class="s12">: 2 ans sur l'intervention de désembouage</span></p>
-            <p class="s14">Suivi <span class="s12">: Contrôle recommandé à 6 mois puis annuellement</span></p>
-          </td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-        </tr>
-      </table>
-      <br>
-      <p class="s2">12 259,80</p>
-      <h3>14 711,76 €</h3>
-      <h3>2 451,96</h3>
-      <h3>12 259,80</h3>
-      <br>
-      <h2>CONDITIONS DE PAIEMENT</h2>
-      <br>
-      <p>« Les travaux ou prestations objet du présent document donneront lieu à une contribution financière de EBS
-        ENERGIE (SIREN 533 333 118), versée par EBS ENERGIE dans le cadre de son rôle incitatif sous forme de prime,
-        directement ou via son (ses) mandataire(s), sous réserve de l'engagement de fournir exclusivement à EBS Energie
-        les documents nécessaires à la valorisation des opérations au titre du dispositif des Certificats d'Économies
-        d'Énergie et sous réserve de la validation de l'éligibilité du dossier par EBS ENERGIE puis par l'autorité
-        administrative compétente.</p>
-      <p>Le montant de cette contribution financière, hors champ d'application de la TVA, est susceptible de varier en
-        fonction des travaux effectivement réalisés et du volume des CEE attribués à l'opération et est estimé à 12
-        259,80 euros ».</p>
-      <br>
-      <h2>Gestion des déchets</h2>
-      <br>
-      <p>Gestion, évacuation et traitements des déchets de chantier comprenant la main d'œuvre liée à la dépose et au
-        tri, le transport des déchets de chantiers vers un ou plusieurs points de collecte et coûts de traitement.</p>
-      <h3>MONTANT TOTAL €</h3>
-      <h3>HT TVA €</h3>
-      <h1>MONTANT TOTAL TTC</h1>
-      <p class="s2">PRIME CEE - €</p>
-      <br>
-      <h3>2 451,96 €</h3>
-      <h1>RESTE A CHARGE</h1>
+      <div class="gray-block avoid-break">
+        <p class="s13">FOURNITURES ET FRAIS ANNEXES</p>
+
+        <table class="invoice-table">
+          <tr>
+            <td class="table-header"><p class="s10">DÉTAIL</p></td>
+            <td class="table-header"><p class="s10">QTÉ</p></td>
+            <td class="table-header"><p class="s10">PU HT</p></td>
+            <td class="table-header"><p class="s10">TOTAL HT</p></td>
+            <td class="table-header"><p class="s10">TVA</p></td>
+          </tr>
+
+          <tr>
+            <td>
+              <p class="s11">INHIBITEUR DE CORROSION SENTINEL X100</p>
+              <p class="s12">Solution inhibitrice pour protection du réseau de chauffage.</p>
+            </td>
+            <td><p class="s12">15 L</p></td>
+            <td><p class="s12">45,00 €</p></td>
+            <td><p class="s12">675,00 €</p></td>
+            <td><p class="s12">20%</p></td>
+          </tr>
+
+          <tr>
+            <td><p class="s11">FRAIS DE DÉPLACEMENT ET LOGISTIQUE</p></td>
+            <td><p class="s12">1</p></td>
+            <td><p class="s12">350,00 €</p></td>
+            <td><p class="s12">350,00 €</p></td>
+            <td><p class="s12">20%</p></td>
+          </tr>
+
+          <tr>
+            <td colspan="3"></td>
+            <td><p class="s11">SOUS-TOTAL HT</p></td>
+            <td><p class="s11">{{ number_format($document->montant_ht, 2, ',', ' ') }} €</p></td>
+          </tr>
+          <tr>
+            <td colspan="3"></td>
+            <td><p class="s11">TVA (20%)</p></td>
+            <td><p class="s11">{{ number_format($document->montant_tva, 2, ',', ' ') }} €</p></td>
+          </tr>
+          <tr>
+            <td colspan="3"></td>
+            <td><p class="s13">TOTAL TTC</p></td>
+            <td><p class="s13">{{ number_format($document->montant_ttc, 2, ',', ' ') }} €</p></td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="gray-block avoid-break">
+        <p class="s13">ENTREPRISE & GARANTIES</p>
+        <p class="s12">Matériel fourni par <span class="s11">ENERGIE NOVA</span></p>
+        <p class="s12">SIRET : 933 487 795 00017</p>
+        <p class="s12">RC Décennale : Contrat n° 25076156863</p>
+        <p class="s12">Garantie : 2 ans — Suivi recommandé annuel</p>
+      </div>
+
+      <div class="gray-block avoid-break">
+        <p class="s13">PRIME CEE</p>
+        <p class="s12">Prime versée par EBS ENERGIE sous réserve de validation.</p>
+        <p class="s12">Montant estimé : <span class="s11">{{ number_format($document->prime_cee, 2, ',', ' ') }} €</span></p>
+      </div>
+
+      <div class="gray-block avoid-break">
+        <p class="s13">GESTION DES DÉCHETS</p>
+        <p class="s12">Tri, évacuation, transport et traitement des déchets de chantier.</p>
+      </div>
+
+      <div class="total-summary avoid-break">
+        <table class="summary-table">
+          <tr>
+            <td><p class="s11">MONTANT TOTAL TTC</p></td>
+            <td class="amount"><p class="s11">{{ number_format($document->montant_ttc, 2, ',', ' ') }} €</p></td>
+          </tr>
+          <tr>
+            <td><p class="s12">PRIME CEE</p></td>
+            <td class="amount"><p class="s12">- {{ number_format($document->prime_cee, 2, ',', ' ') }} €</p></td>
+          </tr>
+          <tr>
+            <td><p class="s13">RESTE À CHARGE</p></td>
+            <td class="amount"><p class="s13">{{ number_format($document->reste_a_charge, 2, ',', ' ') }} €</p></td>
+          </tr>
+        </table>
+      </div>
     </div>
   </div>
 
   <!-- Page 5 -->
-  <div class="page">
-
+  <div class="page last-page">
     <div class="page-content">
-      <div class="signature-section">
-        <p class="s2">En acceptant le présent devis, j'atteste sur l'honneur :</p>
-        <br>
-        <ul>
-          <li>Que le bâtiment est existant depuis plus de deux ans.</li>
-          <li>Ne pas avoir bénéficier de primes CEE pour la fiche N°BAR-SE-109 désembouage</li>
+      <div class="gray-block avoid-break">
+        <p class="s13">ATTESTATIONS DU CLIENT</p>
+        <ul class="s12">
+          <li>Bâtiment achevé depuis plus de 2 ans</li>
+          <li>Aucune prime CEE BAR-SE-109 déjà perçue</li>
         </ul>
-        <br>
-        <p class="s2">Date, Signature et cachet du client précédés des mentions manuscrites suivantes :</p>
-        <br>
-
-        <div class="avoid-break">
-          <ol>
-            <li>Lu et approuvé :</li>
-            <li>Bon pour accord :</li>
-            <li>Devis reçu avant l'exécution des travaux :</li>
-          </ol>
-          <br>
-          <p class="s3">Nom : <span class="s2">Offel De Villaucourt</span></p>
-          <br>
-          <p class="s3">Prénom : <span class="s2">Charles</span></p>
-          <br>
-          <p class="s3">Fonction : <span class="s2">Gérant</span></p>
-          <br>
-          <ol start="4">
-            <li>Date :</li>
-            <li>Signature :</li>
-          </ol>
-          <br>
-          <p class="s2">Le client reconnaît avoir pris connaissance et accepté les conditions générales de vente.</p>
-        </div>
+        <p class="s12">Mention manuscrite : <span class="s11">Lu et approuvé, bon pour accord</span></p>
       </div>
+
+      <div class="gray-block avoid-break">
+        <p class="s13">ACCEPTATION DU DEVIS — CLIENT</p>
+        <p class="s12">Nom : OFFEL DE VILLAUCOURT</p>
+        <p class="s12">Prénom : Charles</p>
+        <p class="s12">Fonction : Gérant</p>
+        <br><br>
+        <p class="s12">Date : ____ / ____ / ________</p>
+        <br><br>
+        <p class="s12">Signature :</p>
+        <div class="signature-line"></div>
+      </div>
+
+      <div class="gray-block avoid-break">
+        <p class="s13">POUR LE PRESTATAIRE — ENERGIE NOVA</p>
+        <p class="s12">Représenté par M. Tamoyan Hamlet</p>
+        <p class="s12">SIRET : 933 487 795 00017</p>
+        <br><br>
+        <p class="s12">Date : ____ / ____ / ________</p>
+        <br><br>
+        <p class="s12">Signature :</p>
+        <div class="signature-line"></div>
+      </div>
+
+      <p class="important-note s12">
+        Le client accepte les conditions générales de vente — Validité du devis : 30 jours à compter du {{ \Carbon\Carbon::parse($document->date_devis)->format('d/m/Y') }}
+      </p>
     </div>
   </div>
-  <div class="pdf-footer">
-    Page <span class="page-number"></span>
-  </div>
 
+  <!-- Footer pour toutes les pages -->
+  <div class="pdf-footer">
+    Page <span class="page-number"></span> / <span class="total-pages"></span>
+  </div>
 </body>
 
 </html>

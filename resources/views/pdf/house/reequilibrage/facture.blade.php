@@ -1,491 +1,217 @@
-<!DOCTYPE html
-    PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-
+<!DOCTYPE html>
+<html lang="fr">
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Facture</title>
-    <style type="text/css">
-        * {
-            margin: 0;
-            padding: 0;
-            text-indent: 0;
-        }
+<meta charset="UTF-8">
+<title>Facture {{ $document->reference_facture }}</title>
 
-        .h1 {
-            color: #FFF;
-            font-family: Calibri, sans-serif;
-            font-style: normal;
-            font-weight: bold;
-            text-decoration: none;
-            font-size: 14pt;
-        }
+<style>
+    body {
+        font-family: DejaVu Sans, sans-serif;
+        font-size: 9.5pt;
+        color: #000;
+        margin: 15px;
+        line-height: 1.35;
+    }
 
-        .s1 {
-            color: black;
-            font-family: Calibri, sans-serif;
-            font-style: normal;
-            font-weight: normal;
-            text-decoration: none;
-            font-size: 10pt;
-        }
+    h1 {
+        font-size: 13pt;
+        color: #FFF;
+        background-color: #81A150;
+        padding: 5px;
+        margin: 5px 0;
+    }
 
-        h4 {
-            color: black;
-            font-family: Calibri, sans-serif;
-            font-style: normal;
-            font-weight: bold;
-            text-decoration: none;
-            font-size: 9pt;
-        }
+    h3 {
+        font-size: 10pt;
+        margin: 8px 0 4px 0;
+    }
 
-        .s2 {
-            color: black;
-            font-family: Calibri, sans-serif;
-            font-style: normal;
-            font-weight: normal;
-            text-decoration: none;
-            font-size: 9pt;
-        }
+    h4 {
+        font-size: 9pt;
+        margin: 4px 0;
+    }
 
-        .s3 {
-            color: black;
-            font-family: Calibri, sans-serif;
-            font-style: normal;
-            font-weight: bold;
-            text-decoration: none;
-            font-size: 11pt;
-        }
+    p { margin: 3px 0; }
 
-        .a {
-            color: black;
-            font-family: Calibri, sans-serif;
-            font-style: normal;
-            font-weight: normal;
-            text-decoration: none;
-            font-size: 9pt;
-        }
+    table {
+        border-collapse: collapse;
+        width: 100%;
+        margin-top: 8px;
+    }
 
-        .s4 {
-            color: #FFF;
-            font-family: Calibri, sans-serif;
-            font-style: normal;
-            font-weight: bold;
-            text-decoration: none;
-            font-size: 11pt;
-        }
+    td, th {
+        border: 1px solid #000;
+        padding: 5px;
+        vertical-align: top;
+    }
 
-        .s5 {
-            color: #FFF;
-            font-family: Calibri, sans-serif;
-            font-style: normal;
-            font-weight: bold;
-            text-decoration: none;
-            font-size: 10pt;
-        }
+    th {
+        background-color: #81A150;
+        color: #FFF;
+        font-weight: bold;
+    }
 
-        .s6 {
-            color: black;
-            font-family: Calibri, sans-serif;
-            font-style: normal;
-            font-weight: normal;
-            text-decoration: none;
-            font-size: 9pt;
-        }
+    ul {
+        margin: 3px 0 3px 15px;
+        padding: 0;
+    }
 
-        .s7 {
-            color: black;
-            font-family: Calibri, sans-serif;
-            font-style: normal;
-            font-weight: normal;
-            text-decoration: none;
-            font-size: 8pt;
-        }
+    li { margin-bottom: 2px; }
 
-        .s8 {
-            color: black;
-            font-family: Calibri, sans-serif;
-            font-style: normal;
-            font-weight: bold;
-            text-decoration: none;
-            font-size: 8pt;
-        }
+    .small-text { font-size: 8.8pt; }
 
-        .s9 {
-            color: black;
-            font-family: Calibri, sans-serif;
-            font-style: normal;
-            font-weight: bold;
-            text-decoration: none;
-            font-size: 10pt;
-        }
+    .signature-box {
+        border: 1px dashed #000;
+        height: 120px;
+        margin-top: 15px;
+        padding: 8px;
+    }
 
-        .s10 {
-            color: black;
-            font-family: Calibri, sans-serif;
-            font-style: normal;
-            font-weight: bold;
-            text-decoration: none;
-            font-size: 9pt;
-        }
+    .page-break {
+        page-break-before: always;
+    }
 
-        h2 {
-            color: #FFF;
-            font-family: Calibri, sans-serif;
-            font-style: normal;
-            font-weight: bold;
-            text-decoration: none;
-            font-size: 11pt;
-        }
+    @page {
+        margin: 18mm 15mm;
+    }
 
-        h3 {
-            color: black;
-            font-family: Calibri, sans-serif;
-            font-style: normal;
-            font-weight: bold;
-            text-decoration: none;
-            font-size: 10pt;
-        }
-
-        p {
-            color: black;
-            font-family: Calibri, sans-serif;
-            font-style: normal;
-            font-weight: normal;
-            text-decoration: none;
-            font-size: 8pt;
-            margin: 0pt;
-        }
-
-        .s11 {
-            color: #828200;
-            font-family: Calibri, sans-serif;
-            font-style: normal;
-            font-weight: bold;
-            text-decoration: none;
-            font-size: 10pt;
-        }
-
-        .s12 {
-            color: #828200;
-            font-family: Calibri, sans-serif;
-            font-style: normal;
-            font-weight: bold;
-            text-decoration: none;
-            font-size: 9pt;
-        }
-
-        li {
-            display: block;
-        }
-
-        #l1 {
-            padding-left: 0pt;
-            counter-reset: c1 1;
-        }
-
-        #l1>li>*:first-child:before {
-            counter-increment: c1;
-            content: counter(c1, decimal)" ";
-            color: black;
-            font-style: normal;
-            font-weight: normal;
-            text-decoration: none;
-        }
-
-        #l1>li:first-child>*:first-child:before {
-            counter-increment: c1 0;
-        }
-
-        li {
-            display: block;
-        }
-
-        #l2 {
-            padding-left: 0pt;
-        }
-
-        #l2>li>*:first-child:before {
-            content: "▪ ";
-            color: black;
-            font-family: Calibri, sans-serif;
-            font-style: normal;
-            font-weight: normal;
-            text-decoration: none;
-            font-size: 9pt;
-        }
-
-        #l3 {
-            padding-left: 0pt;
-        }
-
-        #l3>li>*:first-child:before {
-            content: "▪ ";
-            color: black;
-            font-family: Calibri, sans-serif;
-            font-style: normal;
-            font-weight: normal;
-            text-decoration: none;
-            font-size: 9pt;
-        }
-
-        table,
-        tbody {
-            vertical-align: top;
-            overflow: visible;
-        }
-    </style>
+    table { page-break-inside: auto; }
+    tr { page-break-inside: avoid; }
+    thead { display: table-header-group; }
+</style>
 </head>
 
 <body>
-    <p style="padding-left: 7pt;text-indent: 0pt;text-align: left;"><span><img width="246" height="48" alt="image"
-                src="Facture_files/Image_001.jpg" /></span></p>
-    <p style="text-indent: 0pt;text-align: left;"><br /></p>
-    <p style="padding-left: 9pt;text-indent: 0pt;text-align: left;"><span class="h1"
-            style=" background-color: #81A150;">FACTURE M&#39;YHOUSE-2026-0117 </span></p>
-    <p class="s1" style="padding-top: 2pt;padding-left: 8pt;text-indent: 0pt;text-align: left;">Date : 15/01/2026</p>
-    <h4 style="padding-top: 4pt;padding-left: 8pt;text-indent: 0pt;text-align: left;">ADRESSE DES TRAVAUX :</h4>
-    <p class="s2" style="padding-top: 7pt;padding-left: 8pt;text-indent: 0pt;line-height: 10pt;text-align: left;">37,
-        41, 43 Rue de l&#39;Égalité, 69150 Décines-Charpieu</p>
-    <h4 style="padding-left: 8pt;text-indent: 0pt;line-height: 9pt;text-align: left;">Parcelle cadastrale <span
-            class="s2">: Parcelle 0057 Feuille 000 BE 001</span></h4>
-    <h4 style="padding-left: 8pt;text-indent: 0pt;line-height: 9pt;text-align: left;">N° immatriculation : <span
-            class="s2">AB1102888</span></h4>
-    <h4 style="padding-left: 8pt;text-indent: 0pt;line-height: 9pt;text-align: left;">Nombre bâtiments : <span
-            class="s2">2 Batiments</span></h4>
-    <h4 style="padding-left: 8pt;text-indent: 0pt;line-height: 9pt;text-align: left;">Détails bâtiments : <span
-            class="s2">Bat A ( 56 Logs ), Bat B ( 55 Logs )</span></h4>
-    <h4 style="padding-left: 8pt;text-indent: 0pt;line-height: 9pt;text-align: left;">Nom de résidence : <span
-            class="s2">RES LE MONT BLANC</span></h4>
-    <h4 style="padding-left: 8pt;text-indent: 0pt;line-height: 9pt;text-align: left;">Date travaux : <span
-            class="s2">16/12/2025</span></h4>
-    <h4 style="padding-left: 8pt;text-indent: 0pt;line-height: 10pt;text-align: left;">Date de désembouage : <span
-            class="s2">Du 16/10/2025 au 17/10/2025</span></h4>
-    <p style="text-indent: 0pt;text-align: left;"><br /></p>
-    <p class="s3" style="padding-top: 7pt;padding-left: 7pt;text-indent: 0pt;text-align: left;">BBR MAINTENANCE</p>
-    <p class="s2" style="padding-top: 3pt;padding-left: 7pt;text-indent: 0pt;line-height: 10pt;text-align: left;">Siret
-        : 93146162800030</p>
-    <p class="s2" style="padding-left: 7pt;text-indent: 0pt;line-height: 9pt;text-align: left;">78 AVENUE DES CHAMPS
-        ELYSEES</p>
-    <p class="s2" style="padding-left: 7pt;text-indent: 0pt;line-height: 9pt;text-align: left;">75008 PARIS</p>
-    <p class="s2" style="padding-left: 7pt;text-indent: 0pt;line-height: 9pt;text-align: left;">Tél : 01 85 09 74 35</p>
-    <p class="s2" style="padding-left: 7pt;text-indent: 0pt;line-height: 82%;text-align: left;"><a
-            href="mailto:tech@bbrmaintenance.fr" class="a" target="_blank">Mail : </a>tech@bbrmaintenance.fr Représenté
-        par : M.Poulin Thomas Directeur des Services Techniques</p>
-    <p style="text-indent: 0pt;text-align: left;"><br /></p>
-    <table style="border-collapse:collapse;margin-left:8.74992pt" cellspacing="0">
-        <tr style="height:23pt">
-            <td style="width:358pt" bgcolor="#81A150">
-                <p class="s4" style="padding-top: 4pt;padding-left: 4pt;text-indent: 0pt;text-align: left;">Détail</p>
-            </td>
-            <td style="width:49pt" bgcolor="#81A150">
-                <p class="s5"
-                    style="padding-top: 6pt;padding-left: 3pt;padding-right: 6pt;text-indent: 0pt;text-align: center;">
-                    Quantité</p>
-            </td>
-            <td style="width:55pt" bgcolor="#81A150">
-                <p class="s5" style="padding-top: 6pt;padding-right: 8pt;text-indent: 0pt;text-align: right;">P.U HT</p>
-            </td>
-            <td style="width:55pt" bgcolor="#81A150">
-                <p class="s5" style="padding-top: 6pt;padding-right: 9pt;text-indent: 0pt;text-align: right;">Total HT
-                </p>
-            </td>
-            <td style="width:35pt" bgcolor="#81A150">
-                <p class="s5" style="padding-top: 6pt;padding-left: 10pt;text-indent: 0pt;text-align: left;">TVA</p>
-            </td>
-        </tr>
-        <tr style="height:263pt">
-            <td style="width:358pt;border-left-style:solid;border-left-width:2pt;border-bottom-style:solid;border-bottom-width:2pt;border-right-style:solid;border-right-width:2pt"
-                rowspan="2">
-                <p class="s6"
-                    style="padding-top: 4pt;padding-left: 4pt;text-indent: 0pt;line-height: 82%;text-align: left;">
-                    Réglage des organes d’équilibrage d’une installation de chauffage à eau chaude, opération entrant
-                    dans le dispositif de prime C.E.E. (Certificat d’Économie d’Énergie), conforme aux recommandations
-                    de la fiche BAR-SE-104.</p>
-                <p style="text-indent: 0pt;text-align: left;"><br /></p>
-                <p class="s7" style="padding-top: 6pt;padding-left: 4pt;text-indent: 0pt;text-align: left;">Kwh Cumac :
-                    <b>1 087 800</b></p>
-                <p class="s7" style="padding-top: 2pt;padding-left: 4pt;text-indent: 0pt;text-align: left;">Prime CEE :
-                    <b>7 614,60 </b>€</p>
-                <p class="s7"
-                    style="padding-top: 2pt;padding-left: 6pt;padding-right: 58pt;text-indent: -1pt;line-height: 123%;text-align: left;">
-                    - Matériel(s) fourni(s) et mis en place par notre société <b>M&#39;Y HOUSE</b>, représentée par
-                    Amblar Jean-Christophe, SIRET <b>89155600300046</b></p>
-                <p style="text-indent: 0pt;text-align: left;"><br /></p>
-                <p class="s7" style="padding-left: 4pt;text-indent: 0pt;text-align: left;">Installation collective de
-                    chauffage alimentée par <b>une chaudière hors condensation</b></p>
-                <p class="s7"
-                    style="padding-top: 2pt;padding-left: 4pt;padding-right: 183pt;text-indent: 0pt;line-height: 123%;text-align: left;">
-                    Puissance nominale de la chaudière : 540 Kw Nombre de logements concernés : <b>111</b></p>
-                <p style="text-indent: 0pt;text-align: left;"><br /></p>
-                <p class="s9" style="padding-left: 3pt;text-indent: 0pt;text-align: left;">DETAIL DE LA PRESTATION</p>
-                <ol id="l1">
-                    <li data-list-text="1">
-                        <p class="s8"
-                            style="padding-top: 4pt;padding-left: 3pt;padding-right: 81pt;text-indent: 0pt;text-align: left;">
-                            - <span class="s7">Réglage des organes d’équilibrage d’une installation de chauffage à eau
-                                chaude, destiné à assurer une température uniforme dans tous les locaux</span>:</p>
-                        <p style="text-indent: 0pt;text-align: left;"><br /></p>
-                    </li>
-                    <li data-list-text="2">
-                        <p class="s10" style="padding-left: 12pt;text-indent: -6pt;text-align: left;">- <span
-                                class="s6">Mise en place matériel d’équilibrage :</span></p>
-                    </li>
-                </ol>
-                <p style="text-indent: 0pt;text-align: left;"><br /></p>
-                <ul id="l2">
-                    <li data-list-text="▪">
-                        <p class="s6" style="padding-left: 11pt;text-indent: -5pt;line-height: 10pt;text-align: left;">
-                            Relevé sur site de l’installation</p>
-                    </li>
-                    <li data-list-text="▪">
-                        <p class="s6" style="padding-left: 11pt;text-indent: -5pt;line-height: 9pt;text-align: left;">
-                            Réalisation d’un plan du sous-sol des PDC</p>
-                    </li>
-                    <li data-list-text="▪">
-                        <p class="s6" style="padding-left: 9pt;text-indent: -5pt;line-height: 9pt;text-align: left;">
-                            Réalisation d’un synoptique des colonnes</p>
-                    </li>
-                    <li data-list-text="▪">
-                        <p class="s6"
-                            style="padding-left: 8pt;padding-right: 129pt;text-indent: -4pt;line-height: 82%;text-align: left;">
-                            Réalisation d’une note de calcul des puissances de débits et réglages théoriques par
-                            logement</p>
-                    </li>
-                    <li data-list-text="▪">
-                        <p class="s6" style="padding-left: 9pt;text-indent: -5pt;line-height: 8pt;text-align: left;">
-                            Réglage du point de fonctionnement de la pompe chauffage</p>
-                    </li>
-                    <li data-list-text="▪">
-                        <p class="s6" style="padding-left: 9pt;text-indent: -5pt;line-height: 9pt;text-align: left;">
-                            Réalisation d’une mesure de débit sur les PDC et antennes</p>
-                    </li>
-                    <li data-list-text="▪">
-                        <p class="s6"
-                            style="padding-left: 10pt;padding-right: 51pt;text-indent: -6pt;line-height: 82%;text-align: left;">
-                            Un tableau d’enregistrement des températures moyennes sur un échantillon des logements,
-                            après équilibrage</p>
-                    </li>
-                    <li data-list-text="▪">
-                        <p class="s6"
-                            style="padding-left: 10pt;padding-right: 42pt;text-indent: -6pt;line-height: 82%;text-align: left;">
-                            L’écart de température entre l’appartement le plus chauffé et le moins chauffé doit être
-                            strictement inférieur à 2° C</p>
-                        <p style="text-indent: 0pt;text-align: left;"><br /></p>
-                        <p class="s8" style="padding-top: 7pt;padding-left: 12pt;text-indent: 0pt;text-align: left;">
-                            COMPRIS DANS LES TRAVAUX :</p>
-                        <p style="text-indent: 0pt;text-align: left;"><br /></p>
-                        <ul id="l3">
-                            <li data-list-text="▪">
-                                <p class="s6"
-                                    style="padding-left: 18pt;text-indent: -5pt;line-height: 10pt;text-align: left;">La
-                                    dépose et l’enlèvement de votre ancien appareil</p>
-                            </li>
-                            <li data-list-text="▪">
-                                <p class="s6"
-                                    style="padding-left: 18pt;text-indent: -5pt;line-height: 9pt;text-align: left;">La
-                                    protection et le nettoyage du chantier</p>
-                            </li>
-                            <li data-list-text="▪">
-                                <p class="s6"
-                                    style="padding-left: 18pt;text-indent: -5pt;line-height: 10pt;text-align: left;">Le
-                                    remplissage et la purge de votre installation</p>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
-            </td>
-            <td
-                style="width:49pt;border-left-style:solid;border-left-width:2pt;border-right-style:solid;border-right-width:2pt">
-                <p style="text-indent: 0pt;text-align: left;"><br /></p>
-                <p class="s6" style="padding-right: 2pt;text-indent: 0pt;text-align: center;">1</p>
-            </td>
-            <td
-                style="width:55pt;border-left-style:solid;border-left-width:2pt;border-right-style:solid;border-right-width:2pt">
-                <p style="text-indent: 0pt;text-align: left;"><br /></p>
-                <p class="s6" style="padding-right: 8pt;text-indent: 0pt;text-align: right;">5 413,22 €</p>
-            </td>
-            <td
-                style="width:55pt;border-left-style:solid;border-left-width:2pt;border-right-style:solid;border-right-width:2pt">
-                <p style="text-indent: 0pt;text-align: left;"><br /></p>
-                <p class="s6" style="padding-right: 9pt;text-indent: 0pt;text-align: right;">5 413,22 €</p>
-            </td>
-            <td
-                style="width:35pt;border-left-style:solid;border-left-width:2pt;border-right-style:solid;border-right-width:2pt">
-                <p style="text-indent: 0pt;text-align: left;"><br /></p>
-                <p class="s6" style="padding-left: 9pt;text-indent: 0pt;text-align: left;">5,5 %</p>
-            </td>
-        </tr>
-        <tr style="height:312pt">
-            <td
-                style="width:49pt;border-left-style:solid;border-left-width:2pt;border-bottom-style:solid;border-bottom-width:2pt;border-right-style:solid;border-right-width:2pt">
-                <p style="text-indent: 0pt;text-align: left;"><br /></p>
-                <p class="s6" style="padding-top: 7pt;padding-right: 2pt;text-indent: 0pt;text-align: center;">1</p>
-            </td>
-            <td
-                style="width:55pt;border-left-style:solid;border-left-width:2pt;border-bottom-style:solid;border-bottom-width:2pt;border-right-style:solid;border-right-width:2pt">
-                <p style="text-indent: 0pt;text-align: left;"><br /></p>
-                <p class="s6" style="padding-top: 7pt;padding-right: 6pt;text-indent: 0pt;text-align: right;">1 804,41 €
-                </p>
-            </td>
-            <td
-                style="width:55pt;border-left-style:solid;border-left-width:2pt;border-bottom-style:solid;border-bottom-width:2pt;border-right-style:solid;border-right-width:2pt">
-                <p style="text-indent: 0pt;text-align: left;"><br /></p>
-                <p class="s6" style="padding-top: 7pt;padding-right: 7pt;text-indent: 0pt;text-align: right;">1 804,41 €
-                </p>
-            </td>
-            <td
-                style="width:35pt;border-left-style:solid;border-left-width:2pt;border-bottom-style:solid;border-bottom-width:2pt;border-right-style:solid;border-right-width:2pt">
-                <p style="text-indent: 0pt;text-align: left;"><br /></p>
-                <p class="s6" style="padding-top: 7pt;padding-left: 9pt;text-indent: 0pt;text-align: left;">5,5 %</p>
-            </td>
-        </tr>
-    </table>
-    <p style="padding-left: 5pt;text-indent: 0pt;text-align: left;"><span><img width="246" height="48" alt="image"
-                src="Facture_files/Image_002.jpg" /></span></p>
-    <p style="text-indent: 0pt;text-align: left;"><br /></p>
-    <p style="padding-top: 2pt;padding-bottom: 3pt;padding-left: 8pt;text-indent: 0pt;text-align: left;"><span
-            class="h1" style=" background-color: #81A150;">FACTURE M&#39;YHOUSE-2026-0117 </span></p>
-    <p style="text-indent: 0pt;text-align: left;"><br /></p>
-    <h2 style="padding-left: 4pt;text-indent: 0pt;text-align: left;">Détail Quantité P.U HT Total HT TVA</h2>
-    <p style="padding-left: 8pt;text-indent: 0pt;text-align: left;" />
-    <p style="text-indent: 0pt;text-align: left;"><br /></p>
-    <p style="text-indent: 0pt;text-align: left;"><br /></p>
-    <h3 style="padding-left: 7pt;text-indent: 0pt;text-align: left;">CONDITIONS DE PAIEMENT</h3>
-    <p style="padding-top: 3pt;padding-left: 7pt;text-indent: 0pt;line-height: 123%;text-align: left;">« Les travaux ou
-        prestations objet du présent document donneront lieu à une contribution financière de EBS ENERGIE (SIREN 533 333
-        118), versée par EBS ENERGIE dans le cadre de son rôle incitatif sous forme de prime, directement ou via son
-        (ses) mandataire(s), sous réserve de l’engagement de fournir exclusivement à EBS Energie les documents
-        nécessaires à la valorisation des opérations au titre du dispositif des Certificats d’Économies d’Énergie et
-        sous réserve de la validation de l’éligibilité</p>
-    <p style="padding-left: 7pt;text-indent: 0pt;line-height: 10pt;text-align: left;">du dossier par EBS ENERGIE puis
-        par l’autorité administrative compétente.</p>
-    <p style="padding-top: 2pt;padding-left: 7pt;text-indent: 0pt;line-height: 123%;text-align: left;">Le montant de
-        cette contribution financière, hors champ d’application de la TVA, est susceptible de varier en fonction des
-        travaux effectivement réalisés et du volume des CEE attribués à l’opération et est estimé à 7 614,60 euros ».
-    </p>
-    <p style="text-indent: 0pt;text-align: left;"><br /></p>
-    <h3 style="padding-left: 7pt;text-indent: 0pt;text-align: left;">Gestion des déchets</h3>
-    <p style="text-indent: 0pt;text-align: left;"><span><img width="735" height="169" alt="image"
-                src="Facture_files/Image_003.png" /></span></p>
-    <p class="s1" style="text-indent: 0pt;line-height: 10pt;text-align: right;">Total H.T</p>
-    <p class="s1" style="text-indent: 0pt;line-height: 11pt;text-align: right;">Total TVA 5,5%</p>
-    <h3 style="text-indent: 0pt;line-height: 11pt;text-align: right;">Total TTC</h3>
-    <p class="s1" style="text-indent: 0pt;line-height: 11pt;text-align: right;">* Prime CEE</p>
-    <p class="s11" style="padding-left: 3pt;text-indent: 0pt;line-height: 11pt;text-align: left;">Reste à payer</p>
-    <p style="text-indent: 0pt;text-align: left;" />
-    <p class="s2" style="text-indent: 0pt;line-height: 9pt;text-align: right;">7 217,63 €</p>
-    <p class="s2" style="text-indent: 0pt;text-align: right;">396,97 €</p>
-    <h4 style="text-indent: 0pt;text-align: right;">7 614,60 €</h4>
-    <p class="s2" style="text-indent: 0pt;text-align: right;">-7 614,60 €</p>
-    <p class="s12" style="text-indent: 0pt;line-height: 11pt;text-align: right;">0 €</p>
-    <p style="text-indent: 0pt;text-align: left;" />
-    <p style="text-indent: 0pt;line-height: 8pt;text-align: left;">Mode de paiement : Chèques, virement ou espèce</p>
-    <p style="text-indent: 0pt;text-align: left;" />
-    <p style="padding-top: 2pt;padding-left: 7pt;text-indent: 0pt;line-height: 123%;text-align: left;">Gestion,
-        évacuation et traitements des déchets de chantier comprenant la main d’œuvre liée à la dépose et au tri, le
-        transport des déchets de chantiers vers un ou plusieurs points de collecte et coûts de traitement.</p>
-    <p style="text-indent: 0pt;text-align: left;"><br /></p>
-</body>
 
+<!-- =================== PAGE 1 =================== -->
+
+<img src="{{ public_path('assets/img/rehouse/Facture_files/Image_001.jpg') }}" width="180">
+
+<h1>FACTURE {{ $document->reference_facture }}</h1>
+<p>Date : {{ $document->date_facture }}</p>
+
+<table>
+<tr>
+<td style="width:50%;">
+    <h4>Adresse des travaux :</h4>
+    <p>{{ $document->adresse_travaux }}</p>
+    <p>@php
+$parcelles = array_filter([
+    $document->parcelle_1,
+    $document->parcelle_2,
+    $document->parcelle_3,
+    $document->parcelle_4
+]);
+@endphp
+
+@if(count($parcelles))
+<p><strong>Parcelles cadastrales :</strong> {{ implode(', ', $parcelles) }}</p>
+@endif
+</p>
+    <p>N° immatriculation : {{ $document->numero_immatriculation }}</p>
+    <p>Nombre bâtiments : {{ $document->nombre_batiments }}</p>
+    <p>Détails bâtiments : {{ $document->details_batiments }}</p>
+    <p>Nom résidence : {{ $document->nom_residence }}</p>
+    <p>Date travaux : {{ $document->date_travaux }}</p>
+    <p>Date désembouage : {{ $document->date_desembouage }}</p>
+</td>
+
+<td style="width:50%;">
+    <p><strong>BBR MAINTENANCE</strong></p>
+    <p>Siret : 93146162800030</p>
+    <p>78 Avenue des Champs Élysées, 75008 Paris</p>
+    <p>Tél : 01 85 09 74 35</p>
+    <p>Mail : tech@bbrmaintenance.fr</p>
+    <p>Représenté par : M. Poulin Thomas</p>
+</td>
+</tr>
+</table>
+
+<table>
+<thead>
+<tr>
+<th>Détail</th>
+<th>Qté</th>
+<th>P.U HT</th>
+<th>Total HT</th>
+<th>TVA</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td class="small-text">
+Réglage des organes d’équilibrage d’une installation de chauffage à eau chaude.<br>
+Kwh Cumac : <b>{{ $document->wh_cumac }}</b> — Prime CEE : <b>{{ $document->prime_cee }}</b> €<br>
+Installation : <b>{{ $document->type }}</b> — Puissance chaudière : {{ $document->puissance_chaudiere }} Kw<br>
+Logements concernés : <b>{{ $document->nombre_logements }}</b><br><br>
+
+<b>Détail de la prestation :</b>
+<ul>
+<li>Réglage des organes d’équilibrage</li>
+<li>Mise en place matériel d’équilibrage</li>
+<li>Relevé sur site</li>
+<li>Plan du sous-sol</li>
+<li>Synoptique des colonnes</li>
+<li>Note de calcul des débits</li>
+<li>Réglage pompe chauffage</li>
+<li>Mesure de débit</li>
+<li>Tableau des températures</li>
+</ul>
+
+<b>Compris dans les travaux :</b>
+<ul>
+<li>Dépose et enlèvement ancien appareil</li>
+<li>Protection et nettoyage chantier</li>
+<li>Remplissage et purge installation</li>
+</ul>
+</td>
+
+<td style="text-align:center;">1</td>
+<td style="text-align:right;">{{ $document->montant_ht }} €</td>
+<td style="text-align:right;">{{ $document->montant_ht }} €</td>
+<td style="text-align:center;">5,5 %</td>
+</tr>
+</tbody>
+</table>
+
+<!-- =================== PAGE 2 =================== -->
+<div class="page-break"></div>
+
+<img src="{{ public_path('assets/img/rehouse/Facture_files/Image_001.jpg') }}" width="180">
+
+<h1>FACTURE {{ $document->reference_facture }}</h1>
+<p>Date : {{ $document->date_facture }}</p>
+
+<h3>Conditions de paiement</h3>
+<p class="small-text">
+Les travaux ou prestations objet du présent document donneront lieu à une contribution financière de EBS ENERGIE (SIREN 533 333 118). Le montant est estimé à 7 614,60 €.
+</p>
+
+<h3>Totaux</h3>
+<table>
+<tr><th>Total H.T</th><td>{{ $document->montant_ht }} €</td></tr>
+<tr><th>Total TVA 5,5%</th><td>{{ $document->montant_tva }} €</td></tr>
+<tr><th>Total TTC</th><td>{{ $document->montant_ttc }} €</td></tr>
+<tr><th>Prime CEE</th><td>{{ $document->prime_cee }} €</td></tr>
+<tr><th>Reste à payer</th><td><strong>{{ $document->reste_a_charge }} €</strong></td></tr>
+</table>
+
+<p>Mode de paiement : Chèques, virement ou espèce</p>
+
+<h3>Gestion des déchets</h3>
+<p class="small-text">
+Gestion, évacuation et traitement des déchets de chantier comprenant la main d’œuvre liée à la dépose, le tri, le transport et le traitement.
+</p>
+
+<p><img src="{{ public_path('assets/img/rehouse/Facture_files/Image_003.png') }}" width="350"></p>
+
+<h3>Signature</h3>
+<p><b>Signature, date, cachet commercial & mention « Bon pour accord » :</b></p>
+
+<div class="signature-box">
+Nom, prénom et fonction du signataire :
+</div>
+
+</body>
 </html>
