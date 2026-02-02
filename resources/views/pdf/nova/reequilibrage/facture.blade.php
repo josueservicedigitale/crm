@@ -24,7 +24,7 @@
 
 <!-- PAGE 1 -->
 <div>
-  <p><img src="{{ public_path('assets/img/rehouse/Facture_files/Image_001.png') }}" width="150" alt="Logo"></p>
+  <p><img src="{{ public_path('assets/img/renova/Facture_files/Image_001.png') }}" width="150" alt="Logo"></p>
   <h1>FACTURE {{ $document->reference_facture }}</h1>
   <p>Date : {{ $document->date_facture }}</p>
 
@@ -94,7 +94,12 @@
 </div>
 
 <!-- PAGE 2 -->
+ 
 <div class="page-break">
+
+  <p><img src="{{ public_path('assets/img/renova/Facture_files/Image_001.png') }}" width="150" alt="Logo"></p>
+  <h1>FACTURE {{ $document->reference_facture }}</h1>
+  <p>Date : {{ $document->date_facture }}</p>
   <h2>Détail de la prestation</h2>
   <table>
     <thead>
@@ -149,6 +154,10 @@
 
 <!-- PAGE 3 -->
 <div class="page-break">
+  <div>
+  <p><img src="{{ public_path('assets/img/renova/Facture_files/Image_001.png') }}" width="150" alt="Logo"></p>
+  <h1>FACTURE {{ $document->reference_facture }}</h1>
+  <p>Date : {{ $document->date_facture }}</p>
   <h2>Conditions CEE</h2>
   <p>Les travaux donneront lieu à une contribution financière de EBS ENERGIE (SIREN 533 333 118), versée sous réserve de validation de l’éligibilité du dossier par l’autorité compétente.</p>
   <p>Montant estimé : <strong>{{ $document->prime_cee }} €</strong></p>

@@ -4,17 +4,28 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
 class Activite extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'nom',
-        'slug',
+        'code',           // Renommé de 'slug' à 'code'
         'description',
-        'statut'
+        'est_active',     // Changé de 'statut' à 'est_active' (boolean)
+        'couleur',        // Nouveau champ
+        'icon',           // Nouveau champ
+        'user_id'         // Nouveau champ
+    ];
+
+    protected $casts = [
+        'est_active' => 'boolean',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     /**
@@ -24,17 +35,22 @@ class Activite extends Model
     {
         parent::boot();
 
-        // Génère automatiquement le slug avant la création
+        // Génère automatiquement le code avant la création
         static::creating(function ($activite) {
-            if (empty($activite->slug) && !empty($activite->nom)) {
-                $activite->slug = Str::slug($activite->nom);
+            if (empty($activite->code) && !empty($activite->nom)) {
+                $activite->code = Str::slug($activite->nom);
+            }
+            
+            // Par défaut, l'utilisateur connecté
+            if (empty($activite->user_id) && auth()->check()) {
+                $activite->user_id = auth()->id();
             }
         });
 
-        // Met à jour le slug si le nom change
+        // Met à jour le code si le nom change
         static::updating(function ($activite) {
-            if ($activite->isDirty('nom') && empty($activite->slug)) {
-                $activite->slug = Str::slug($activite->nom);
+            if ($activite->isDirty('nom') && empty($activite->code)) {
+                $activite->code = Str::slug($activite->nom);
             }
         });
     }
@@ -48,7 +64,7 @@ class Activite extends Model
      */
     public function documents()
     {
-        return $this->hasMany(Document::class, 'activity', 'slug');
+        return $this->hasMany(Document::class, 'activity', 'code');
     }
 
     /**
@@ -57,6 +73,14 @@ class Activite extends Model
     public function societes()
     {
         return $this->belongsToMany(Societe::class, 'activite_societe');
+    }
+
+    /**
+     * Relation avec l'utilisateur créateur
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 
     // =========================================================================
@@ -68,7 +92,7 @@ class Activite extends Model
      */
     public function scopeActive($query)
     {
-        return $query->where('statut', 'actif');
+        return $query->where('est_active', true);
     }
 
     /**
@@ -76,19 +100,35 @@ class Activite extends Model
      */
     public function scopeInactive($query)
     {
-        return $query->where('statut', 'inactif');
+        return $query->where('est_active', false);
     }
 
     /**
-     * Scope pour rechercher par nom ou slug
+     * Scope pour rechercher par nom ou code
      */
     public function scopeSearch($query, $search)
     {
         return $query->where(function ($q) use ($search) {
             $q->where('nom', 'LIKE', "%{$search}%")
-              ->orWhere('slug', 'LIKE', "%{$search}%")
+              ->orWhere('code', 'LIKE', "%{$search}%")
               ->orWhere('description', 'LIKE', "%{$search}%");
         });
+    }
+
+    /**
+     * Scope pour les activités avec couleur spécifique
+     */
+    public function scopeByCouleur($query, $couleur)
+    {
+        return $query->where('couleur', $couleur);
+    }
+
+    /**
+     * Scope pour les activités d'un utilisateur
+     */
+    public function scopeByUser($query, $userId)
+    {
+        return $query->where('user_id', $userId);
     }
 
     // =========================================================================
@@ -100,9 +140,10 @@ class Activite extends Model
      */
     public function getNomFormateAttribute()
     {
-        return match($this->slug) {
+        return match($this->code) {
             'desembouage' => 'Désembouage',
             'reequilibrage' => 'Rééquilibrage',
+            'maintenance-chaudiere' => 'Maintenance Chaudière',
             default => $this->nom
         };
     }
@@ -112,11 +153,7 @@ class Activite extends Model
      */
     public function getStatutFormateAttribute()
     {
-        return match($this->statut) {
-            'actif' => 'Actif',
-            'inactif' => 'Inactif',
-            default => ucfirst($this->statut)
-        };
+        return $this->est_active ? 'Actif' : 'Inactif';
     }
 
     /**
@@ -124,11 +161,7 @@ class Activite extends Model
      */
     public function getStatutCouleurAttribute()
     {
-        return match($this->statut) {
-            'actif' => 'success',
-            'inactif' => 'danger',
-            default => 'secondary'
-        };
+        return $this->est_active ? 'success' : 'secondary';
     }
 
     /**
@@ -136,26 +169,77 @@ class Activite extends Model
      */
     public function getStatutIconeAttribute()
     {
-        return match($this->statut) {
-            'actif' => 'fa-check-circle',
-            'inactif' => 'fa-times-circle',
-            default => 'fa-question-circle'
-        };
+        return $this->est_active ? 'fa-toggle-on' : 'fa-toggle-off';
     }
 
     /**
-     * Mutator pour assurer un slug valide
+     * Accessor pour l'icône complète (FontAwesome)
      */
-    public function setSlugAttribute($value)
+    public function getIconeCompleteAttribute()
+    {
+        return $this->icon ?? 'fa-tools';
+    }
+
+    /**
+     * Accessor pour le style CSS de la couleur
+     */
+    public function getCouleurStyleAttribute()
+    {
+        return "background-color: {$this->couleur}; color: white;";
+    }
+
+    /**
+     * Accessor pour le texte de la couleur contrastée
+     */
+    public function getCouleurContrastAttribute()
+    {
+        // Fonction simple pour déterminer si le texte doit être clair ou foncé
+        $hex = str_replace('#', '', $this->couleur);
+        $r = hexdec(substr($hex, 0, 2));
+        $g = hexdec(substr($hex, 2, 2));
+        $b = hexdec(substr($hex, 4, 2));
+        
+        // Formule de luminance
+        $luminance = (0.299 * $r + 0.587 * $g + 0.114 * $b) / 255;
+        
+        return $luminance > 0.5 ? '#000000' : '#FFFFFF';
+    }
+
+    /**
+     * Mutator pour assurer un code valide
+     */
+    public function setCodeAttribute($value)
     {
         // Si une valeur est fournie, on la transforme en slug
         if ($value) {
-            $this->attributes['slug'] = Str::slug($value);
+            $this->attributes['code'] = Str::slug($value);
         }
         // Sinon, on utilise le nom (sera géré par le boot() si nom existe)
-        elseif ($this->nom && !$this->slug) {
-            $this->attributes['slug'] = Str::slug($this->nom);
+        elseif ($this->nom && !$this->code) {
+            $this->attributes['code'] = Str::slug($this->nom);
         }
+    }
+
+    /**
+     * Mutator pour la couleur (s'assure qu'elle commence par #)
+     */
+    public function setCouleurAttribute($value)
+    {
+        if (!empty($value) && !str_starts_with($value, '#')) {
+            $value = '#' . $value;
+        }
+        $this->attributes['couleur'] = $value;
+    }
+
+    /**
+     * Mutator pour l'icône (s'assure qu'elle a le préfixe 'fa-')
+     */
+    public function setIconAttribute($value)
+    {
+        if (!empty($value) && !str_starts_with($value, 'fa-')) {
+            $value = 'fa-' . $value;
+        }
+        $this->attributes['icon'] = $value;
     }
 
     // =========================================================================
@@ -207,17 +291,28 @@ class Activite extends Model
     /**
      * Active l'activité
      */
-    public function activate(): void
+    public function activate(): bool
     {
-        $this->update(['statut' => 'actif']);
+        $this->est_active = true;
+        return $this->save();
     }
 
     /**
      * Désactive l'activité
      */
-    public function deactivate(): void
+    public function deactivate(): bool
     {
-        $this->update(['statut' => 'inactif']);
+        $this->est_active = false;
+        return $this->save();
+    }
+
+    /**
+     * Bascule l'état actif/inactif
+     */
+    public function toggleStatus(): bool
+    {
+        $this->est_active = !$this->est_active;
+        return $this->save();
     }
 
     /**
@@ -225,7 +320,7 @@ class Activite extends Model
      */
     public function isActive(): bool
     {
-        return $this->statut === 'actif';
+        return $this->est_active === true;
     }
 
     /**
@@ -237,19 +332,19 @@ class Activite extends Model
     }
 
     /**
-     * Trouve une activité par son slug
+     * Trouve une activité par son code
      */
-    public static function findBySlug(string $slug): ?self
+    public static function findByCode(string $code): ?self
     {
-        return self::where('slug', $slug)->first();
+        return self::where('code', $code)->first();
     }
 
     /**
-     * Trouve une activité par son slug ou échoue
+     * Trouve une activité par son code ou échoue
      */
-    public static function findBySlugOrFail(string $slug): self
+    public static function findByCodeOrFail(string $code): self
     {
-        return self::where('slug', $slug)->firstOrFail();
+        return self::where('code', $code)->firstOrFail();
     }
 
     /**
@@ -261,7 +356,7 @@ class Activite extends Model
             ->orderBy('nom')
             ->get()
             ->mapWithKeys(function ($activite) {
-                return [$activite->slug => $activite->nom_formate];
+                return [$activite->code => $activite->nom_formate];
             })
             ->toArray();
     }
@@ -276,8 +371,49 @@ class Activite extends Model
             'statut_formate' => $this->statut_formate,
             'statut_couleur' => $this->statut_couleur,
             'statut_icone' => $this->statut_icone,
+            'icon_complete' => $this->icon_complete,
+            'couleur_style' => $this->couleur_style,
+            'couleur_contrast' => $this->couleur_contrast,
             'has_documents' => $this->hasDocuments(),
             'documents_count' => $this->countDocuments(),
+            'created_by' => $this->user ? $this->user->name : 'Inconnu',
+            'created_at_formatted' => $this->created_at->format('d/m/Y H:i'),
         ]);
+    }
+
+    /**
+     * Récupère les activités sous forme de tableau pour les selects
+     */
+    public static function forSelect(): array
+    {
+        return self::active()
+            ->orderBy('nom')
+            ->get()
+            ->mapWithKeys(function ($activite) {
+                return [
+                    $activite->code => "{$activite->nom} ({$activite->code})"
+                ];
+            })
+            ->toArray();
+    }
+
+    /**
+     * Récupère les activités avec leur couleur pour affichage
+     */
+    public static function withColors(): array
+    {
+        return self::active()
+            ->orderBy('nom')
+            ->get()
+            ->map(function ($activite) {
+                return [
+                    'code' => $activite->code,
+                    'nom' => $activite->nom,
+                    'couleur' => $activite->couleur,
+                    'icon' => $activite->icon,
+                    'description' => $activite->description,
+                ];
+            })
+            ->toArray();
     }
 }
