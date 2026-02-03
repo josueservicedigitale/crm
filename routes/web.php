@@ -34,27 +34,32 @@ Route::middleware('auth')->group(function () {
         ->name('back.all-dashboards');
 });
 
-// Routes activités et sociétés
-Route::middleware('auth')->group(function () {
-    Route::get('/back/activites', [ActiviteController::class, 'index'])->name('back.activite.index');
-    Route::get('/back/activites/create', [ActiviteController::class, 'create'])->name('back.activite.create');
-    Route::post('/back/activites', [ActiviteController::class, 'store'])->name('back.activite.store');
-    Route::get('/back/activites/{activite}', [ActiviteController::class, 'show'])->name('back.activite.show');
-    Route::get('/back/activites/{activite}/edit', [ActiviteController::class, 'edit'])->name('back.activite.edit');
-    Route::put('/back/activites/{activite}', [ActiviteController::class, 'update'])->name('back.activite.update');
-    Route::delete('/back/activites/{activite}', [ActiviteController::class, 'destroy'])->name('back.activite.destroy');
-    Route::get('/back/activites/{activite}/documents', [ActiviteController::class, 'documents'])->name('back.activite.documents');
-
-    Route::get('/back/societes', [SocieteController::class, 'index'])->name('back.societe.index');
-    Route::get('/back/societes/create', [SocieteController::class, 'create'])->name('back.societe.create');
-    Route::post('/back/societes', [SocieteController::class, 'store'])->name('back.societe.store');
-    Route::get('/back/societes/{societe}', [SocieteController::class, 'show'])->name('back.societe.show');
-    Route::get('/back/societes/{societe}/edit', [SocieteController::class, 'edit'])->name('back.societe.edit');
-    Route::put('/back/societes/{societe}', [SocieteController::class, 'update'])->name('back.societe.update');
-    Route::delete('/back/societes/{societe}', [SocieteController::class, 'destroy'])->name('back.societe.destroy');
-    Route::get('/back/societes/{societe}/documents', [SocieteController::class, 'documents'])->name('back.societe.documents');
+// Routes pour les sociétés
+Route::prefix('back/societes')->name('back.societes.')->group(function () {
+    Route::get('/', [SocieteController::class, 'index'])->name('index');
+    Route::get('/create', [SocieteController::class, 'create'])->name('create');
+    Route::post('/', [SocieteController::class, 'store'])->name('store');
+    Route::get('/{societe}', [SocieteController::class, 'show'])->name('show');
+    Route::get('/{societe}/edit', [SocieteController::class, 'edit'])->name('edit');
+    Route::put('/{societe}', [SocieteController::class, 'update'])->name('update');
+    Route::delete('/{societe}', [SocieteController::class, 'destroy'])->name('destroy');
+    Route::post('/{societe}/toggle', [SocieteController::class, 'toggle'])->name('toggle');
+    Route::get('/{societe}/documents', [SocieteController::class, 'documents'])->name('documents');
+    Route::get('/{societe}/export', [SocieteController::class, 'export'])->name('export');
+    Route::get('/{societe}/stats', [SocieteController::class, 'stats'])->name('stats');
 });
 
+// Routes pour les activités (AJOUTEZ CE GROUPE)
+Route::prefix('back/activites')->name('back.activites.')->group(function () {
+    Route::get('/', [ActiviteController::class, 'index'])->name('index');
+    Route::get('/create', [ActiviteController::class, 'create'])->name('create');
+    Route::post('/', [ActiviteController::class, 'store'])->name('store');
+    Route::get('/{activite}', [ActiviteController::class, 'show'])->name('show');
+    Route::get('/{activite}/edit', [ActiviteController::class, 'edit'])->name('edit');
+    Route::put('/{activite}', [ActiviteController::class, 'update'])->name('update');
+    Route::delete('/{activite}', [ActiviteController::class, 'destroy'])->name('destroy');
+    Route::post('/{activite}/toggle', [ActiviteController::class, 'toggle'])->name('toggle');
+});
 // =========================================================================
 // ROUTES DOCUMENTS AVEC PARAMÈTRES - ORDRE CRITIQUE
 // =========================================================================

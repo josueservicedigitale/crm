@@ -3,91 +3,122 @@
 namespace App\Http\Controllers\Back;
 
 use App\Http\Controllers\Controller;
+use App\Models\Societe;
+use App\Models\Activite;
 use App\Models\Document;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class SocieteController extends Controller
 {
     /**
      * Liste toutes les sociétés
-     */
-    public function index()
-    {
-        Log::info('🏢 Liste des sociétés consultée', ['user_id' => auth()->id()]);
-        
-        // Utiliser les méthodes du modèle Document
-        $societes = [
-            'nova' => [
-                'nom' => 'Énergie Nova',
-                'adresse' => '123 Avenue des Entrepreneurs, 75000 Paris',
-                'telephone' => '01 23 45 67 89',
-                'email' => 'contact@nova-energie.fr',
-                'siret' => '123 456 789 00012',
-                'documents_count' => Document::where('society', 'nova')->count(),
-                'statistiques' => Document::getSocietyStats('nova') // Nouvelle méthode
-            ],
-            'house' => [
-                'nom' => 'MyHouse Solutions',
-                'adresse' => '456 Avenue des Métiers, 69000 Lyon',
-                'telephone' => '04 56 78 90 12',
-                'email' => 'contact@myhouse.fr',
-                'siret' => '987 654 321 00098',
-                'documents_count' => Document::where('society', 'house')->count(),
-                'statistiques' => Document::getSocietyStats('house') // Nouvelle méthode
-            ]
-        ];
-        
-        return view('back.societes.index', compact('societes'));
-    }
+     */// SocieteController.php - méthode index()
+public function index()
+{
+    Log::info('🏢 Liste des sociétés consultée', ['user_id' => auth()->id()]);
     
+    $societes = Societe::withCount('documents')
+        ->with('activites')
+        ->orderBy('est_active', 'desc')
+        ->orderBy('nom', 'asc')
+        ->paginate(15); // <-- Utilisez paginate() au lieu de get()
+    
+    // Statistiques globales (vous pouvez garder get() pour les stats)
+    $allSocietes = Societe::get();
+    $stats = [
+        'total' => $allSocietes->count(),
+        'actives' => $allSocietes->where('est_active', true)->count(),
+        'inactives' => $allSocietes->where('est_active', false)->count(),
+        'documents_total' => $allSocietes->sum('documents_count'),
+        'chiffre_affaires_total' => Document::sum('montant_ttc'),
+    ];
+    
+    return view('back.societes.index', compact('societes', 'stats'));
+}
     /**
      * Affiche le détail d'une société
      */
-    public function show($societe)
+    public function show(Societe $societe)
     {
-        Log::info('🔍 Détail société consulté', ['societe' => $societe]);
+        Log::info('🔍 Détail société consulté', ['societe_id' => $societe->id]);
         
-        // Utiliser la nouvelle méthode getSocietyStats du modèle
-        $stats = Document::getSocietyStats($societe);
+        // Récupérer les statistiques
+        $stats = $societe->getStats();
         
-        // Récupérer les documents récents pour cette société
-        $documentsRecents = Document::where('society', $societe)
+        // Documents récents
+        $documentsRecents = $societe->documents()
             ->with(['user', 'parent'])
             ->latest()
             ->take(10)
             ->get();
         
-        // Récupérer les meilleurs clients (si vous avez des infos clients dans vos documents)
-        $clientsFrequents = $this->getFrequentClients($societe);
+        // Top activités
+        $topActivites = $societe->documents()
+            ->selectRaw('activity, COUNT(*) as total')
+            ->groupBy('activity')
+            ->orderByDesc('total')
+            ->limit(5)
+            ->get();
         
-        $nomSociete = match($societe) {
-            'nova' => 'Énergie Nova',
-            'house' => 'MyHouse Solutions',
-            default => ucfirst($societe)
-        };
+        // Top clients (par adresse)
+        $topClients = $societe->documents()
+            ->whereNotNull('adresse_travaux')
+            ->selectRaw('adresse_travaux, COUNT(*) as total')
+            ->groupBy('adresse_travaux')
+            ->orderByDesc('total')
+            ->limit(5)
+            ->get();
         
-        // Récupérer les coordonnées de la société
-        $infosSociete = $this->getCompanyInfo($societe);
+        // Évolution mensuelle
+        $evolutionMensuelle = Document::where('society', $societe->code)
+            ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, COUNT(*) as count')
+            ->groupBy('year', 'month')
+            ->orderBy('year', 'desc')
+            ->orderBy('month', 'desc')
+            ->limit(12)
+            ->get();
         
         return view('back.societes.show', compact(
             'societe', 
-            'nomSociete', 
             'stats',
             'documentsRecents',
-            'clientsFrequents',
-            'infosSociete'
+            'topActivites',
+            'topClients',
+            'evolutionMensuelle'
         ));
     }
     
     /**
-     * Affiche le formulaire de création d'une nouvelle société
+     * Affiche le formulaire de création
      */
     public function create()
     {
         Log::info('➕ Formulaire création société affiché');
         
-        return view('back.societes.create');
+        $couleurs = [
+            '#3B82F6' => 'Bleu',
+            '#10B981' => 'Vert',
+            '#F59E0B' => 'Orange',
+            '#EF4444' => 'Rouge',
+            '#8B5CF6' => 'Violet',
+            '#EC4899' => 'Rose',
+        ];
+        
+        $icones = [
+            'fa-building' => 'Bâtiment',
+            'fa-industry' => 'Industrie',
+            'fa-store' => 'Magasin',
+            'fa-briefcase' => 'Porte-documents',
+            'fa-handshake' => 'Poignée de main',
+            'fa-chart-line' => 'Graphique',
+        ];
+        
+        $activites = Activite::active()->get();
+        
+        return view('back.societes.create', compact('couleurs', 'icones', 'activites'));
     }
     
     /**
@@ -97,122 +128,248 @@ class SocieteController extends Controller
     {
         $request->validate([
             'nom' => 'required|string|max:100',
-            'code' => 'required|string|max:50|alpha_dash|unique:documents,society', // Utilise le champ existant
-            'adresse' => 'required|string',
+            'adresse' => 'nullable|string',
             'telephone' => 'nullable|string|max:20',
             'email' => 'nullable|email',
-            'siret' => 'nullable|string|max:20',
-            'logo' => 'nullable|image|max:2048'
+            'ville' => 'nullable|string|max:50',
+            'code_postal' => 'nullable|string|max:10',
+            'siret' => 'nullable|string|max:14',
+            'tva_intracommunautaire' => 'nullable|string|max:20',
+            'logo' => 'nullable|image|max:2048',
+            'couleur' => 'nullable|string|max:7',
+            'icon' => 'nullable|string|max:50',
+            'est_active' => 'boolean',
+            'activites' => 'nullable|array',
+            'activites.*' => 'exists:activites,id',
         ]);
         
         try {
-            // Note: Comme pour les activités, vous pourriez gérer cela via configuration
+            DB::beginTransaction();
             
-            // Gérer l'upload du logo
+            // Gérer le logo
             $logoPath = null;
             if ($request->hasFile('logo')) {
-                $logoPath = $request->file('logo')->store('logos/societes', 'public');
+                $logoPath = $request->file('logo')->store('logos', 'public');
             }
             
-            Log::info('✅ Configuration société créée', [
+            $societe = Societe::create([
                 'nom' => $request->nom,
-                'code' => $request->code,
-                'logo' => $logoPath,
+                'adresse' => $request->adresse,
+                'telephone' => $request->telephone,
+                'email' => $request->email,
+                'ville' => $request->ville,
+                'code_postal' => $request->code_postal,
+                'siret' => $request->siret,
+                'tva_intracommunautaire' => $request->tva_intracommunautaire,
+                'logo_path' => $logoPath,
+                'couleur' => $request->couleur ?? '#3B82F6',
+                'icon' => $request->icon ?? 'fa-building',
+                'est_active' => $request->has('est_active'),
+                'user_id' => auth()->id(),
+            ]);
+            
+            // Synchroniser les activités
+            if ($request->has('activites')) {
+                $societe->activites()->sync($request->activites);
+            }
+            
+            DB::commit();
+            
+            Log::info('✅ Société créée', [
+                'id' => $societe->id,
+                'nom' => $societe->nom,
                 'user_id' => auth()->id()
             ]);
             
-            return redirect()->route('back.societe.index')
-                ->with('success', 'Configuration de société créée avec succès !');
+            return redirect()->route('back.societes.index')
+                ->with('success', 'Société créée avec succès !');
                 
         } catch (\Exception $e) {
+            DB::rollBack();
+            
             Log::error('❌ Erreur création société', [
                 'error' => $e->getMessage(),
                 'data' => $request->all()
             ]);
             
-            return back()->withErrors('Erreur lors de la création : ' . $e->getMessage());
+            return back()
+                ->withInput()
+                ->withErrors('Erreur lors de la création de la société : ' . $e->getMessage());
         }
     }
     
     /**
-     * Affiche le formulaire d'édition d'une société
+     * Affiche le formulaire d'édition
      */
-    public function edit($societe)
+    public function edit(Societe $societe)
     {
-        Log::info('✏️ Formulaire édition société', ['societe' => $societe]);
+        Log::info('✏️ Formulaire édition société', ['societe_id' => $societe->id]);
         
-        // Récupérer les statistiques actuelles
-        $stats = Document::getSocietyStats($societe);
+        $couleurs = [
+            '#3B82F6' => 'Bleu',
+            '#10B981' => 'Vert',
+            '#F59E0B' => 'Orange',
+            '#EF4444' => 'Rouge',
+            '#8B5CF6' => 'Violet',
+            '#EC4899' => 'Rose',
+        ];
         
-        $infosSociete = $this->getCompanyInfo($societe);
+        $icones = [
+            'fa-building' => 'Bâtiment',
+            'fa-industry' => 'Industrie',
+            'fa-store' => 'Magasin',
+            'fa-briefcase' => 'Porte-documents',
+            'fa-handshake' => 'Poignée de main',
+            'fa-chart-line' => 'Graphique',
+        ];
         
-        return view('back.societes.edit', compact('societe', 'infosSociete', 'stats'));
+        $activites = Activite::active()->get();
+        
+        return view('back.societes.edit', compact('societe', 'couleurs', 'icones', 'activites'));
     }
     
     /**
-     * Met à jour une société existante
+     * Met à jour une société
      */
-    public function update(Request $request, $societe)
+    public function update(Request $request, Societe $societe)
     {
         $request->validate([
             'nom' => 'required|string|max:100',
-            'adresse' => 'required|string',
+            'adresse' => 'nullable|string',
             'telephone' => 'nullable|string|max:20',
             'email' => 'nullable|email',
-            'siret' => 'nullable|string|max:20',
-            'logo' => 'nullable|image|max:2048'
+            'ville' => 'nullable|string|max:50',
+            'code_postal' => 'nullable|string|max:10',
+            'siret' => 'nullable|string|max:14',
+            'tva_intracommunautaire' => 'nullable|string|max:20',
+            'logo' => 'nullable|image|max:2048',
+            'couleur' => 'nullable|string|max:7',
+            'icon' => 'nullable|string|max:50',
+            'est_active' => 'boolean',
+            'activites' => 'nullable|array',
+            'activites.*' => 'exists:activites,id',
         ]);
         
         try {
-            // Note: Mettre à jour la configuration, pas les documents existants
+            DB::beginTransaction();
             
-            Log::info('🔄 Configuration société mise à jour', [
-                'societe' => $societe,
-                'nouveau_nom' => $request->nom,
-                'user_id' => auth()->id()
+            // Gérer le logo
+            if ($request->hasFile('logo')) {
+                // Supprimer l'ancien logo s'il existe
+                if ($societe->logo_path) {
+                    Storage::disk('public')->delete($societe->logo_path);
+                }
+                
+                $logoPath = $request->file('logo')->store('logos', 'public');
+                $societe->logo_path = $logoPath;
+            }
+            
+            $societe->update([
+                'nom' => $request->nom,
+                'adresse' => $request->adresse,
+                'telephone' => $request->telephone,
+                'email' => $request->email,
+                'ville' => $request->ville,
+                'code_postal' => $request->code_postal,
+                'siret' => $request->siret,
+                'tva_intracommunautaire' => $request->tva_intracommunautaire,
+                'couleur' => $request->couleur,
+                'icon' => $request->icon,
+                'est_active' => $request->has('est_active'),
             ]);
             
-            return redirect()->route('back.societe.show', ['societe' => $societe])
-                ->with('success', 'Configuration mise à jour avec succès !');
+            // Synchroniser les activités
+            $societe->activites()->sync($request->activites ?? []);
+            
+            DB::commit();
+            
+            Log::info('🔄 Société mise à jour', [
+                'id' => $societe->id,
+                'nom' => $societe->nom,
+                'est_active' => $societe->est_active
+            ]);
+            
+            return redirect()->route('back.societes.index')
+                ->with('success', 'Société mise à jour avec succès !');
                 
         } catch (\Exception $e) {
+            DB::rollBack();
+            
             Log::error('❌ Erreur mise à jour société', [
                 'error' => $e->getMessage(),
-                'societe' => $societe
+                'societe_id' => $societe->id
             ]);
             
-            return back()->withErrors('Erreur lors de la mise à jour : ' . $e->getMessage());
+            return back()
+                ->withInput()
+                ->withErrors('Erreur lors de la mise à jour : ' . $e->getMessage());
         }
     }
     
     /**
-     * Supprime une société (configuration uniquement)
+     * Basculer l'état actif/inactif
      */
-    public function destroy($societe)
+    public function toggle(Societe $societe)
+    {
+        try {
+            $newStatus = $societe->toggleStatus();
+            
+            Log::info('🔄 Statut société basculé', [
+                'id' => $societe->id,
+                'nom' => $societe->nom,
+                'nouveau_statut' => $newStatus ? 'actif' : 'inactif'
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'est_active' => $newStatus,
+                'message' => 'Statut mis à jour avec succès'
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('❌ Erreur basculement statut société', [
+                'error' => $e->getMessage(),
+                'societe_id' => $societe->id
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors du basculement'
+            ], 500);
+        }
+    }
+    
+    /**
+     * Supprime une société
+     */
+    public function destroy(Societe $societe)
     {
         try {
             // Vérifier qu'il n'y a pas de documents liés
-            $documentsCount = Document::where('society', $societe)->count();
-            
-            if ($documentsCount > 0) {
-                return back()->withErrors('Impossible de supprimer cette société : ' . $documentsCount . ' documents y sont liés.');
+            if ($societe->documents()->exists()) {
+                return back()->withErrors('Impossible de supprimer cette société : des documents y sont liés.');
             }
             
-            Log::info('🗑️ Configuration société supprimée', [
-                'societe' => $societe,
-                'user_id' => auth()->id()
+            // Supprimer le logo s'il existe
+            if ($societe->logo_path) {
+                Storage::disk('public')->delete($societe->logo_path);
+            }
+            
+            $nom = $societe->nom;
+            $societe->delete();
+            
+            Log::info('🗑️ Société supprimée', [
+                'id' => $societe->id,
+                'nom' => $nom
             ]);
             
-            // Supprimer la configuration uniquement
-            // Note: Les documents ne sont pas affectés
-            
-            return redirect()->route('back.societe.index')
-                ->with('success', 'Configuration de société supprimée avec succès !');
+            return redirect()->route('back.societes.index')
+                ->with('success', 'Société supprimée avec succès !');
                 
         } catch (\Exception $e) {
             Log::error('❌ Erreur suppression société', [
                 'error' => $e->getMessage(),
-                'societe' => $societe
+                'societe_id' => $societe->id
             ]);
             
             return back()->withErrors('Erreur lors de la suppression : ' . $e->getMessage());
@@ -222,14 +379,14 @@ class SocieteController extends Controller
     /**
      * Récupère les documents d'une société avec filtres
      */
-    public function documents($societe, Request $request)
+    public function documents(Societe $societe, Request $request)
     {
         Log::info('📄 Documents par société', [
-            'societe' => $societe,
+            'societe_id' => $societe->id,
             'filtres' => $request->all()
         ]);
         
-        $query = Document::where('society', $societe)
+        $query = $societe->documents()
             ->with(['user', 'parent']);
         
         // Filtres
@@ -249,81 +406,156 @@ class SocieteController extends Controller
             $query->whereDate('created_at', '<=', $request->date_fin);
         }
         
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('reference', 'LIKE', "%{$search}%")
+                  ->orWhere('adresse_travaux', 'LIKE', "%{$search}%")
+                  ->orWhere('reference_devis', 'LIKE', "%{$search}%")
+                  ->orWhere('reference_facture', 'LIKE', "%{$search}%");
+            });
+        }
+        
         $documents = $query->latest()
             ->paginate(20)
             ->withQueryString();
         
-        $nomSociete = match($societe) {
-            'nova' => 'Énergie Nova',
-            'house' => 'MyHouse Solutions',
-            default => ucfirst($societe)
-        };
+        // Options de filtres
+        $activites = $societe->documents()
+            ->select('activity')
+            ->distinct()
+            ->pluck('activity');
+        
+        $types = $societe->documents()
+            ->select('type')
+            ->distinct()
+            ->pluck('type');
         
         return view('back.societes.documents', compact(
             'societe',
-            'nomSociete',
-            'documents'
+            'documents',
+            'activites',
+            'types'
         ));
     }
     
     /**
-     * Récupère les informations d'une société
+     * Exporte les documents d'une société
      */
-    private function getCompanyInfo(string $societe): array
+    public function export(Societe $societe, Request $request)
     {
-        return match($societe) {
-            'nova' => [
-                'nom' => 'Énergie Nova',
-                'code' => 'nova',
-                'adresse' => '123 Avenue des Entrepreneurs, 75000 Paris',
-                'telephone' => '01 23 45 67 89',
-                'email' => 'contact@nova-energie.fr',
-                'siret' => '123 456 789 00012',
-                'tva' => 'FR 12 345 678 901',
-                'logo' => asset('storage/logos/nova-logo.png') // Si vous avez un logo
-            ],
-            'house' => [
-                'nom' => 'MyHouse Solutions',
-                'code' => 'house',
-                'adresse' => '456 Avenue des Métiers, 69000 Lyon',
-                'telephone' => '04 56 78 90 12',
-                'email' => 'contact@myhouse.fr',
-                'siret' => '987 654 321 00098',
-                'tva' => 'FR 98 765 432 109',
-                'logo' => asset('storage/logos/house-logo.png') // Si vous avez un logo
-            ],
-            default => [
-                'nom' => ucfirst($societe),
-                'code' => $societe,
-                'adresse' => '',
-                'telephone' => '',
-                'email' => '',
-                'siret' => '',
-                'tva' => '',
-                'logo' => null
-            ]
+        Log::info('📤 Export documents société', ['societe_id' => $societe->id]);
+        
+        $query = $societe->documents();
+        
+        // Appliquer les mêmes filtres que la page documents
+        if ($request->filled('activity')) {
+            $query->where('activity', $request->activity);
+        }
+        
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+        
+        if ($request->filled('date_debut')) {
+            $query->whereDate('created_at', '>=', $request->date_debut);
+        }
+        
+        if ($request->filled('date_fin')) {
+            $query->whereDate('created_at', '<=', $request->date_fin);
+        }
+        
+        $documents = $query->get();
+        
+        // Générer le CSV
+        $fileName = "documents_{$societe->code}_" . date('Y-m-d') . '.csv';
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
+        ];
+        
+        $callback = function() use ($documents) {
+            $file = fopen('php://output', 'w');
+            
+            // En-têtes
+            fputcsv($file, [
+                'Référence',
+                'Type',
+                'Activité',
+                'Adresse travaux',
+                'Montant TTC',
+                'Date création',
+                'Référence devis',
+                'Référence facture',
+                'Créé par'
+            ]);
+            
+            // Données
+            foreach ($documents as $document) {
+                fputcsv($file, [
+                    $document->reference,
+                    $document->type_name,
+                    $document->activity_name,
+                    $document->adresse_travaux,
+                    $document->montant_ttc,
+                    $document->created_at->format('d/m/Y'),
+                    $document->reference_devis,
+                    $document->reference_facture,
+                    $document->user->name ?? 'Inconnu'
+                ]);
+            }
+            
+            fclose($file);
         };
+        
+        return response()->stream($callback, 200, $headers);
     }
     
     /**
-     * Récupère les clients les plus fréquents pour une société
+     * Affiche les statistiques détaillées d'une société
      */
-    private function getFrequentClients(string $societe): array
+    public function stats(Societe $societe)
     {
-        // Récupère les adresses les plus fréquentes dans les documents
-        $clients = Document::where('society', $societe)
-            ->whereNotNull('adresse_travaux')
-            ->selectRaw('adresse_travaux, COUNT(*) as total')
-            ->groupBy('adresse_travaux')
-            ->orderByDesc('total')
-            ->limit(5)
+        Log::info('📊 Statistiques société consultées', ['societe_id' => $societe->id]);
+        
+        $stats = $societe->getStats();
+        
+        // Évolution mensuelle
+        $evolution = Document::where('society', $societe->code)
+            ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, COUNT(*) as count, SUM(montant_ttc) as total_ttc')
+            ->groupBy('year', 'month')
+            ->orderBy('year', 'asc')
+            ->orderBy('month', 'asc')
             ->get();
         
-        return $clients->map(function ($client) {
-            return [
-                'adresse' => $client->adresse_travaux,
-                'total_documents' => $client->total
-            ];
-        })->toArray();
+        // Répartition par activité
+        $repartitionActivite = $societe->documents()
+            ->selectRaw('activity, COUNT(*) as count, SUM(montant_ttc) as total_ttc')
+            ->groupBy('activity')
+            ->get()
+            ->mapWithKeys(function ($item) {
+                return [
+                    $item->activity => [
+                        'count' => $item->count,
+                        'total_ttc' => $item->total_ttc
+                    ]
+                ];
+            })
+            ->toArray();
+        
+        // Top 10 des documents par montant
+        $topDocuments = $societe->documents()
+            ->whereNotNull('montant_ttc')
+            ->orderByDesc('montant_ttc')
+            ->limit(10)
+            ->get();
+        
+        return view('back.societes.stats', compact(
+            'societe',
+            'stats',
+            'evolution',
+            'repartitionActivite',
+            'topDocuments'
+        ));
     }
 }

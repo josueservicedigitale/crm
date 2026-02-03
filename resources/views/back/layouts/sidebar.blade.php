@@ -49,43 +49,54 @@
                 <i class="fa fa-tachometer-alt me-2"></i>Dashboard
             </a>
 
-            <!-- ACTIVITÉS -->
-            <div class="nav-item dropdown">
-                <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                    <i class="fa fa-tasks me-2"></i>ACTIVITÉS
-                </a>
-                <div class="dropdown-menu bg-transparent border-0">
-                    @foreach($activites as $key => $label)
-                        <a href="{{ route('back.activite.show', ['activite' => $key]) }}"
-                            class="dropdown-item {{ $currentActivity === $key ? 'active' : '' }}">
-                            <i class="fa fa-gear me-2"></i>{{ $label }}
-                        </a>
-                    @endforeach
-                    <div class="dropdown-divider"></div>
-                    <a href="{{ route('back.activite.create') }}" class="dropdown-item">
-                        <i class="fa fa-plus me-2"></i>Ajouter une activité
-                    </a>
-                </div>
-            </div>
+        <!-- ACTIVITÉS -->
+<div class="nav-item dropdown">
+    <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+        <i class="fa fa-tasks me-2"></i>ACTIVITÉS
+    </a>
+    <div class="dropdown-menu bg-transparent border-0">
+        @foreach($activites as $key => $label)
+            {{-- Utilisez back.activites.show (pluriel) --}}
+            <a href="{{ route('back.activites.show', $key) }}"
+                class="dropdown-item {{ $currentActivity === $key ? 'active' : '' }}">
+                <i class="fa fa-gear me-2"></i>{{ $label }}
+            </a>
+        @endforeach
+        <div class="dropdown-divider"></div>
+        {{-- Utilisez back.activites.create (pluriel) --}}
+        <a href="{{ route('back.activites.create') }}" class="dropdown-item">
+            <i class="fa fa-plus me-2"></i>Ajouter une activité
+        </a>
+          <a href="{{ route('back.activites.index') }}" class="dropdown-item">
+            <i class="fas fa-list me-2"></i>Toutes les activités
+        </a>
+    </div>
+</div>
 
-            <!-- SOCIÉTÉS -->
-            <div class="nav-item dropdown">
-                <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                    <i class="fa fa-building me-2"></i>SOCIÉTÉS
-                </a>
-                <div class="dropdown-menu bg-transparent border-0">
-                    @foreach($societes as $key => $label)
-                        <a href="{{ route('back.societe.show', ['societe' => $key]) }}"
-                            class="dropdown-item {{ $currentSociety === $key ? 'active' : '' }}">
-                            <i class="fa fa-building me-2"></i>{{ $label }}
-                        </a>
-                    @endforeach
-                    <div class="dropdown-divider"></div>
-                    <a href="{{ route('back.societe.create') }}" class="dropdown-item">
-                        <i class="fa fa-plus me-2"></i>Ajouter une société
-                    </a>
-                </div>
-            </div>
+<!-- SOCIÉTÉS -->
+<div class="nav-item dropdown">
+    <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+        <i class="fa fa-building me-2"></i>SOCIÉTÉS
+    </a>
+    <div class="dropdown-menu bg-transparent border-0">
+        @foreach($societes as $key => $label)
+            {{-- Utilisez back.societes.show (pluriel) --}}
+            <a href="{{ route('back.societes.show', $key) }}"
+                class="dropdown-item {{ $currentSociety === $key ? 'active' : '' }}">
+                <i class="fa fa-building me-2"></i>{{ $label }}
+            </a>
+        @endforeach
+        <div class="dropdown-divider"></div>
+        {{-- Utilisez back.societes.create (pluriel) --}}
+        <a href="{{ route('back.societes.create') }}" class="dropdown-item">
+            <i class="fa fa-plus me-2"></i>Ajouter une société
+        </a>
+        {{-- Optionnel: Ajouter un lien vers la liste complète --}}
+        <a href="{{ route('back.societes.index') }}" class="dropdown-item">
+            <i class="fas fa-list me-2"></i>Toutes les sociétés
+        </a>
+    </div>
+</div>
 
             <!-- ESPACES DE TRAVAIL -->
             <div class="nav-item dropdown">

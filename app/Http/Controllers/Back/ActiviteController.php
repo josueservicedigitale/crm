@@ -7,6 +7,7 @@ use App\Models\Activite;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Collection;
 
 class ActiviteController extends Controller
 {
@@ -16,30 +17,31 @@ class ActiviteController extends Controller
     public function index()
     {
         Log::info('📋 Liste des activités consultée', ['user_id' => auth()->id()]);
-        
+        // Pagination pour la vue (15 par page)
         $activites = Activite::withCount('documents')
             ->orderBy('est_active', 'desc')
             ->orderBy('nom', 'asc')
-            ->get();
-        
-        // Statistiques globales
+            ->paginate(15);
+
+        // Statistiques globales (calculées sur l'ensemble des enregistrements)
+        $all = Activite::withCount('documents')->get();
         $stats = [
-            'total' => $activites->count(),
-            'actives' => $activites->where('est_active', true)->count(),
-            'inactives' => $activites->where('est_active', false)->count(),
-            'documents_total' => $activites->sum('documents_count'),
+            'total' => $all->count(),
+            'actives' => $all->where('est_active', true)->count(),
+            'inactives' => $all->where('est_active', false)->count(),
+            'documents_total' => $all->sum('documents_count'),
         ];
-        
+
         return view('back.activites.index', compact('activites', 'stats'));
     }
-    
+
     /**
      * Affiche le formulaire de création
      */
     public function create()
     {
         Log::info('➕ Formulaire création activité affiché');
-        
+
         $couleurs = [
             '#3B82F6' => 'Bleu',
             '#10B981' => 'Vert',
@@ -48,7 +50,7 @@ class ActiviteController extends Controller
             '#8B5CF6' => 'Violet',
             '#EC4899' => 'Rose',
         ];
-        
+
         $icones = [
             'fa-broom' => 'Balai',
             'fa-fire' => 'Flamme',
@@ -58,10 +60,10 @@ class ActiviteController extends Controller
             'fa-wrench' => 'Clé',
             'fa-thermometer-half' => 'Thermomètre',
         ];
-        
+
         return view('back.activites.create', compact('couleurs', 'icones'));
     }
-    
+
     /**
      * Enregistre une nouvelle activité
      */
@@ -75,10 +77,10 @@ class ActiviteController extends Controller
             'icon' => 'nullable|string|max:50',
             'est_active' => 'boolean',
         ]);
-        
+
         try {
             DB::beginTransaction();
-            
+
             $activite = Activite::create([
                 'nom' => $request->nom,
                 'code' => $request->code,
@@ -88,39 +90,39 @@ class ActiviteController extends Controller
                 'est_active' => $request->has('est_active'),
                 'user_id' => auth()->id(),
             ]);
-            
+
             DB::commit();
-            
+
             Log::info('✅ Activité créée', [
                 'id' => $activite->id,
                 'nom' => $activite->nom,
                 'user_id' => auth()->id()
             ]);
-            
+
             return redirect()->route('back.activites.index')
                 ->with('success', 'Activité créée avec succès !');
-                
+
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             Log::error('❌ Erreur création activité', [
                 'error' => $e->getMessage(),
                 'data' => $request->all()
             ]);
-            
+
             return back()
                 ->withInput()
                 ->withErrors('Erreur lors de la création de l\'activité : ' . $e->getMessage());
         }
     }
-    
+
     /**
      * Affiche le formulaire d'édition
      */
     public function edit(Activite $activite)
     {
         Log::info('✏️ Formulaire édition activité', ['activite_id' => $activite->id]);
-        
+
         $couleurs = [
             '#3B82F6' => 'Bleu',
             '#10B981' => 'Vert',
@@ -129,7 +131,7 @@ class ActiviteController extends Controller
             '#8B5CF6' => 'Violet',
             '#EC4899' => 'Rose',
         ];
-        
+
         $icones = [
             'fa-broom' => 'Balai',
             'fa-fire' => 'Flamme',
@@ -139,10 +141,10 @@ class ActiviteController extends Controller
             'fa-wrench' => 'Clé',
             'fa-thermometer-half' => 'Thermomètre',
         ];
-        
+
         return view('back.activites.edit', compact('activite', 'couleurs', 'icones'));
     }
-    
+
     /**
      * Met à jour une activité
      */
@@ -156,10 +158,10 @@ class ActiviteController extends Controller
             'icon' => 'nullable|string|max:50',
             'est_active' => 'boolean',
         ]);
-        
+
         try {
             DB::beginTransaction();
-            
+
             $activite->update([
                 'nom' => $request->nom,
                 'code' => $request->code,
@@ -168,32 +170,32 @@ class ActiviteController extends Controller
                 'icon' => $request->icon,
                 'est_active' => $request->has('est_active'),
             ]);
-            
+
             DB::commit();
-            
+
             Log::info('🔄 Activité mise à jour', [
                 'id' => $activite->id,
                 'nom' => $activite->nom,
                 'est_active' => $activite->est_active
             ]);
-            
+
             return redirect()->route('back.activites.index')
                 ->with('success', 'Activité mise à jour avec succès !');
-                
+
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             Log::error('❌ Erreur mise à jour activité', [
                 'error' => $e->getMessage(),
                 'activite_id' => $activite->id
             ]);
-            
+
             return back()
                 ->withInput()
                 ->withErrors('Erreur lors de la mise à jour : ' . $e->getMessage());
         }
     }
-    
+
     /**
      * Basculer l'état actif/inactif
      */
@@ -201,32 +203,32 @@ class ActiviteController extends Controller
     {
         try {
             $newStatus = $activite->toggleStatus();
-            
+
             Log::info('🔄 Statut activité basculé', [
                 'id' => $activite->id,
                 'nom' => $activite->nom,
                 'nouveau_statut' => $newStatus ? 'actif' : 'inactif'
             ]);
-            
+
             return response()->json([
                 'success' => true,
                 'est_active' => $newStatus,
                 'message' => 'Statut mis à jour avec succès'
             ]);
-            
+
         } catch (\Exception $e) {
             Log::error('❌ Erreur basculement statut', [
                 'error' => $e->getMessage(),
                 'activite_id' => $activite->id
             ]);
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors du basculement'
             ], 500);
         }
     }
-    
+
     /**
      * Supprime une activité
      */
@@ -237,24 +239,24 @@ class ActiviteController extends Controller
             if ($activite->documents()->exists()) {
                 return back()->withErrors('Impossible de supprimer cette activité : des documents y sont liés.');
             }
-            
+
             $nom = $activite->nom;
             $activite->delete();
-            
+
             Log::info('🗑️ Activité supprimée', [
                 'id' => $activite->id,
                 'nom' => $nom
             ]);
-            
+
             return redirect()->route('back.activites.index')
                 ->with('success', 'Activité supprimée avec succès !');
-                
+
         } catch (\Exception $e) {
             Log::error('❌ Erreur suppression activité', [
                 'error' => $e->getMessage(),
                 'activite_id' => $activite->id
             ]);
-            
+
             return back()->withErrors('Erreur lors de la suppression : ' . $e->getMessage());
         }
     }

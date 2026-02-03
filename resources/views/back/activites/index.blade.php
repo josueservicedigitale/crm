@@ -157,7 +157,7 @@ $(document).ready(function() {
         
         // Envoi AJAX
         $.ajax({
-            url: "{{ route('back.activites.toggle', '') }}/" + activiteId,
+            url: "{{ url('back/activites') }}/" + activiteId + "/toggle",
             method: 'POST',
             data: {
                 _token: "{{ csrf_token() }}",
@@ -207,7 +207,7 @@ $(document).ready(function() {
                 // Soumission du formulaire de suppression
                 const form = $('<form>', {
                     'method': 'POST',
-                    'action': "{{ route('back.activites.destroy', '') }}/" + activiteId
+                    'action': "{{ url('back/activites') }}/" + activiteId
                 });
                 
                 form.append($('<input>', {
