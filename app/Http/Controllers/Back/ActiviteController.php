@@ -199,39 +199,57 @@ class ActiviteController extends Controller
     /**
      * Basculer l'état actif/inactif
      */
-    public function toggle(Activite $activite)
-    {
-        try {
-            $newStatus = $activite->toggleStatus();
-
-            Log::info('🔄 Statut activité basculé', [
-                'id' => $activite->id,
-                'nom' => $activite->nom,
-                'nouveau_statut' => $newStatus ? 'actif' : 'inactif'
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'est_active' => $newStatus,
-                'message' => 'Statut mis à jour avec succès'
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('❌ Erreur basculement statut', [
-                'error' => $e->getMessage(),
-                'activite_id' => $activite->id
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors du basculement'
-            ], 500);
-        }
+public function toggle(Activite $activite)
+{
+    try {
+        // DEBUG: log avant
+        Log::info('🔄 Début toggle', [
+            'id' => $activite->id,
+            'nom' => $activite->nom,
+            'avant' => $activite->est_active ? 'true' : 'false'
+        ]);
+        
+        // Méthode
+        $activite->est_active = !$activite->est_active;
+        $activite->save();
+        
+        $activite->refresh();
+        
+        // DEBUG: log après
+        Log::info('🔄 Fin toggle', [
+            'id' => $activite->id,
+            'nom' => $activite->nom,
+            'après' => $activite->est_active ? 'true' : 'false'
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'est_active' => (bool)$activite->est_active, // Cast en booléen
+            'message' => $activite->est_active ? 'Activité activée' : 'Activité désactivée'
+        ]);
+        
+    } catch (\Exception $e) {
+        Log::error('❌ Erreur basculement statut', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+            'activite_id' => $activite->id
+        ]);
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Erreur technique: ' . $e->getMessage()
+        ], 500);
     }
+}
+
 
     /**
      * Supprime une activité
      */
+
+    /**
+ * Basculer l'état actif/inactif
+ */
     public function destroy(Activite $activite)
     {
         try {

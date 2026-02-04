@@ -14,6 +14,12 @@
             color: #000;
         }
         
+        /* Page break fix */
+        .page-break {
+            page-break-before: always;
+            break-before: page;
+        }
+        
         /* En-tête */
         .header {
             text-align: center;
@@ -56,6 +62,11 @@
         
         .blue-text {
             color: #4471C4;
+        }
+        
+        .blue-signature {
+            color: #2a5d9f;
+            font-size: 12px;
         }
         
         .italic {
@@ -123,20 +134,6 @@
             margin: 10pt 0;
         }
         
-        /* Signature */
-        .signature-area {
-            display: flex;
-            justify-content: space-between;
-            margin: 20pt 0;
-            padding: 0 5pt;
-        }
-        
-        .signature-box {
-            width: 48%;
-            border-top: 1pt solid #000;
-            padding-top: 15pt;
-        }
-        
         /* Images */
         img {
             max-width: 100%;
@@ -150,12 +147,14 @@
             margin: 20pt 0 10pt;
         }
         
+        /* Logos footer avec plus d'espace */
         .footer-logos {
             display: flex;
             justify-content: center;
-            gap: 15pt;
+            gap: 40pt;
             align-items: center;
-            margin: 10pt 0;
+            margin: 20pt 0;
+            flex-wrap: wrap;
         }
         
         /* Mises en garde */
@@ -167,37 +166,102 @@
             border-radius: 3pt;
         }
         
+        /* ===== STYLE UNIQUE POUR LA SIGNATURE ===== */
+        .signature-container {
+            margin-top: 30px;
+            padding-top: 20px;
+            width: 100%;
+        }
+        
+        .signature-info {
+            margin-bottom: 20px;
+            font-size: 11pt;
+        }
+        
+        /* BLOC UNIQUE RECTANGULAIRE */
+        .signature-block {
+            border: 2px solid #000;
+            height: 140px;
+            width: 100%;
+            position: relative;
+            margin-top: 10px;
+        }
+        
+        /* Texte "Signature" en bas à gauche DANS le bloc */
+        .signature-text {
+            position: absolute;
+            bottom: 10px;
+            left: 20px;
+            color: #2a5d9f;
+            font-size: 11pt;
+        }
+        
+        /* Texte "Cachet" en bas à droite DANS le bloc */
+        .stamp-text {
+            position: absolute;
+            bottom: 10px;
+            right: 20px;
+            color: #2a5d9f;
+            font-size: 11pt;
+        }
+        
+        /* Ligne de séparation au milieu */
+        .signature-divider {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            border-top: 1px dashed #999;
+        }
+        
         /* Responsive */
         @media print {
             body {
                 font-size: 9pt;
             }
             .page-break {
-                page-break-after: always;
+                page-break-before: always;
+                break-before: page;
             }
+            .signature-container {
+                position: fixed;
+                bottom: 50px;
+                width: 100%;
+            }
+        }
+        
+        /* Espacement des logos en-tête */
+        .logo-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20pt;
+        }
+        
+        .logo-table td {
+            border: none;
+            padding: 10pt;
+            vertical-align: middle;
         }
     </style>
 </head>
 <body>
-  <!-- ====== EN-TÊTE AVEC 3 LOGOS ALIGNÉS ====== -->
-<table width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 15pt;">
-    <tr>
-        <!-- Logo gauche -->
-        <td width="33%" align="left" style="border: none;">
-            <img src="{{ public_path('assets/img/renova/Cdc_files/Image_001.jpg') }}" height="70">
-        </td>
-
-        <!-- Logo centre -->
-        <td width="34%" align="center" style="border: none;">
-            <img src="{{ public_path('assets/img/renova/Cdc_files/Image_002.png') }}" height="55">
-        </td>
-
-        <!-- Logo droite -->
-        <td width="33%" align="right" style="border: none;">
-            <img src="{{ public_path('assets/img/renova/Cdc_files/Image_003.jpg') }}" height="70">
-        </td>
-    </tr>
-</table>
+    <!-- ====== EN-TÊTE AVEC 3 LOGOS ====== -->
+    <table class="logo-table">
+        <tr>
+            <td width="33%" align="right">
+                <img src="/assets/img/renova/Cdc_files/image_003.jpg" height="70" alt="Logo 3">
+            </td> 
+            <td width="33%" align="left">
+                <img src="/assets/img/renova/Cdc_files/image_001.jpg" height="70" alt="Logo 1">
+            </td>
+            
+            <td width="34%" align="center">
+                <img src="/assets/img/renova/Cdc_files/image_002.png" height="55" alt="Logo 2">
+            </td>
+            
+            
+        </tr>
+    </table>
 
     <!-- Introduction -->
     <div class="section">
@@ -253,6 +317,9 @@
         </table>
     </div>
     
+    <!-- Page break corrigé -->
+    <div class="page-break"></div>
+    
     <!-- Bénéficiaire -->
     <div class="section">
         <h2>Bénéficiaire de l'Offre</h2>
@@ -290,21 +357,29 @@
         <p><strong>Date de cette proposition :</strong> 04/12/2025</p>
     </div>
     
-    <!-- Signature -->
-    <div class="signature-area">
-        <div class="signature-box">
-            <p><strong>Signature :</strong></p>
-            <p class="blue-text">NOM Prénom : HAMLET TAMOYAN</p>
-            <p class="blue-text">Fonction : Président</p>
+    <!-- ===== NOUVELLE SIGNATURE : UN SEUL BLOC ===== -->
+    <div class="signature-container">
+        <div class="signature-info">
+            <strong>NOM Prénom :</strong> HAMLET TAMOYAN<br>
+            <strong>Fonction :</strong> Président
         </div>
         
-        <div class="signature-box" style="text-align: center;">
-            <p class="blue-text">Tampon et signature de la société</p>
-            <br><br><br>
-            <p>___________________________________</p>
+        <!-- UN SEUL BLOC RECTANGULAIRE VIDE -->
+        <div class="signature-block">
+            <!-- Ligne de séparation au milieu (optionnelle) -->
+            
+            <!-- Texte "Signature" en bas à gauche DANS le bloc -->
+            <div class="signature-text text-center">
+                <strong>Signature et cachet de la société</strong>
+            </div>
+            
+           
         </div>
     </div>
+    
+    <!-- Nouvelle page -->
     <div class="page-break"></div>
+    
     <!-- Mentions importantes -->
     <div class="warning">
         <h1>⚠️ Faites réaliser plusieurs devis</h1>
@@ -317,10 +392,11 @@
     <div class="section">
         <h2>Informations et Contact</h2>
         
+        <!-- Logos avec plus d'espace -->
         <div class="footer-logos">
-            <img src="{{ public_path('assets/img/renova/Cdc_files/Image_006.jpg') }}" width="192" height="77" alt="Logo 1">
-            <img src="{{ public_path('assets/img/renova/Cdc_files/Image_007.jpg') }}" width="214" height="46" alt="Logo 2">
-            <img src="{{ public_path('assets/img/renova/Cdc_files/Image_008.png') }}" width="100" height="60" alt="Logo 3">
+            <img src="/assets/img/renova/Cdc_files/image_006.jpg" width="192" height="77" alt="Logo 1">
+            <img src="/assets/img/renova/Cdc_files/image_007.jpg" width="214" height="46" alt="Logo 2">
+            <img src="/assets/img/renova/Cdc_files/image_008.png" width="100" height="60" alt="Logo 3">
         </div>
         
         <p class="small-text">
@@ -347,11 +423,11 @@
     <!-- Pied de page -->
     <div class="footer">
         <p class="italic small-text">
-            FORM_CONF_CDC_BAR SE 109_EBS Energie_INDIRECT HCDP_2024 09 01
+            <!-- FORM_CONF_CDC_BAR SE 109_EBS Energie_INDIRECT HCDP_2024 09 01 -->
         </p>
         
         <div>
-            <img src="{{ public_path('assets/img/renova/Cdc_files/Image_009.png') }}" width="699" height="158" alt="Bannière informations">
+            <img src="/assets/img/renova/Cdc_files/image_009.png" width="699" height="158" alt="Bannière informations">
         </div>
     </div>
 </body>

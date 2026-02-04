@@ -16,7 +16,7 @@
                         <p class="text-muted mb-0">Vue d'ensemble de toutes les activités et sociétés</p>
                     </div>
                     <div>
-                        <a href="{{ route('dashboard') }}" class="btn btn-outline-primary">
+                        <a href="{{ route('back.all-dashboards') }}" class="btn btn-sm btn-outline-primary">
                             <i class="fa fa-arrow-left me-2"></i>Retour Dashboard
                         </a>
                     </div>
@@ -137,7 +137,7 @@
                                             <h6 class="fw-bold mb-1">{{ $activite['nom'] }}</h6>
                                             <p class="text-muted small mb-2">{{ $activite['description'] }}</p>
                                             <div class="d-flex">
-                                                <a href="{{ route('back.activite.show', $key) }}"
+                                                <a href="{{ route('back.activites.show', parameters: $key) }}"
                                                     class="btn btn-sm btn-outline-{{ $activite['color'] }}">
                                                     <i class="fa fa-eye me-1"></i>Détails
                                                 </a>
@@ -177,7 +177,7 @@
                                             <h6 class="fw-bold mb-1">{{ $societe['nom'] }}</h6>
                                             <p class="text-muted small mb-2">{{ $societe['description'] }}</p>
                                             <div class="d-flex">
-                                                <a href="{{ route('back.societe.show', $key) }}"
+                                                <a href="{{ route('back.societes.show', $key) }}"
                                                     class="btn btn-sm btn-outline-{{ $societe['color'] }}">
                                                     <i class="fa fa-building me-1"></i>Profil
                                                 </a>
@@ -387,7 +387,7 @@
                                 </a>
                             </div>
                             <div class="col-md-3">
-                                <a href="{{ route('back.activite.index') }}"
+                                <a href="{{ route('back.activites.index') }}"
                                     class="btn btn-outline-success w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
                                     <i class="fa fa-tasks fa-2x mb-2"></i>
                                     <span>Gérer les activités</span>
@@ -395,7 +395,7 @@
                                 </a>
                             </div>
                             <div class="col-md-3">
-                                <a href="{{ route('back.societe.index') }}"
+                                <a href="{{ route('back.societes.index') }}"
                                     class="btn btn-outline-warning w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
                                     <i class="fa fa-building fa-2x mb-2"></i>
                                     <span>Gérer les sociétés</span>

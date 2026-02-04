@@ -292,7 +292,7 @@ class DocumentController extends Controller
             'rapports' => Document::where('type', 'rapport')->count(),
         ];
 
-        return view('back.documents.index', compact('documents', 'stats'));
+        return view('back.documents.tous', compact('documents', 'stats'));
     }
 
     public function searchGlobal(Request $request)
