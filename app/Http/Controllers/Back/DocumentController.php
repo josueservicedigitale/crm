@@ -731,134 +731,209 @@ class DocumentController extends Controller
             'numero' => $numero,
         ]);
     }
-    public function createRapportFromFacture(string $activity, string $society, int $factureId)
-    {
-        $normalizedSociety = $this->normalizeSociety($society);
+public function createRapportFromFacture(string $activity, string $society, int $factureId)
+{
+    $normalizedSociety = $this->normalizeSociety($society);
+    $facture = Document::findOrFail($factureId);
 
-        $facture = Document::findOrFail($factureId);
-
-        $lastRapport = Document::where('activity', $activity)
-            ->where('society', $normalizedSociety)
-            ->where('type', 'rapport')
-            ->latest()
-            ->first();
-
-        $numero = $this->generateNextNumber($activity, $society, 'rapport', $lastRapport);
-
-        $document = new Document();
-        $document->type = 'rapport';
-        $document->society = $society;
-        $document->activity = $activity;
-        $document->parent_id = $facture->id;
-        $document->numero = $numero;
-        $document->fill($facture->toArray());
-
-        $templateView = $this->getFormView('rapport');
-
-        return view('back.documents.form', [
-            'activity' => $activity,
-            'society' => $society,
-            'type' => 'rapport',
-            'parent' => $facture,
-            'document' => $document,
-            'templateView' => $templateView,
-        ]);
+    // Vérifications basiques
+    if ($facture->type !== 'facture') {
+        abort(404, 'Pas une facture');
     }
+
+    // Créer un document vide (tout viendra du parent)
+    $document = new Document();
+    $document->type = 'rapport';
+    $document->parent_id = $facture->id;
+
+    // Aucun champ à pré-remplir dans le formulaire
+    // Tout sera géré dans store()
+
+    $templateView = $this->getFormView('rapport');
+
+    return view('back.documents.form', [
+        'activity' => $activity,
+        'society' => $society,
+        'type' => 'rapport',
+        'parent' => $facture,
+        'document' => $document,
+        'templateView' => $templateView,
+    ]);
+}
     // =========================================================================
     // ENREGISTREMENT ET MISE À JOUR
     // =========================================================================
 
+public function store(Request $request, $activity, $society, $type)
+{
+    // Normaliser la société
+    $normalizedSociety = $this->normalizeSociety($society);
 
-    public function store(Request $request, $activity, $society, $type)
-    {
+    Log::info('📝 STORE METHOD - Rapport simple', [
+        'activity' => $activity,
+        'society' => $society,
+        'type' => $type,
+        'parent_id' => $request->parent_id ?? 'null',
+    ]);
 
-    // dd(public_path('assets/img/house/Devis_files/Image_001.jpg'));
+    return DB::transaction(function () use ($request, $activity, $society, $normalizedSociety, $type) {
+        $data = $request->all();
 
-        // Normaliser la société
-        $normalizedSociety = $this->normalizeSociety($society);
+        // 1. TROUVER LA FACTURE PARENT
+        $parentDocument = null;
+        if (!empty($data['parent_id'])) {
+            $parentDocument = Document::find($data['parent_id']);
+            
+            if ($parentDocument) {
+                Log::info('📋 Facture parent trouvée', [
+                    'id' => $parentDocument->id,
+                    'reference' => $parentDocument->reference,
+                    'type' => $parentDocument->type
+                ]);
+                
+                // 2. COPIER TOUTES LES DONNÉES DE LA FACTURE
+                $parentData = $parentDocument->toArray();
+                
+                // Fusionner toutes les données du parent
+                foreach ($parentData as $key => $value) {
+                    // Ne pas copier certains champs
+                    $excludedFields = ['id', 'created_at', 'updated_at', 'type', 'numero', 'reference'];
+                    
+                    if (!in_array($key, $excludedFields) && $value !== null) {
+                        $data[$key] = $value;
+                    }
+                }
+            }
+        }
 
-        Log::info('📝 STORE METHOD CALLED', [
-            'activity' => $activity,
-            'society' => $society,
-            'normalized_society' => $normalizedSociety,
-            'type' => $type,
-            'user_id' => auth()->id(),
+        // 3. CHAMPS OBLIGATOIRES POUR TOUS LES DOCUMENTS
+        // GÉNÉRER LA RÉFÉRENCE EN PREMIER - C'EST LÀ QUE ÇA BLOQUE !
+        $data['reference'] = $data['reference'] ?? $this->generateReference($normalizedSociety, $type);
+        $data['society'] = $normalizedSociety;
+        $data['activity'] = $activity;
+        $data['type'] = $type;
+        $data['user_id'] = auth()->id();
+        
+        // Conserver le parent_id
+        if (!empty($data['parent_id'])) {
+            $data['parent_id'] = $data['parent_id'];
+        }
+
+        // 4. NUMÉROTATION
+        if (!isset($data['numero']) && isset($data['numero_custom'])) {
+            $data['numero'] = $data['numero_custom'];
+        } elseif (!isset($data['numero'])) {
+            $lastDocument = Document::where('activity', $activity)
+                ->where('society', $normalizedSociety)
+                ->where('type', $type)
+                ->latest()
+                ->first();
+            $data['numero'] = $this->generateNextNumber($activity, $normalizedSociety, $type, $lastDocument);
+        }
+
+        // 5. FILTRER LES CHAMPS FILLABLE
+        $model = new Document();
+        $fillable = $model->getFillable();
+        
+        // Ajouter 'reference' si ce n'est pas dans fillable (au cas où)
+        if (!in_array('reference', $fillable)) {
+            $fillable[] = 'reference';
+        }
+        
+        Log::debug('📋 Champs fillable', $fillable);
+        Log::debug('📋 Données reçues', array_keys($data));
+
+        $filteredData = [];
+        foreach ($data as $key => $value) {
+            if (in_array($key, $fillable)) {
+                $filteredData[$key] = $value;
+            }
+        }
+
+        // VÉRIFIER QUE LA RÉFÉRENCE EST BIEN PRÉSENTE
+        if (!isset($filteredData['reference']) || empty($filteredData['reference'])) {
+            $filteredData['reference'] = $this->generateReference($normalizedSociety, $type);
+        }
+
+        Log::info('📋 Données finales du rapport', [
+            'fields_count' => count($filteredData),
+            'has_parent' => !empty($filteredData['parent_id']),
+            'reference' => $filteredData['reference'] ?? 'null',
+            'type' => $filteredData['type'] ?? 'null',
+            'numero' => $filteredData['numero'] ?? 'null'
         ]);
 
-        return DB::transaction(function () use ($request, $activity, $society, $normalizedSociety, $type) {
-            $data = $request->all();
+        // 6. CRÉER LE DOCUMENT
+        $document = Document::create($filteredData);
 
-            // Champs obligatoires
-            $data['reference'] = $data['reference'] ?? Document::generateReference($normalizedSociety, $type);
-            $data['society'] = $normalizedSociety;
-            $data['activity'] = $activity;
-            $data['type'] = $type;
-            $data['user_id'] = auth()->id();
+        Log::info('✅ Document créé avec succès', [
+            'id' => $document->id,
+            'reference' => $document->reference,
+            'type' => $document->type,
+            'parent_id' => $document->parent_id,
+            'society' => $document->society
+        ]);
 
-            // Numérotation
-            if (!isset($data['numero']) && isset($data['numero_custom'])) {
-                $data['numero'] = $data['numero_custom'];
-            } elseif (!isset($data['numero'])) {
-                $lastDocument = Document::where('activity', $activity)
-                    ->where('society', $normalizedSociety)
-                    ->where('type', $type)
-                    ->latest()
-                    ->first();
-                $data['numero'] = $this->generateNextNumber($activity, $normalizedSociety, $type, $lastDocument);
-            }
-
-            // Filtrer les champs fillable
-            $model = new Document();
-            $fillable = $model->getFillable();
-            $filteredData = array_intersect_key($data, array_flip($fillable));
-
-            // Créer le document
-            $document = Document::create($filteredData);
-
-            Log::info('✅ Document created successfully', [
-                'id' => $document->id,
-                'reference' => $document->reference,
-                'type' => $document->type
+        // 7. GÉNÉRER LE PDF
+        try {
+            $template = $this->getPdfView($document);
+            Log::info('🔄 Génération du PDF', [
+                'document_id' => $document->id,
+                'template' => $template
             ]);
 
-            // GÉNÉRER LE PDF IMMÉDIATEMENT
-            try {
-                $template = $this->getPdfView($document);
-                Log::info('🔄 Génération PDF automatique', [
-                    'document_id' => $document->id,
-                    'template' => $template
-                ]);
+            $pdfPath = $this->pdfFillService->generateAndSavePdf($document, $template);
 
-                $pdfPath = $this->pdfFillService->generateAndSavePdf($document, $template);
+            // Mettre à jour le document avec le chemin du PDF
+            $document->update(['file_path' => $pdfPath]);
 
-                Log::info('📄 PDF généré automatiquement', [
-                    'document_id' => $document->id,
-                    'pdf_path' => $pdfPath
-                ]);
+            Log::info('📄 PDF généré et sauvegardé', [
+                'document_id' => $document->id,
+                'pdf_path' => $pdfPath
+            ]);
 
-                // TÉLÉCHARGER DIRECTEMENT LE PDF APRÈS CRÉATION
-                return $this->downloadPDF($activity, $society, $type, $document->id);
+            // 8. TÉLÉCHARGER LE PDF
+            return $this->downloadPDF($activity, $society, $type, $document->id);
 
-            } catch (\Exception $e) {
-                Log::error('❌ Échec génération PDF automatique', [
-                    'document_id' => $document->id,
-                    'error' => $e->getMessage()
-                ]);
+        } catch (\Exception $e) {
+            Log::error('❌ Échec de la génération du PDF', [
+                'document_id' => $document->id,
+                'error' => $e->getMessage()
+            ]);
 
-                // Si le PDF échoue, rediriger vers la page du document
-                return redirect()
-                    ->route('back.document.show', [
-                        'activity' => $activity,
-                        'society' => $society,
-                        'type' => $type,
-                        'document' => $document->id
-                    ])
-                    ->with('success', 'Document créé mais erreur lors de la génération du PDF.')
-                    ->with('error', $e->getMessage());
-            }
-        });
-    }
-    public function update(Request $request, $activity, $society, $type, Document $document)
+            return redirect()
+                ->route('back.document.show', [
+                    'activity' => $activity,
+                    'society' => $society,
+                    'type' => $type,
+                    'document' => $document->id
+                ])
+                ->with('success', 'Document créé avec succès !')
+                ->with('warning', 'Le PDF n\'a pas pu être généré : ' . $e->getMessage());
+        }
+    });
+}
+
+/**
+ * Génère une référence unique pour un document
+ */
+private function generateReference($society, $type)
+{
+    $prefixes = [
+        'devis' => 'DEV',
+        'facture' => 'FAC', 
+        'rapport' => 'RAP',
+        'cahier_des_charges' => 'CDC',
+        'attestation_realisation' => 'ATT-R',
+        'attestation_signataire' => 'ATT-S'
+    ];
+    
+    $prefix = $prefixes[$type] ?? 'DOC';
+    $timestamp = time();
+    $random = mt_rand(1000, 9999);
+    
+    return $prefix . '-' . strtoupper(substr($society, 0, 3)) . '-' . $timestamp . '-' . $random;
+}    public function update(Request $request, $activity, $society, $type, Document $document)
     {
         try {
             Log::info('📝 Update method called', ['document_id' => $document->id]);
@@ -1602,29 +1677,41 @@ class DocumentController extends Controller
     /**
      * Générer le numéro suivant pour un document
      */
-    private function generateNextNumber($activity, $society, $type, $lastDocument = null)
-    {
-        $prefixes = [
-            'devis' => 'DEV',
-            'facture' => 'FAC',
-            'rapport' => 'RAP',
-            'cahier_des_charges' => 'CDC',
-            'attestation_realisation' => 'ATT-R',
-            'attestation_signataire' => 'ATT-S'
-        ];
+  private function generateNextNumber($activity, $society, $type, $lastDocument = null)
+{
+    // Normaliser la société ici aussi
+    $normalizedSociety = $this->normalizeSociety($society);
+    
+    $prefixes = [
+        'devis' => 'DEV',
+        'facture' => 'FAC',
+        'rapport' => 'RAP',
+        'cahier_des_charges' => 'CDC',
+        'attestation_realisation' => 'ATT-R',
+        'attestation_signataire' => 'ATT-S'
+    ];
 
-        $prefix = $prefixes[$type] ?? 'DOC';
-        $year = date('Y');
-        $month = date('m');
+    $prefix = $prefixes[$type] ?? 'DOC';
+    $year = date('Y');
+    $month = date('m');
 
-        if ($lastDocument && preg_match('/^' . $prefix . '-\d{4}-\d{2}-(\d+)$/', $lastDocument->numero, $matches)) {
-            $nextNumber = str_pad((int) $matches[1] + 1, 4, '0', STR_PAD_LEFT);
-        } else {
-            $nextNumber = '0001';
-        }
-
-        return $prefix . '-' . $year . '-' . $month . '-' . $nextNumber;
+    // Chercher le dernier document avec la société normalisée
+    if (!$lastDocument) {
+        $lastDocument = Document::where('activity', $activity)
+            ->where('society', $normalizedSociety)
+            ->where('type', $type)
+            ->latest()
+            ->first();
     }
+
+    if ($lastDocument && preg_match('/^' . $prefix . '-\d{4}-\d{2}-(\d+)$/', $lastDocument->numero, $matches)) {
+        $nextNumber = str_pad((int) $matches[1] + 1, 4, '0', STR_PAD_LEFT);
+    } else {
+        $nextNumber = '0001';
+    }
+
+    return $prefix . '-' . $nextNumber . '-' . $month . '-' . $year;
+}
 
     /**
      * Règles de validation selon le type de document

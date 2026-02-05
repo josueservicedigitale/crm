@@ -7,7 +7,7 @@
 <style>
 body{
     font-family: Arial, sans-serif;
-    margin:40px;
+    margin:10px;
     color:#333;
     font-size:12px;
 }
@@ -51,6 +51,7 @@ body{
     padding:10px;
     border-radius:8px;
     font-size:11px;
+    text-align: center;
 }
 
 /* MAIN GRID */
@@ -67,7 +68,7 @@ body{
     border:2px dashed #e30613;
     border-radius:12px;
     padding:10px;
-    height:140px;
+    height:200px;
 }
 .panel-title{
     background:#e30613;
@@ -98,7 +99,7 @@ input[type=checkbox]{
     border:2px dashed #e30613;
     border-radius:12px;
     padding:8px;
-    height:140px;
+    height:200px;
     font-size:11px;
 }
 .product-title{
@@ -112,19 +113,43 @@ input[type=checkbox]{
 }
 .product-box img{
     height:50px;
-    display:block;
+    display:inline;
     margin:5px auto;
 }
 
 /* FOOT LOGOS */
 .footer-logos{
     margin-top:15px;
-    text-align:right;
+    text-align: center;
 }
 .footer-logos img{
-    height:40px;
+    height: 100px;
+    width: 200px;
+}
+/* LIGNE PRODUIT AVEC CHECKBOX + NOM + IMAGE */
+.product-item{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:6px;
+}
+
+.product-left{
+    display:flex;
+    align-items:center;
+    gap:6px;
+}
+
+.product-item img{
+    height:38px;
     margin-left:10px;
 }
+.choice{
+    display:inline-block;
+    margin-right:14px; /* espace entre Oui et Non */
+}
+
+
 </style>
 </head>
 
@@ -146,7 +171,7 @@ input[type=checkbox]{
 </table>
 
 <div style="text-align:left;">
-    <img src="cee-logo.png" height="50">
+    <img src="/assets/img/house/Rapport_files/image_001.jpg" height="50">
 </div>
 
 <div class="title">ATTESTATION DE DÉSEMBOUAGE</div>
@@ -158,37 +183,38 @@ La société <strong>MY HOUSE</strong> reconnue certifie que l’ensemble du ré
 
 <table class="main-table">
 <tr>
-<td width="20%">
+<td width="40%">
     <div class="side-box">
-        <strong>Bâtiment existant depuis plus de 2 ans à l'engagement de l'opération</strong><br>
-        <input type="checkbox"> Oui<br>
-        <input type="checkbox"> Non<br><br>
+        <strong>Bâtiment existant depuis plus de 2 ans à l'engagement de l'opération</strong><br><br>
+        <label class="choice"><input type="checkbox"> Oui</label>
+        <label class="choice"><input type="checkbox"> Non</label><br><br>
 
-        <strong>Type de logement</strong><br>
-        <input type="checkbox"> Maison<br>
-        <input type="checkbox"> Appartement<br><br>
+        <strong>Type de logement</strong><br><br>
+        <label class="choice"><input type="checkbox"> Maison</label>
+        <label class="choice"><input type="checkbox"> Appartement</label><br><br>
 
-        <strong>L'opération concerne une installation globale de chauffage</strong><br>
-        <input type="checkbox"> Oui<br>
-        <input type="checkbox"> Non
+        <strong>L'opération concerne une installation globale de chauffage</strong><br><br>
+        <label class="choice"><input type="checkbox"> Oui</label>
+        <label class="choice"><input type="checkbox"> Non</label>
     </div>
 </td>
 
-<td width="26%">
+
+<td width="40%">
     <div class="panel">
         <div class="panel-title">Type de générateur</div>
-        <input type="checkbox"> Chaudière hors condensation<br>
-        <input type="checkbox"> Chaudière à condensation<br>
+        <input type="checkbox"> Chaudière hors condensation<br><br>
+        <input type="checkbox"> Chaudière à condensation<br><br>
         <input type="checkbox"> Réseau de chaleur<br><br>
         Puissance nominale du générateur: <strong>600 kW</strong>
     </div>
 </td>
 
-<td width="26%">
+<td width="40%">
     <div class="panel">
         <div class="panel-title">Nombre d’émetteurs désemboués</div>
-        Radiateurs : <strong>42</strong><br>
-        Plancher chauffant : <strong>m2</strong><br><br>
+        Radiateurs : <strong>42</strong><br><br>
+        Plancher chauffant : <strong>m2</strong><br><br><br>
         <div style="margin-top:10px;border:2px dashed #e30613;padding:6px;border-radius:8px;text-align:center;">
             Volume d’eau total du circuit<br>
             <strong>4 660</strong> litres
@@ -196,13 +222,13 @@ La société <strong>MY HOUSE</strong> reconnue certifie que l’ensemble du ré
     </div>
 </td>
 
-<td width="26%">
+<td width="40%">
     <div class="panel">
         <div class="panel-title">Nature du réseau</div>
-        <input type="checkbox"> Cuivre<br>
-        <input type="checkbox"> Acier<br>
-        <input type="checkbox"> Multicouche<br>
-        <input type="checkbox"> Matériaux de synthèse<br>
+        <input type="checkbox"> Cuivre<br><br>
+        <input type="checkbox"> Acier<br><br>
+        <input type="checkbox"> Multicouche<br><br>
+        <input type="checkbox"> Matériaux de synthèse<br><br>
         <input type="checkbox"> Autre
     </div>
 </td>
@@ -221,50 +247,117 @@ La société <strong>MY HOUSE</strong> reconnue certifie que l’ensemble du ré
 
 <table width="100%">
 <tr>
+
 <td width="25%">
     <div class="product-box">
         <div class="product-title">Pompe à désembouer</div>
-        <img src="pump.png">
-        VIRAX<br>
-        Kiloutou<br>
-        Autre
+
+        <div class="product-item">
+            <div class="product-left">
+                <input type="checkbox"> VIRAX
+            </div>
+            <img src="/assets/img/house/Rapport_files/virax.png">
+        </div>
+
+        <div class="product-item">
+            <div class="product-left">
+                <input type="checkbox"> Kiloutou
+            </div>
+            <img src="/assets/img/house/Rapport_files/kiloutou.png">
+        </div>
+
+        <div class="product-item">
+            <div class="product-left">
+                <input type="checkbox"> Autre
+            </div>
+        </div>
     </div>
 </td>
 
 <td width="25%">
     <div class="product-box">
         <div class="product-title">Réactifs désembouant</div>
-        <img src="sentinel-x400.png">
-        Sentinel X400<br>
-        Sentinel X800<br>
-        Autre
+
+        <div class="product-item">
+            <div class="product-left">
+                <input type="checkbox"> Sentinel X400
+            </div>
+            <img src="/assets/img/house/Rapport_files/senti400.png">
+        </div>
+
+        <div class="product-item">
+            <div class="product-left">
+                <input type="checkbox"> Sentinel X800
+            </div>
+            <img src="/assets/img/house/Rapport_files/senti800.png">
+        </div>
+
+        <div class="product-item">
+            <div class="product-left">
+                <input type="checkbox"> Autre
+            </div>
+        </div>
     </div>
 </td>
 
 <td width="25%">
     <div class="product-box">
         <div class="product-title">Réactif inhibiteur</div>
-        <img src="sentinel-x100.png">
-        Sentinel X100<br>
-        Sentinel X700<br>
-        Autre
+
+        <div class="product-item">
+            <div class="product-left">
+                <input type="checkbox"> Sentinel X100
+            </div>
+            <img src="/assets/img/house/Rapport_files/senti100.png">
+        </div>
+
+        <div class="product-item">
+            <div class="product-left">
+                <input type="checkbox"> Sentinel X700
+            </div>
+            <img src="/assets/img/house/Rapport_files/senti700.png">
+        </div>
+
+        <div class="product-item">
+            <div class="product-left">
+                <input type="checkbox"> Autre
+            </div>
+        </div>
     </div>
 </td>
 
 <td width="25%">
     <div class="product-box">
         <div class="product-title">Installations filtre</div>
-        <img src="filter.png">
-        Sentinel Vortex 300<br>
-        Sentinel Vortex 500
+
+        <div class="product-item">
+            <div class="product-left">
+                <input type="checkbox"> Sentinel Vortex 300
+            </div>
+            <img src="/assets/img/house/Rapport_files/vortex300.png">
+        </div>
+
+        <div class="product-item">
+            <div class="product-left">
+                <input type="checkbox"> Sentinel Vortex 500
+            </div>
+            <img src="/assets/img/house/Rapport_files/vortex500.png">
+        </div>
+
+        <div class="product-item">
+            <div class="product-left">
+                <input type="checkbox"> Autre
+            </div>
+        </div>
     </div>
 </td>
+
 </tr>
 </table>
 
+
 <div class="footer-logos">
-    <img src="myhouse-logo.png">
-    <img src="sentinel-logo.png">
+    <img src="/assets/img/house/Rapport_files/Image_005.png">
 </div>
 
 </body>
