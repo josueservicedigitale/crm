@@ -1,8 +1,10 @@
 <?php
 
+
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Console\Scheduling\Schedule;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -10,9 +12,21 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware): void {
+    ->withMiddleware(function (Middleware $middleware) {
         //
     })
-    ->withExceptions(function (Exceptions $exceptions): void {
+    ->withExceptions(function (Exceptions $exceptions) {
         //
-    })->create();
+    })
+    ->withSchedule(function (Schedule $schedule) {
+        // Nettoyer la corbeille tous les jours à minuit
+        $schedule->command('corbeille:nettoyer --jours=30 --force')
+            ->dailyAt('00:00')
+            ->description('Nettoyage automatique de la corbeille')
+            ->onOneServer()
+            ->appendOutputTo(storage_path('logs/corbeille-nettoyage.log'));
+        
+        // Vous pouvez aussi ajouter d'autres tâches planifiées ici
+        // $schedule->command('autre:commande')->hourly();
+    })
+    ->create();

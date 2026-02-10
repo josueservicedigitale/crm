@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB; // AJOUTEZ CETTE LIGNE
 
 class Activite extends Model
 {
@@ -309,11 +310,11 @@ class Activite extends Model
     /**
      * Bascule l'état actif/inactif
      */
-    public function toggleStatus(): bool
-    {
-        $this->est_active = !$this->est_active;
-        return $this->save();
-    }
+  public function toggleStatus(): bool
+{
+    return self::where('id', $this->id)
+        ->update(['est_active' => DB::raw('NOT est_active')]) === 1;
+}
 
     /**
      * Vérifie si l'activité est active

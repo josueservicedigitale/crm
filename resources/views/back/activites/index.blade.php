@@ -142,141 +142,70 @@
 </div>
 @endsection
 
-@push('scripts')
-<script>
-$(document).ready(function() {
-    // Toggle switch avec style Bluetooth
-    $('.toggle-status').on('change', function() {
-        const activiteId = $(this).data('activite-id');
-        const isChecked = $(this).is(':checked');
-        const label = $(this).next('.form-check-label').find('span');
-        
-        // Animation visuelle
-        $(this).prop('disabled', true);
-        label.text('Chargement...').removeClass('text-success text-secondary');
-        
-        // Envoi AJAX
-        $.ajax({
-            url: "{{ url('back/activites') }}/" + activiteId + "/toggle",
-            method: 'POST',
-            data: {
-                _token: "{{ csrf_token() }}",
-                _method: 'PATCH'
-            },
-            success: function(response) {
-                if (response.success) {
-                    // Mise à jour du label
-                    if (response.est_active) {
-                        label.text('Active').addClass('text-success').removeClass('text-secondary');
-                    } else {
-                        label.text('Inactive').addClass('text-secondary').removeClass('text-success');
-                    }
-                    
-                    // Feedback utilisateur
-                    toastr.success('Statut mis à jour');
-                }
-            },
-   $(document).ready(function() {
-    // Toggle switch version simplifiée
-    $('.toggle-status').on('change', function(e) {
+@push('js')
+<script>$(document).ready(function () {
+    // Version SIMPLE qui marche à coup sûr
+    $('.toggle-status').on('change', function (e) {
         e.preventDefault();
         
         const checkbox = $(this);
         const activiteId = checkbox.data('activite-id');
-        const isChecked = checkbox.is(':checked');
         const label = checkbox.next('.form-check-label').find('span');
+        const newState = checkbox.is(':checked');
         
-        // Désactiver temporairement
+        console.log('Toggle sur activité ID:', activiteId);
+        
+        // Désactiver pendant la requête
         checkbox.prop('disabled', true);
         
+        // URL CORRECTE maintenant : /back/activites/{id}/toggle
+        const url = `/back/activites/${activiteId}/toggle`;
+        
+        // Requête AJAX
         $.ajax({
-            url: "{{ url('back/activites') }}/" + activiteId + "/toggle",
-            method: 'POST',
+            url: url,
+            type: 'POST',
             data: {
-                _token: "{{ csrf_token() }}",
-                _method: 'PATCH'
+                _token: '{{ csrf_token() }}'
+                // Pas besoin de _method: 'PATCH' car c'est déjà POST
             },
             success: function(response) {
+                console.log('Réponse:', response);
+                
                 if (response.success) {
-                    // Mise à jour du label
+                    // Mettre à jour visuellement
                     label.text(response.est_active ? 'Active' : 'Inactive')
-                        .toggleClass('text-success', response.est_active)
-                        .toggleClass('text-secondary', !response.est_active);
+                         .removeClass('text-success text-secondary')
+                         .addClass(response.est_active ? 'text-success' : 'text-secondary');
                     
-                    // Mise à jour du style
-                    if (response.est_active) {
-                        checkbox.css({
-                            'background-color': '#0d6efd',
-                            'border-color': '#0d6efd'
-                        });
-                    } else {
-                        checkbox.css({
-                            'background-color': '',
-                            'border-color': ''
-                        });
-                    }
+                    toastr.success(response.message);
                     
-                    toastr.success('Statut mis à jour');
+                    // Rafraîchir la page après 1 seconde
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    // Revenir en arrière si erreur
+                    checkbox.prop('checked', !newState);
+                    toastr.error(response.message || 'Erreur');
                 }
             },
-            error: function() {
-                // En cas d'erreur, on remet à l'état précédent
-                checkbox.prop('checked', !isChecked);
-                toastr.error('Erreur réseau');
+            error: function(xhr, status, error) {
+                console.error('Erreur:', error);
+                console.log('Réponse:', xhr.responseText);
+                
+                // Revenir en arrière
+                checkbox.prop('checked', !newState);
+                toastr.error('Erreur de connexion');
             },
             complete: function() {
                 checkbox.prop('disabled', false);
             }
         });
     });
+});</script>
     
-    // Confirmation suppression (version simplifiée)
-    $('.delete-activity').on('click', function() {
-        const activiteId = $(this).data('id');
-        const activiteNom = $(this).data('nom');
-        
-        Swal.fire({
-            title: 'Supprimer cette activité ?',
-            text: `L'activité "${activiteNom}" sera définitivement supprimée`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Supprimer',
-            cancelButtonText: 'Annuler'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Formulaire de suppression
-                const form = $('<form>', {
-                    method: 'POST',
-                    action: "{{ url('back/activites') }}/" + activiteId
-                });
-                
-                form.append(
-                    $('<input>', {
-                        type: 'hidden',
-                        name: '_token',
-                        value: "{{ csrf_token() }}"
-                    }),
-                    $('<input>', {
-                        type: 'hidden',
-                        name: '_method',
-                        value: 'DELETE'
-                    })
-                );
-                
-                $('body').append(form);
-                form.submit();
-            }
-        });
-    });
-    
-    // Style initial des switches
-    $('.form-check-input:checked').css({
-        'background-color': '#0d6efd',
-        'border-color': '#0d6efd'
-    });
-});
+
 <style>
 /* Style custom pour les switches */
 .form-check-input:checked {
@@ -288,6 +217,12 @@ $(document).ready(function() {
     border-color: #0d6efd;
     box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }
+
+
+    $('.form-check-input:checked').css({
+        'background-color': '#0d6efd',
+        'border-color': '#0d6efd'
+    });
 
 .form-check-input {
     width: 3em !important;

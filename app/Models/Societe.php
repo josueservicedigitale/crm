@@ -1,5 +1,6 @@
 <?php
 
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -26,10 +27,10 @@ class Societe extends Model
         'siret',
         'tva_intracommunautaire',
         'logo_path',
-        'est_active',     // Changé de 'statut' à 'est_active' (boolean)
-        'couleur',        // Nouveau champ
-        'icon',           // Nouveau champ
-        'user_id'         // Nouveau champ
+        'est_active',    
+        'couleur',       
+        'icon',          
+        'user_id'        
     ];
 
     protected $casts = [
@@ -469,9 +470,16 @@ class Societe extends Model
      */
     public function toggleStatus(): bool
     {
-        $this->est_active = !$this->est_active;
-        return $this->save();
+        if ($this->est_active && self::where('est_active', true)->count() <= 1) {
+            // Ne rien faire, c'est la dernière active
+            return false;
+        }
+
+        return $this->update([
+            'est_active' => !$this->est_active
+        ]);
     }
+
 
     /**
      * Vérifie si la société est active

@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Back\DocumentController;
 use App\Http\Controllers\Back\ActiviteController;
 use App\Http\Controllers\Back\SocieteController;
+use App\Http\Controllers\Back\CorbeilleController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -48,21 +49,26 @@ Route::prefix('back/societes')->name('back.societes.')->group(function () {
     Route::get('/{societe}/export', [SocieteController::class, 'export'])->name('export');
     Route::get('/{societe}/stats', [SocieteController::class, 'stats'])->name('stats');
 });
-
-// Routes pour les activités (AJOUTEZ CE GROUPE)
-Route::prefix('back/activites')->name('back.activites.')->group(function () {
-    Route::get('/', [ActiviteController::class, 'index'])->name('index');
-    Route::get('/create', [ActiviteController::class, 'create'])->name('create');
-    Route::post('/', [ActiviteController::class, 'store'])->name('store');
-    Route::get('/{activite}', [ActiviteController::class, 'show'])->name('show');
-    Route::get('/{activite}/edit', [ActiviteController::class, 'edit'])->name('edit');
-    Route::put('/{activite}', [ActiviteController::class, 'update'])->name('update');
-    Route::delete('/{activite}', [ActiviteController::class, 'destroy'])->name('destroy');
-    Route::post('/{activite}/toggle', [ActiviteController::class, 'toggle'])->name('toggle');
+// Version 1 : Avec prefix 'back' + name 'back.'
+Route::prefix('back')->name('back.')->group(function () {
+    // Toutes les routes des activités
+    Route::prefix('activites')->name('activites.')->group(function () {
+        // Routes principales
+        Route::get('/', [ActiviteController::class, 'index'])->name('index');
+        Route::get('/create', [ActiviteController::class, 'create'])->name('create');
+        Route::post('/', [ActiviteController::class, 'store'])->name('store');
+        Route::get('/{activite}/edit', [ActiviteController::class, 'edit'])->name('edit');
+        Route::put('/{activite}', [ActiviteController::class, 'update'])->name('update');
+        Route::delete('/{activite}', [ActiviteController::class, 'destroy'])->name('destroy');
+        
+        // ✅ Routes spécifiques - CORRECTES
+        Route::post('/{activite}/toggle', [ActiviteController::class, 'toggle'])->name('toggle');
+        Route::get('/stats', [ActiviteController::class, 'stats'])->name('stats'); // ✅ Pas de double "activites"
+        
+        // Optionnel : show (si nécessaire)
+        Route::get('/{activite}', [ActiviteController::class, 'show'])->name('show');
+    });
 });
-// =========================================================================
-// ROUTES DOCUMENTS AVEC PARAMÈTRES - ORDRE CRITIQUE
-// =========================================================================
 
 // 1. D'abord les routes avec paramètres FIXES (les plus spécifiques)
 Route::middleware('auth')->group(function () {
@@ -151,4 +157,42 @@ Route::middleware('auth')->group(function () {
         ->name('back.document.list');
 });
 
+
+
+
+// =========================================================================
+// ROUTES POUR LA CORBEILLE
+// =========================================================================
+
+// Dans votre fichier web.php
+Route::prefix('back/corbeille')->name('back.corbeille.')->middleware('auth')->group(function () {
+    // Page principale de la corbeille
+    Route::get('/', [CorbeilleController::class, 'index'])->name('index');
+    
+    // Afficher les détails d'un élément
+    Route::get('/{id}/afficher', [CorbeilleController::class, 'afficher'])->name('afficher');
+    
+    // Restaurer un élément
+    Route::post('/{id}/restaurer', [CorbeilleController::class, 'restaurer'])->name('restaurer');
+    
+    // Supprimer définitivement
+    Route::delete('/{id}/supprimer-definitivement', [CorbeilleController::class, 'supprimerDefinitivement'])->name('supprimer-definitivement');
+    
+    // Vider toute la corbeille
+    Route::get('/vider-formulaire', [CorbeilleController::class, 'formulaireVider'])->name('vider-formulaire');
+    Route::post('/vider', [CorbeilleController::class, 'viderCorbeille'])->name('vider');
+    
+    // Restaurer tous les éléments
+    Route::get('/restaurer-tous-formulaire', [CorbeilleController::class, 'formulaireRestaurerTous'])->name('restaurer-tous-formulaire');
+    Route::post('/restaurer-tous', [CorbeilleController::class, 'restaurerTous'])->name('restaurer-tous');
+    
+    // Filtrer par type
+    Route::get('/type/{type}', [CorbeilleController::class, 'parType'])->name('par-type');
+    
+    // Télécharger un rapport
+    Route::get('/telecharger-rapport', [CorbeilleController::class, 'telechargerRapport'])->name('telecharger-rapport');
+    
+    // Actions groupées
+    Route::post('/actions-groupées', [CorbeilleController::class, 'actionsGroupées'])->name('actions-groupées');
+});
 require __DIR__ . '/auth.php';

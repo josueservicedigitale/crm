@@ -181,134 +181,58 @@
 </div>
 @endsection
 
-@push('scripts')
+@push('js')
 <script>
 $(document).ready(function() {
+    console.log('Script sociétés chargé');
+    
     // Toggle switch
     $('.toggle-status').on('change', function() {
-        const societeId = $(this).data('societe-id');
-        const isChecked = $(this).is(':checked');
-        const label = $(this).next('.form-check-label').find('span');
+        const checkbox = $(this);
+        const societeId = checkbox.data('societe-id');
+        const isChecked = checkbox.is(':checked');
         
-        // Animation visuelle
-        $(this).prop('disabled', true);
-        label.text('Chargement...').removeClass('text-success text-secondary');
+        console.log('Toggle société ID:', societeId, '->', isChecked ? 'actif' : 'inactif');
         
-        // Envoi AJAX
+        // Désactiver pendant la requête
+        checkbox.prop('disabled', true);
+        
+        // Envoi AJAX SIMPLE
         $.ajax({
-          url: "{{ route('back.societes.toggle', 'CODE_PLACEHOLDER') }}".replace('CODE_PLACEHOLDER', societeId),
+            url: "/back/societes/" + societeId + "/toggle",
             method: 'POST',
             data: {
-                _token: "{{ csrf_token() }}",
-                _method: 'PATCH'
+                _token: "{{ csrf_token() }}"
             },
             success: function(response) {
+                console.log('Réponse:', response);
+                
                 if (response.success) {
-                    // Mise à jour du label
-                    if (response.est_active) {
-                        label.text('Active').addClass('text-success').removeClass('text-secondary');
-                    } else {
-                        label.text('Inactive').addClass('text-secondary').removeClass('text-success');
-                    }
-                    
-                    // Feedback utilisateur
-                    toastr.success('Statut mis à jour');
+                    // Rafraîchir la page immédiatement
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 500);
+                } else {
+                    // Revenir à l'état précédent
+                    checkbox.prop('checked', !isChecked);
+                    alert('Erreur: ' + response.message);
                 }
             },
-            error: function(xhr) {
-                // Annulation du changement
-                const checkbox = $('.toggle-status[data-societe-id="' + societeId + '"]');
+            error: function(xhr, status, error) {
+                console.error('Erreur AJAX:', error);
+                console.log('Status:', xhr.status);
+                
+                // Revenir à l'état précédent
                 checkbox.prop('checked', !isChecked);
-                toastr.error('Erreur lors de la mise à jour');
+                alert('Erreur de connexion au serveur');
             },
             complete: function() {
-                $('.toggle-status').prop('disabled', false);
+                checkbox.prop('disabled', false);
             }
         });
     });
-    
-    // Confirmation suppression
-// Confirmation suppression
-$(document).on('click', '.delete-societe', function(e) {
-    e.preventDefault();
-    
-    const $button = $(this);
-    const societeId = $button.data('id');
-    const societeNom = $button.data('nom');
-    const societeCode = $button.data('code'); // Si vous avez besoin du code
-    
-    Swal.fire({
-        title: 'Confirmer la suppression',
-        html: `
-            <div class="text-center">
-                <i class="fas fa-exclamation-triangle text-warning fa-3x mb-3"></i>
-                <p class="mb-1">Êtes-vous sûr de vouloir supprimer :</p>
-                <p class="fw-bold text-danger">"${societeNom}"</p>
-                <div class="alert alert-danger mt-3 py-2">
-                    <i class="fas fa-exclamation-circle me-2"></i>
-                    <strong>Attention !</strong> Cette action est irréversible.
-                </div>
-            </div>
-        `,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#dc3545',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: '<i class="fas fa-trash me-2"></i>Supprimer',
-        cancelButtonText: '<i class="fas fa-times me-2"></i>Annuler',
-        reverseButtons: true,
-        customClass: {
-            confirmButton: 'btn btn-danger',
-            cancelButton: 'btn btn-secondary'
-        },
-        buttonsStyling: false
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Afficher un loader
-            Swal.fire({
-                title: 'Suppression en cours...',
-                text: 'Veuillez patienter',
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                willOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-            
-            // Construire l'URL de suppression
-            // Utilisez soit :id soit :code selon vos routes
-            const deleteUrl = "{{ route('back.societes.destroy', ':id') }}".replace(':id', societeId);
-            
-            // Soumettre via AJAX pour mieux gérer les réponses
-            $.ajax({
-                url: deleteUrl,
-                method: 'POST',
-                data: {
-                    _token: "{{ csrf_token() }}",
-                    _method: 'DELETE'
-                },
-                success: function(response) {
-                    Swal.fire({
-                        title: 'Supprimé !',
-                        text: response.message || 'Société supprimée avec succès',
-                        icon: 'success',
-                        confirmButtonColor: '#198754'
-                    }).then(() => {
-                        // Recharger la page
-                        window.location.reload();
-                    });
-                },
-                error: function(xhr) {
-                    Swal.fire({
-                        title: 'Erreur !',
-                        text: xhr.responseJSON?.message || 'Erreur lors de la suppression',
-                        icon: 'error',
-                        confirmButtonColor: '#dc3545'
-                    });
-                }
-            });
-        }
     });
-});
+
+    
 </script>
 @endpush

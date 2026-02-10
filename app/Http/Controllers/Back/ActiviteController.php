@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Back;
-
+use App\Models\Document;
 use App\Http\Controllers\Controller;
 use App\Models\Activite;
 use Illuminate\Http\Request;
@@ -34,6 +34,18 @@ class ActiviteController extends Controller
 
         return view('back.activites.index', compact('activites', 'stats'));
     }
+
+    public function stats()
+{
+    $stats = [
+        'total' => Activite::count(),
+        'actives' => Activite::where('est_active', true)->count(),
+        'inactives' => Activite::where('est_active', false)->count(),
+        'documents_total' => Document::count(),
+    ];
+    
+    return response()->json($stats);
+}
 
     /**
      * Affiche le formulaire de création
@@ -197,59 +209,60 @@ class ActiviteController extends Controller
     }
 
     /**
-     * Basculer l'état actif/inactif
-     */
+ * Basculer l'état actif/inactif
+ */
+/**
+ * Basculer l'état actif/inactif
+ */
 public function toggle(Activite $activite)
 {
     try {
-        // DEBUG: log avant
-        Log::info('🔄 Début toggle', [
-            'id' => $activite->id,
-            'nom' => $activite->nom,
-            'avant' => $activite->est_active ? 'true' : 'false'
-        ]);
-        
-        // Méthode
+        // Vérifier si c'est la dernière activité active
+        if ($activite->est_active) {
+            $activeCount = Activite::where('est_active', true)->count();
+
+            if ($activeCount <= 1) {
+                return response()->json([
+                    'success' => false,
+                    'message' => '⚠️ Impossible de désactiver cette activité : au moins une activité doit rester active.',
+                    'refresh' => false // Pas besoin de rafraîchir
+                ]);
+            }
+        }
+
+        // Basculer le statut
         $activite->est_active = !$activite->est_active;
         $activite->save();
-        
         $activite->refresh();
-        
-        // DEBUG: log après
-        Log::info('🔄 Fin toggle', [
+
+        Log::info('✅ Activité basculée', [
             'id' => $activite->id,
             'nom' => $activite->nom,
-            'après' => $activite->est_active ? 'true' : 'false'
+            'nouveau_statut' => $activite->est_active ? 'active' : 'inactive'
         ]);
-        
+
         return response()->json([
             'success' => true,
-            'est_active' => (bool)$activite->est_active, // Cast en booléen
-            'message' => $activite->est_active ? 'Activité activée' : 'Activité désactivée'
+            'est_active' => (bool) $activite->est_active,
+            'message' => $activite->est_active ? '✅ Activité activée' : '✅ Activité désactivée',
+            'refresh' => true, // Indique au front de rafraîchir
+            'refresh_delay' => 1000 // 1 seconde avant rafraîchissement
         ]);
-        
+
     } catch (\Exception $e) {
-        Log::error('❌ Erreur basculement statut', [
+        Log::error('❌ Erreur toggle activité', [
+            'id' => $activite->id,
             'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString(),
-            'activite_id' => $activite->id
+            'trace' => $e->getTraceAsString()
         ]);
-        
+
         return response()->json([
             'success' => false,
-            'message' => 'Erreur technique: ' . $e->getMessage()
+            'message' => '❌ Erreur technique: ' . $e->getMessage(),
+            'refresh' => false
         ], 500);
     }
 }
-
-
-    /**
-     * Supprime une activité
-     */
-
-    /**
- * Basculer l'état actif/inactif
- */
     public function destroy(Activite $activite)
     {
         try {

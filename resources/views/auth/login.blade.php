@@ -11,10 +11,10 @@
                 <div class="d-flex align-items-center justify-content-between mb-3">
                     <a href="{{ url('/') }}">
                         <h3 class="text-primary">
-                            <i class="fa fa-hashtag me-2"></i>DASHMIN
+                            <i class="fa fa-user-circle me-2"></i> ADMIN
                         </h3>
                     </a>
-                    <h3>Sign In</h3>
+                    <h3>S'authentifier</h3>
                 </div>
 
                 <form method="POST" action="{{ route('login') }}">
@@ -28,7 +28,7 @@
                                placeholder="name@example.com"
                                value="{{ old('email') }}"
                                required autofocus>
-                        <label for="email">Email address</label>
+                        <label for="email"> Address email</label>
                         @error('email')
                             <small class="text-danger">{{ $message }}</small>
                         @enderror
@@ -41,7 +41,7 @@
                                id="password"
                                placeholder="Password"
                                required>
-                        <label for="password">Password</label>
+                        <label for="password">Mot de passe</label>
                         @error('password')
                             <small class="text-danger">{{ $message }}</small>
                         @enderror
@@ -50,22 +50,22 @@
                     <div class="d-flex align-items-center justify-content-between mb-4">
                         <div class="form-check">
                             <input type="checkbox" name="remember" class="form-check-input" id="remember">
-                            <label class="form-check-label" for="remember">Remember me</label>
+                            <label class="form-check-label" for="remember">se rappeler de moi</label>
                         </div>
 
                        @if (\Illuminate\Support\Facades\Route::has('password.request'))
 
-                            <a href="{{ route('password.request') }}">Forgot Password</a>
+                            <a href="{{ route('password.request') }}">Mot de passe oublié</a>
                         @endif
                     </div>
 
                     <button type="submit" class="btn btn-primary py-3 w-100 mb-4">
-                        Sign In
+                        Se connecter
                     </button>
 
                     <p class="text-center mb-0">
                         Don't have an Account ?
-                        <a href="{{ route('register') }}">Sign Up</a>
+                        <a href="{{ route('register') }}">S'inscrire</a>
                     </p>
                 </form>
 

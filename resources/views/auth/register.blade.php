@@ -12,10 +12,11 @@
                 <div class="d-flex align-items-center justify-content-between mb-3">
                     <a href="{{ url('/') }}">
                         <h3 class="text-primary">
-                            <i class="fa fa-hashtag me-2"></i>DASHMIN
+                            <i class="fa fa-user-circle me-2"></i> ADMIN
+
                         </h3>
                     </a>
-                    <h3>Sign Up</h3>
+                    <h3>S'authentifier</h3>
                 </div>
 
                 <form method="POST" action="{{ route('register') }}">
@@ -45,7 +46,7 @@
                                placeholder="name@example.com"
                                value="{{ old('email') }}"
                                required>
-                        <label for="email">Email address</label>
+                        <label for="email">Address email</label>
                         @error('email')
                             <small class="text-danger">{{ $message }}</small>
                         @enderror
@@ -59,7 +60,7 @@
                                id="password"
                                placeholder="Password"
                                required>
-                        <label for="password">Password</label>
+                        <label for="password">Mot de passe</label>
                         @error('password')
                             <small class="text-danger">{{ $message }}</small>
                         @enderror
@@ -73,16 +74,16 @@
                                id="password_confirmation"
                                placeholder="Confirm Password"
                                required>
-                        <label for="password_confirmation">Confirm Password</label>
+                        <label for="password_confirmation">Confirmer le mot de passe</label>
                     </div>
 
                     <button type="submit" class="btn btn-primary py-3 w-100 mb-4">
-                        Sign Up
+                        S'inscrire
                     </button>
 
                     <p class="text-center mb-0">
-                        Already have an Account ?
-                        <a href="{{ route('login') }}">Sign In</a>
+                        Deja un compte ?
+                        <a href="{{ route('login') }}">Se connecter</a>
                     </p>
                 </form>
 

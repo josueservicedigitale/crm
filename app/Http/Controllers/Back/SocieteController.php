@@ -309,36 +309,37 @@ public function index()
     /**
      * Basculer l'état actif/inactif
      */
-    public function toggle(Societe $societe)
-    {
-        try {
-            $newStatus = $societe->toggleStatus();
-            
-            Log::info('🔄 Statut société basculé', [
-                'id' => $societe->id,
-                'nom' => $societe->nom,
-                'nouveau_statut' => $newStatus ? 'actif' : 'inactif'
-            ]);
-            
-            return response()->json([
-                'success' => true,
-                'est_active' => $newStatus,
-                'message' => 'Statut mis à jour avec succès'
-            ]);
-            
-        } catch (\Exception $e) {
-            Log::error('❌ Erreur basculement statut société', [
-                'error' => $e->getMessage(),
-                'societe_id' => $societe->id
-            ]);
-            
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors du basculement'
-            ], 500);
-        }
+// Dans app/Http\Controllers\Back\SocieteController.php
+public function toggle(Societe $societe)
+{
+    try {
+        // LOG pour debug
+        \Log::info('Toggle société appelé - ID: ' . $societe->id . 
+                   ', Avant: ' . ($societe->est_active ? 'true' : 'false'));
+        
+        // SIMPLE et DIRECT
+        $societe->est_active = !$societe->est_active;
+        $societe->save();
+        
+        \Log::info('Toggle société réussi - ID: ' . $societe->id . 
+                   ', Après: ' . ($societe->est_active ? 'true' : 'false'));
+        
+        return response()->json([
+            'success' => true,
+            'est_active' => (bool)$societe->est_active,
+            'message' => $societe->est_active ? 'Société activée' : 'Société désactivée'
+        ]);
+        
+    } catch (\Exception $e) {
+        \Log::error('Toggle société erreur: ' . $e->getMessage());
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Erreur: ' . $e->getMessage()
+        ], 500);
     }
-    
+}
+
     /**
      * Supprime une société
      */
