@@ -74,7 +74,7 @@
 
         <!-- User menu -->
         <div class="nav-item dropdown">
-            <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+            <a href="{{ route('profile.edit') }}" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
                 <img
                     class="rounded-circle me-lg-2"
                     src="{{ asset('img/user.jpg') }}"
@@ -85,7 +85,7 @@
             </a>
 
             <div class="dropdown-menu dropdown-menu-end bg-light border-0 rounded-0 rounded-bottom m-0">
-                <a href="#" class="dropdown-item">{{ __('Profile') }}</a>
+                <a href="{{ route('profile.edit') }}" class="dropdown-item">{{ __('Profile') }}</a>
                 <a href="#" class="dropdown-item">Settings</a>
 
                 <form method="POST" action="{{ route('logout') }}">

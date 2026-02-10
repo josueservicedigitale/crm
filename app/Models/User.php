@@ -1,48 +1,95 @@
 <?php
+// app/Models/User.php
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Traits\SuppressionDouce;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SuppressionDouce;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
+        'telephone',
+        'avatar',
+        'role',
+        'est_actif',
+        'derniere_connexion',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'est_actif' => 'boolean',
+        'derniere_connexion' => 'datetime',
+        'deleted_at' => 'datetime',
+    ];
+
     /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
+     * Relation avec les sociétés
      */
-    protected function casts(): array
+    public function societes()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->hasMany(Societe::class, 'user_id');
+    }
+
+    /**
+     * Relation avec les activités
+     */
+    public function activites()
+    {
+        return $this->hasMany(Activite::class, 'user_id');
+    }
+
+    /**
+     * Relation avec les documents
+     */
+    public function documents()
+    {
+        return $this->hasMany(Document::class, 'user_id');
+    }
+
+    /**
+     * Vérifier si l'utilisateur est administrateur
+     */
+    public function estAdministrateur()
+    {
+        return $this->role === 'admin';
+    }
+
+    /**
+     * Vérifier si l'utilisateur est actif
+     */
+    public function estActif()
+    {
+        return $this->est_actif === true;
+    }
+
+    /**
+     * Obtenir les initiales pour l'avatar
+     */
+    public function getInitialesAttribute()
+    {
+        $mots = explode(' ', $this->name);
+        $initiales = '';
+        
+        foreach ($mots as $mot) {
+            if (!empty($mot)) {
+                $initiales .= strtoupper(substr($mot, 0, 1));
+            }
+        }
+        
+        return substr($initiales, 0, 2);
     }
 }

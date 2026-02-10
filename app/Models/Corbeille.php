@@ -32,7 +32,7 @@ class Corbeille extends Model
      */
     public function supprimePar()
     {
-        return $this->belongsTo(Utilisateur::class, 'supprime_par');
+        return $this->belongsTo(User::class, 'supprime_par');
     }
     
     /**

@@ -2,47 +2,90 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProfileUpdateRequest;
-use Illuminate\Http\RedirectResponse;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\View\View;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\ValidationException;
+use App\Models\Utilisateur;
 
 class ProfileController extends Controller
 {
     /**
-     * Display the user's profile form.
+     * Afficher le formulaire de modification du profil
      */
-    public function edit(Request $request): View
+    public function edit(Request $request)
     {
-        return view('profile.edit', [
-            'user' => $request->user(),
-        ]);
+        $user = $request->user();
+        $statistiques = [
+            'societes' => $user->societes()->count(),
+            'activites' => $user->activites()->count(),
+            'documents' => $user->documents()->count(),
+        ];
+        
+        return view('profile.edit', compact('user', 'statistiques'));
     }
 
     /**
-     * Update the user's profile information.
+     * Mettre à jour les informations du profil
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function update(Request $request)
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        
+        $request->validate([
+            'nom' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:utilisateurs,email,' . $user->id],
+            'telephone' => ['nullable', 'string', 'max:20'],
+            'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
+        ]);
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        $data = $request->only(['nom', 'email', 'telephone']);
+        
+        // Gérer l'upload de l'avatar
+        if ($request->hasFile('avatar')) {
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $data['avatar'] = $path;
+            
+            // Supprimer l'ancien avatar si existant
+            if ($user->avatar) {
+                Storage::disk('public')->delete($user->avatar);
+            }
         }
 
-        $request->user()->save();
+        $user->update($data);
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        return redirect()
+            ->route('profile.edit')
+            ->with('success', 'Profil mis à jour avec succès.');
     }
 
     /**
-     * Delete the user's account.
+     * Mettre à jour le mot de passe
      */
-    public function destroy(Request $request): RedirectResponse
+    public function updatePassword(Request $request)
     {
-        $request->validateWithBag('userDeletion', [
+        $request->validate([
+            'current_password' => ['required', 'current_password'],
+            'password' => ['required', 'confirmed', Password::defaults()],
+        ]);
+
+        $request->user()->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        return redirect()
+            ->route('profile.edit')
+            ->with('success', 'Mot de passe mis à jour avec succès.');
+    }
+
+    /**
+     * Supprimer le compte utilisateur
+     */
+    public function destroy(Request $request)
+    {
+        $request->validate([
             'password' => ['required', 'current_password'],
         ]);
 
@@ -55,6 +98,6 @@ class ProfileController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return Redirect::to('/');
+        return redirect('/');
     }
 }

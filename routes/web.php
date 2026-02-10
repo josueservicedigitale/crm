@@ -15,11 +15,19 @@ Route::get('/dashboard', function () {
     return view('back.dashboard');
 })->middleware(['auth', 'verified'])->name('home.dashboard');
 
+// Dans web.php
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::patch('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
 });
+// Dans web.php
+Route::post('/logout-other-sessions', function (Request $request) {
+    Auth::logoutOtherDevices($request->password);
+    
+    return back()->with('success', 'Déconnexion effectuée sur tous les autres appareils.');
+})->middleware('auth')->name('logout.other');
 
 // =========================================================================
 // ROUTES BACK - SANS PRÉFIXE MAIS AVEC MIDDLEWARE AUTH

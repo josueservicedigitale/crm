@@ -9,19 +9,30 @@
 
         <!-- User Info -->
         <div class="d-flex align-items-center ms-4 mb-4">
-            <div class="position-relative">
-                <img class="rounded-circle" src="{{ asset('img/user.jpg') }}" alt="" style="width: 40px; height: 40px;">
-            </div>
-            <div class="ms-3">
-                <h6 class="mb-0">
-                    @auth
-                        {{ auth()->user()->name ?? 'Utilisateur' }}
-                    @else
-                        Non connecté
-                    @endauth
-                </h6>
-                <span>Admin</span>
-            </div>
+            <a href="{{ route('profile.edit') }}"
+                class="text-decoration-none text-dark d-flex align-items-center w-100">
+                <div class="position-relative">
+                    <img class="rounded-circle"
+                        src="{{ Auth::user()->avatar ? asset('storage/' . Auth::user()->avatar) : asset('img/user.jpg') }}"
+                        alt="Photo de profil" style="width: 40px; height: 40px; object-fit: cover;">
+                </div>
+                <div class="ms-3">
+                    <h6 class="mb-0">
+                        @auth
+                            {{ Auth::user()->name ?? 'Utilisateur' }}
+                        @else
+                            Non connecté
+                        @endauth
+                    </h6>
+                    <span class="text-muted">
+                        @auth
+                            {{ Auth::user()->estAdministrateur() ? 'Administrateur' : 'Utilisateur' }}
+                        @else
+                            Invité
+                        @endauth
+                    </span>
+                </div>
+            </a>
         </div>
 
         @php
