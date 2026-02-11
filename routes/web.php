@@ -6,6 +6,8 @@ use App\Http\Controllers\Back\DocumentController;
 use App\Http\Controllers\Back\ActiviteController;
 use App\Http\Controllers\Back\SocieteController;
 use App\Http\Controllers\Back\CorbeilleController;
+use App\Http\Controllers\Back\ParametreController;
+use App\Http\Controllers\Back\UserController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -21,6 +23,27 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::patch('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+});
+
+
+
+Route::prefix('back')->name('back.')->group(function () {
+    // ... autres routes
+
+    // Gestion des utilisateurs (admin seulement)
+    Route::prefix('users')->name('users.')->group(function () {
+        Route::get('/', [UserController::class, 'index'])->name('index');
+        Route::get('/create', [UserController::class, 'create'])->name('create');
+        Route::post('/', [UserController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [UserController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [UserController::class, 'update'])->name('update');
+        Route::delete('/{id}', [UserController::class, 'destroy'])->name('destroy');
+
+        // Actions supplémentaires
+        Route::post('/{id}/toggle-status', [UserController::class, 'toggleStatus'])->name('toggle-status');
+        Route::post('/{id}/restore', [UserController::class, 'restore'])->name('restore');
+        Route::delete('/{id}/force-delete', [UserController::class, 'forceDelete'])->name('force-delete');
+    });
 });
 // Dans web.php
 Route::post('/logout-other-sessions', function (Request $request) {
@@ -57,6 +80,29 @@ Route::prefix('back/societes')->name('back.societes.')->group(function () {
     Route::get('/{societe}/export', [SocieteController::class, 'export'])->name('export');
     Route::get('/{societe}/stats', [SocieteController::class, 'stats'])->name('stats');
 });
+
+
+
+
+Route::prefix('back')->name('back.')->group(function () {
+    
+    // Routes des paramètres
+    Route::prefix('parametres')->name('parametres.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Back\ParametreController::class, 'index'])->name('index');
+        Route::get('/creer', [\App\Http\Controllers\Back\ParametreController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\Back\ParametreController::class, 'store'])->name('store');
+        Route::get('/{parametre}', [\App\Http\Controllers\Back\ParametreController::class, 'show'])->name('show');
+        Route::get('/{parametre}/modifier', [\App\Http\Controllers\Back\ParametreController::class, 'edit'])->name('edit');
+        Route::put('/{parametre}', [\App\Http\Controllers\Back\ParametreController::class, 'update'])->name('update');
+        Route::delete('/{parametre}', [\App\Http\Controllers\Back\ParametreController::class, 'destroy'])->name('destroy');
+        Route::post('/mise-a-jour-masse', [\App\Http\Controllers\Back\ParametreController::class, 'updateEnMasse'])->name('update-masse');
+        Route::post('/restaurer-defauts', [\App\Http\Controllers\Back\ParametreController::class, 'restaurerDefauts'])->name('restaurer-defauts');
+    });
+    
+});
+
+
+
 // Version 1 : Avec prefix 'back' + name 'back.'
 Route::prefix('back')->name('back.')->group(function () {
     // Toutes les routes des activités
@@ -203,4 +249,15 @@ Route::prefix('back/corbeille')->name('back.corbeille.')->middleware('auth')->gr
     // Actions groupées
     Route::post('/actions-groupées', [CorbeilleController::class, 'actionsGroupées'])->name('actions-groupées');
 });
+
+
+
+// Routes pour les paramètres
+// =========================================================================
+// ROUTES POUR LES PARAMÈTRES
+// =========================================================================
+
+
+
+
 require __DIR__ . '/auth.php';

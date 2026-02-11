@@ -8,9 +8,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB; // AJOUTEZ CETTE LIGNE
 
+
 class Activite extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes; // Ajoutez SoftDeletes
+    
+    protected $dates = ['deleted_at'];
 
     protected $fillable = [
         'nom',

@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Traits\SuppressionDouce;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, SuppressionDouce;
+    use HasFactory, Notifiable, SuppressionDouce,SoftDeletes;
 
     protected $fillable = [
         'name',
@@ -75,6 +76,7 @@ class User extends Authenticatable
     {
         return $this->est_actif === true;
     }
+
 
     /**
      * Obtenir les initiales pour l'avatar

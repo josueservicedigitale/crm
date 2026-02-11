@@ -37,7 +37,9 @@
 
         @php
             use App\Models\Activite;
-            use App\Models\Societe; // IMPORTANT: Ajoutez cette ligne
+            use App\Models\Societe;
+            use App\Models\User;
+            use App\Models\Document;
 
             // Récupère uniquement les activités actives
             $activites = Activite::active()->orderBy('nom')->pluck('nom', 'code')->toArray();
@@ -51,14 +53,8 @@
                 })
                 ->toArray();
 
-            // Ancien tableau statique (à supprimer ou garder en backup)
-            $societesStatiques = [
-                'energie_nova' => 'Énergie Nova',
-                'myhouse' => 'MyHouse Solutions'
-            ];
-
             // Utilisez les sociétés actives de la base de données
-            $societes = $societesActives; // Remplace par les données dynamiques
+            $societes = $societesActives;
 
             $documentTypes = [
                 'devis' => ['icon' => 'fa-file-invoice', 'label' => 'Devis'],
@@ -72,7 +68,6 @@
             $currentActivity = request()->route('activity') ?? array_key_first($activites);
             $currentSociety = request()->route('society') ?? array_key_first($societes);
         @endphp
-
 
         <div class="navbar-nav w-100">
             <!-- Dashboard -->
@@ -88,14 +83,12 @@
                 </a>
                 <div class="dropdown-menu bg-transparent border-0">
                     @foreach($activites as $key => $label)
-                        {{-- Utilisez back.activites.show (pluriel) --}}
                         <a href="{{ route('back.activites.show', $key) }}"
                             class="dropdown-item {{ $currentActivity === $key ? 'active' : '' }}">
                             <i class="fa fa-gear me-2"></i>{{ $label }}
                         </a>
                     @endforeach
                     <div class="dropdown-divider"></div>
-                    {{-- Utilisez back.activites.create (pluriel) --}}
                     <a href="{{ route('back.activites.create') }}" class="dropdown-item">
                         <i class="fa fa-plus me-2"></i>Ajouter une activité
                     </a>
@@ -105,7 +98,6 @@
                 </div>
             </div>
 
-            <!-- SOCIÉTÉS -->
             <!-- SOCIÉTÉS -->
             <div class="nav-item dropdown">
                 <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
@@ -130,17 +122,41 @@
                     @endif
 
                     <div class="dropdown-divider"></div>
-
                     <a href="{{ route('back.societes.create') }}" class="dropdown-item">
                         <i class="fa fa-plus me-2"></i>Ajouter une société
                     </a>
-
                     <a href="{{ route('back.societes.index') }}" class="dropdown-item">
                         <i class="fas fa-list me-2"></i>Toutes les sociétés
                     </a>
                 </div>
             </div>
 
+            <!-- UTILISATEURS - Admin seulement -->
+            @if(auth()->check() && auth()->user()->estAdministrateur())
+            <div class="nav-item dropdown">
+                <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+                    <i class="fa fa-users me-2"></i>UTILISATEURS
+                </a>
+                <div class="dropdown-menu bg-transparent border-0">
+                    <a href="{{ route('back.users.index') }}"
+                        class="dropdown-item {{ request()->routeIs('back.users.*') && !request()->routeIs('back.users.create') ? 'active' : '' }}">
+                        <i class="fa fa-list me-2"></i>Tous les utilisateurs
+                    </a>
+                    <a href="{{ route('back.users.create') }}"
+                        class="dropdown-item {{ request()->routeIs('back.users.create') ? 'active' : '' }}">
+                        <i class="fa fa-plus me-2"></i>Ajouter un utilisateur
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <span class="dropdown-item-text text-muted">
+                        <small>
+                            <i class="fa fa-shield-alt me-1"></i>
+                            Admins: {{ User::where('role', 'admin')->count() }} |
+                            Actifs: {{ User::where('est_actif', true)->count() }}
+                        </small>
+                    </span>
+                </div>
+            </div>
+            @endif
 
             <!-- ESPACES DE TRAVAIL -->
             <div class="nav-item dropdown">
@@ -176,12 +192,12 @@
                             @endif
                         </div>
                     @endif
-
                     <a href="{{ route('back.all-dashboards') }}" class="dropdown-item">
                         <i class="fa fa-eye me-2"></i>Voir tous les espaces
                     </a>
                 </div>
             </div>
+
             <!-- DOCUMENTS -->
             <div class="nav-item dropdown">
                 <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
@@ -207,26 +223,22 @@
             </div>
 
             <!-- CORBEILLE -->
-            <a href="{{ route('back.corbeille.index') }}" class="nav-item nav-link corbeille-link"
-                data-bs-toggle="tooltip" data-bs-placement="right" title="Éléments supprimés">
-
-                <i class="fa fa-trash me-2"></i>
-                Corbeille
-
-                @php
-                    $nombreElementsCorbeille = \App\Models\Corbeille::count();
-                @endphp
-
-                @if($nombreElementsCorbeille > 0)
+            @php
+                $corbeilleCount = Document::onlyTrashed()->count() +
+                                 Activite::onlyTrashed()->count() +
+                                 Societe::onlyTrashed()->count();
+            @endphp
+            <a href="{{ route('back.corbeille.index') }}" class="nav-item nav-link {{ request()->routeIs('back.corbeille.*') ? 'active' : '' }}">
+                <i class="fa fa-trash me-2"></i>Corbeille
+                @if($corbeilleCount > 0)
                     <span class="badge bg-danger float-end badge-pulse">
-                        {{ $nombreElementsCorbeille }}
+                        {{ $corbeilleCount }}
                     </span>
                 @endif
             </a>
 
-
             <!-- PARAMÈTRES -->
-            <a href="#" class="nav-item nav-link">
+            <a href="{{ route('back.parametres.index') }}" class="nav-item nav-link {{ request()->routeIs('back.parametres.*') ? 'active' : '' }}">
                 <i class="fa fa-cog me-2"></i>Paramètres
             </a>
 

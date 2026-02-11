@@ -14,8 +14,9 @@ use Intervention\Image\Color;
 
 class Societe extends Model
 {
-    use HasFactory, SoftDeletes;
-
+    use HasFactory, SoftDeletes; // Ajoutez SoftDeletes
+    
+    protected $dates = ['deleted_at'];
     protected $fillable = [
         'nom',
         'code',           // Renommé de 'slug' à 'code'

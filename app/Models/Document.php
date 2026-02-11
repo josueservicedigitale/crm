@@ -3,9 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Document extends Model
 {
+    use SoftDeletes; // Ajoutez cette ligne
+    
+    protected $dates = ['deleted_at']; 
+
     protected $fillable = [
         'file_path',  // TRÈS IMPORTANT !
         'reference',
