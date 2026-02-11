@@ -35,6 +35,8 @@ class ActiviteController extends Controller
         return view('back.activites.index', compact('activites', 'stats'));
     }
 
+
+
     public function stats()
 {
     $stats = [
@@ -291,4 +293,5 @@ public function toggle(Activite $activite)
             return back()->withErrors('Erreur lors de la suppression : ' . $e->getMessage());
         }
     }
+    
 }

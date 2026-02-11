@@ -117,43 +117,36 @@
                         <td>
                             <small>{{ $user->created_at->format('d/m/Y') }}</small>
                         </td>
-                        <td class="text-end">
-                            @if($user->trashed())
-                                <div class="btn-group" role="group">
-                                    <form action="{{ route('back.users.restore', $user->id) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm btn-success" title="Restaurer">
-                                            <i class="fas fa-undo-alt"></i>
-                                        </button>
-                                    </form>
-                                    <form action="{{ route('back.users.force-delete', $user->id) }}" method="POST" class="d-inline"
-                                          onsubmit="return confirm('⚠️ Supprimer définitivement {{ addslashes($user->name) }} ?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger" title="Supprimer définitivement">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            @else
-                                <div class="btn-group" role="group">
-                                    <a href="{{ route('back.users.edit', $user->id) }}"
-                                       class="btn btn-sm btn-outline-warning" title="Modifier">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    @if($user->id !== auth()->id())
-                                        <form action="{{ route('back.users.destroy', $user->id) }}" method="POST" class="d-inline"
-                                              onsubmit="return confirm('Déplacer {{ addslashes($user->name) }} vers la corbeille ?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
-                                    @endif
-                                </div>
-                            @endif
-                        </td>
+                       <td class="text-end">
+    <div class="btn-group" role="group">
+        {{-- 🔥 NOUVEAU : Bouton pour démarrer une conversation --}}
+        @if($user->id !== auth()->id() && !$user->trashed())
+            <a href="{{ route('back.messagerie.start', $user) }}" 
+               class="btn btn-sm btn-outline-info"
+               data-bs-toggle="tooltip"
+               title="Démarrer une conversation">
+                <i class="fas fa-comment"></i>
+            </a>
+        @endif
+
+        {{-- Actions existantes --}}
+        <a href="{{ route('back.users.edit', $user->id) }}"
+           class="btn btn-sm btn-outline-warning" title="Modifier">
+            <i class="fas fa-edit"></i>
+        </a>
+
+        @if($user->id !== auth()->id())
+            <form action="{{ route('back.users.destroy', $user->id) }}" method="POST" class="d-inline"
+                  onsubmit="return confirm('Déplacer {{ addslashes($user->name) }} vers la corbeille ?')">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </form>
+        @endif
+    </div>
+</td>
                     </tr>
                     @empty
                     <tr>

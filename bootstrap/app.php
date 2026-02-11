@@ -8,12 +8,14 @@ use Illuminate\Console\Scheduling\Schedule;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
-        web: __DIR__.'/../routes/web.php',
-        commands: __DIR__.'/../routes/console.php',
+        web: __DIR__ . '/../routes/web.php',
+        commands: __DIR__ . '/../routes/console.php',
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        $middleware->web(append: [
+            \App\Http\Middleware\LogUserActivity::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
@@ -25,7 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
             ->description('Nettoyage automatique de la corbeille')
             ->onOneServer()
             ->appendOutputTo(storage_path('logs/corbeille-nettoyage.log'));
-        
+
         // Vous pouvez aussi ajouter d'autres tâches planifiées ici
         // $schedule->command('autre:commande')->hourly();
     })

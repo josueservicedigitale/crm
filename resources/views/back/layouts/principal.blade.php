@@ -11,6 +11,9 @@
 
     <!-- Styles communs -->
     @include('back.layouts.style')
+    <script>
+    window.currentUserId = {{ auth()->id() ?? 'null' }};
+</script>
 </head>
 
 <body>

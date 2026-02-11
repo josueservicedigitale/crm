@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, SuppressionDouce,SoftDeletes;
+    use HasFactory, Notifiable, SuppressionDouce, SoftDeletes;
 
     protected $fillable = [
         'name',
@@ -34,6 +34,7 @@ class User extends Authenticatable
         'password' => 'hashed',
         'est_actif' => 'boolean',
         'derniere_connexion' => 'datetime',
+        'last_active_at' => 'datetime',
         'deleted_at' => 'datetime',
     ];
 
@@ -85,13 +86,68 @@ class User extends Authenticatable
     {
         $mots = explode(' ', $this->name);
         $initiales = '';
-        
+
         foreach ($mots as $mot) {
             if (!empty($mot)) {
                 $initiales .= strtoupper(substr($mot, 0, 1));
             }
         }
-        
+
         return substr($initiales, 0, 2);
     }
+
+
+
+    /**
+     * Vérifie si l'utilisateur est en ligne (actif dans les 5 dernières minutes)
+     */
+    public function isOnline(): bool
+    {
+        if (!$this->last_active_at) {
+            return false;
+        }
+
+        $lastActive = $this->last_active_at instanceof \Carbon\Carbon
+            ? $this->last_active_at
+            : \Carbon\Carbon::parse($this->last_active_at);
+
+        return $lastActive->gt(now()->subMinutes(5));
+    }
+
+    /**
+     * Conversations de l'utilisateur
+     */
+    public function conversations()
+    {
+        return $this->belongsToMany(Conversation::class)->withPivot('last_read_at')->withTimestamps();
+    }
+
+    /**
+     * Messages non lus dans toutes les conversations
+     */
+    public function unreadMessagesCount()
+    {
+        return Message::whereHas('conversation', function ($q) {
+            $q->whereHas('users', function ($q2) {
+                $q2->where('users.id', $this->id);
+            });
+        })
+            ->where('user_id', '!=', $this->id)
+            ->whereRaw('messages.created_at > (
+            SELECT last_read_at 
+            FROM conversation_user 
+            WHERE conversation_user.conversation_id = messages.conversation_id
+            AND conversation_user.user_id = ?
+        )', [$this->id])
+            ->count();
+    }
+
+    /**
+     * Canal privé pour l'utilisateur
+     */
+    public function receivesBroadcastNotificationsOn(): string
+    {
+        return 'private-user.' . $this->id;
+    }
+
 }
