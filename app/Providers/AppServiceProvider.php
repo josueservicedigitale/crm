@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,6 +23,10 @@ class AppServiceProvider extends ServiceProvider
      */// Dans votre contrôleur ou AppServiceProvider
 public function boot()
 {
+     if (app()->environment('local')) {
+        URL::forceScheme('https');
+    }
+    Paginator::useBootstrapFive();
     View::composer('back.layouts.sidebar', function ($view) {
         // Pour les activités - tableau clé => label
         $activites = \App\Models\Activite::active()
@@ -48,4 +54,5 @@ public function boot()
         ]);
     });
 }
+
 }

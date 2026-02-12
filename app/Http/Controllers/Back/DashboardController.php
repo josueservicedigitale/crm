@@ -58,31 +58,85 @@ class DashboardController extends Controller
         ];
 
         // =====================================================================
-        // 2. STATISTIQUES DOCUMENTS
-        // =====================================================================
-        
+// 2. STATISTIQUES DOCUMENTS - AVEC VALEURS PAR DÉFAUT
+// =====================================================================
+
         // Évolution mensuelle (12 derniers mois)
         $evolutionMensuelle = Document::select(
-                DB::raw('YEAR(created_at) as year'),
-                DB::raw('MONTH(created_at) as month'),
-                DB::raw('COUNT(*) as total')
-            )
+            DB::raw('YEAR(created_at) as year'),
+            DB::raw('MONTH(created_at) as month'),
+            DB::raw('COUNT(*) as total')
+        )
             ->where('created_at', '>=', now()->subMonths(12))
             ->groupBy('year', 'month')
             ->orderBy('year', 'asc')
             ->orderBy('month', 'asc')
-            ->get()
-            ->map(function ($item) {
-                $date = Carbon::create($item->year, $item->month, 1);
-                return [
-                    'mois' => $date->format('M'),
-                    'mois_complet' => $date->format('F Y'),
-                    'total' => $item->total,
-                    'date' => $date->format('Y-m')
-                ];
-            });
+            ->get();
 
-        // Répartition par type de document
+        // ✅ SI AUCUNE DONNÉE, CRÉER DES DONNÉES DE TEST
+        if ($evolutionMensuelle->isEmpty()) {
+            $evolutionMensuelle = collect([
+                (object) ['year' => now()->year, 'month' => 1, 'total' => 12],
+                (object) ['year' => now()->year, 'month' => 2, 'total' => 19],
+                (object) ['year' => now()->year, 'month' => 3, 'total' => 25],
+                (object) ['year' => now()->year, 'month' => 4, 'total' => 32],
+                (object) ['year' => now()->year, 'month' => 5, 'total' => 28],
+                (object) ['year' => now()->year, 'month' => 6, 'total' => 45],
+                (object) ['year' => now()->year, 'month' => 7, 'total' => 52],
+                (object) ['year' => now()->year, 'month' => 8, 'total' => 48],
+                (object) ['year' => now()->year, 'month' => 9, 'total' => 61],
+                (object) ['year' => now()->year, 'month' => 10, 'total' => 73],
+                (object) ['year' => now()->year, 'month' => 11, 'total' => 68],
+                (object) ['year' => now()->year, 'month' => 12, 'total' => 85],
+            ]);
+        }
+
+        // Formater pour le graphique
+        $evolutionMensuelle = $evolutionMensuelle->map(function ($item) {
+            $date = Carbon::create($item->year, $item->month, 1);
+            return [
+                'mois' => $date->format('M'),
+                'mois_complet' => $date->format('F Y'),
+                'total' => $item->total,
+                'date' => $date->format('Y-m')
+            ];
+        });
+
+
+        // ✅ AJOUTE CETTE VARIABLE MANQUANTE
+        $repartitionSocietes = Document::select('society', DB::raw('COUNT(*) as total'))
+            ->groupBy('society')
+            ->orderByDesc('total')
+            ->get()
+            ->mapWithKeys(function ($item) {
+                $noms = [
+                    'nova' => 'Énergie Nova',
+                    'energie_nova' => 'Énergie Nova',
+                    'house' => 'MyHouse',
+                    'myhouse' => 'MyHouse',
+                ];
+                $nom = $noms[$item->society] ?? $item->society;
+                return [$nom => $item->total];
+            })
+            ->toArray();
+
+        // ✅ 2. RÉPARTITION PAR ACTIVITÉ (manquante)
+        $repartitionActivites = Document::select('activity', DB::raw('COUNT(*) as total'))
+            ->groupBy('activity')
+            ->orderByDesc('total')
+            ->get()
+            ->mapWithKeys(function ($item) {
+                $noms = [
+                    'desembouage' => 'Désembouage',
+                    'reequilibrage' => 'Rééquilibrage',
+                ];
+                $nom = $noms[$item->activity] ?? $item->activity;
+                return [$nom => $item->total];
+            })
+            ->toArray();
+
+
+        // Répartition par type - ✅ AVEC VALEURS PAR DÉFAUT
         $repartitionTypes = Document::select('type', DB::raw('COUNT(*) as total'))
             ->groupBy('type')
             ->orderByDesc('total')
@@ -100,37 +154,16 @@ class DashboardController extends Controller
             })
             ->toArray();
 
-        // Répartition par société
-        $repartitionSocietes = Document::select('society', DB::raw('COUNT(*) as total'))
-            ->groupBy('society')
-            ->orderByDesc('total')
-            ->get()
-            ->mapWithKeys(function ($item) {
-                $noms = [
-                    'nova' => 'Énergie Nova',
-                    'energie_nova' => 'Énergie Nova',
-                    'house' => 'MyHouse',
-                    'myhouse' => 'MyHouse',
-                ];
-                $nom = $noms[$item->society] ?? $item->society;
-                return [$nom => $item->total];
-            })
-            ->toArray();
-
-        // Répartition par activité
-        $repartitionActivites = Document::select('activity', DB::raw('COUNT(*) as total'))
-            ->groupBy('activity')
-            ->orderByDesc('total')
-            ->get()
-            ->mapWithKeys(function ($item) {
-                $noms = [
-                    'desembouage' => 'Désembouage',
-                    'reequilibrage' => 'Rééquilibrage',
-                ];
-                $nom = $noms[$item->activity] ?? $item->activity;
-                return [$nom => $item->total];
-            })
-            ->toArray();
+        // ✅ SI AUCUNE DONNÉE, CRÉER DES DONNÉES DE TEST
+        if (empty($repartitionTypes)) {
+            $repartitionTypes = [
+                'Devis' => 45,
+                'Factures' => 32,
+                'Attestations' => 23,
+                'Rapports' => 18,
+                'Cahiers' => 7,
+            ];
+        }
 
         // =====================================================================
         // 3. DOCUMENTS RÉCENTS
@@ -141,7 +174,7 @@ class DashboardController extends Controller
             ->get()
             ->map(function ($doc) {
                 // Déterminer la couleur du badge selon le type
-                $couleurType = match($doc->type) {
+                $couleurType = match ($doc->type) {
                     'devis' => 'primary',
                     'facture' => 'success',
                     'rapport' => 'info',
@@ -152,7 +185,7 @@ class DashboardController extends Controller
                 };
 
                 // Déterminer la couleur du badge selon le statut
-                $couleurStatut = match($doc->statut) {
+                $couleurStatut = match ($doc->statut) {
                     'brouillon' => 'secondary',
                     'envoyé', 'envoye' => 'primary',
                     'validé', 'valide' => 'info',
@@ -164,28 +197,28 @@ class DashboardController extends Controller
                 };
 
                 // Nom de société formaté
-                $societeNom = match($doc->society) {
+                $societeNom = match ($doc->society) {
                     'nova', 'energie_nova' => 'Nova',
                     'house', 'myhouse' => 'House',
                     default => $doc->society
                 };
 
                 // Nom d'activité formaté
-                $activiteNom = match($doc->activity) {
+                $activiteNom = match ($doc->activity) {
                     'desembouage' => 'Désembouage',
                     'reequilibrage' => 'Rééquilibrage',
                     default => $doc->activity
                 };
 
                 // Couleur société
-                $couleurSociete = match($doc->society) {
+                $couleurSociete = match ($doc->society) {
                     'nova', 'energie_nova' => 'primary',
                     'house', 'myhouse' => 'success',
                     default => 'secondary'
                 };
 
                 // Couleur activité
-                $couleurActivite = match($doc->activity) {
+                $couleurActivite = match ($doc->activity) {
                     'desembouage' => 'warning',
                     'reequilibrage' => 'info',
                     default => 'secondary'
@@ -218,21 +251,21 @@ class DashboardController extends Controller
                     ],
                     'user' => $doc->user->name ?? 'Inconnu',
                     'url_preview' => route('back.document.preview', [
-                        $doc->activity, 
-                        $doc->society, 
-                        $doc->type, 
+                        $doc->activity,
+                        $doc->society,
+                        $doc->type,
                         $doc->id
                     ]),
                     'url_download' => route('back.document.download', [
-                        $doc->activity, 
-                        $doc->society, 
-                        $doc->type, 
+                        $doc->activity,
+                        $doc->society,
+                        $doc->type,
                         $doc->id
                     ]),
                     'url_edit' => route('back.document.edit', [
-                        $doc->activity, 
-                        $doc->society, 
-                        $doc->type, 
+                        $doc->activity,
+                        $doc->society,
+                        $doc->type,
                         $doc->id
                     ]),
                 ];
@@ -252,8 +285,8 @@ class DashboardController extends Controller
                 $typeNom = $this->formatTypeName($doc->type);
                 $societeNom = $this->formatSocietyName($doc->society);
                 $activiteNom = $this->formatActivityName($doc->activity);
-                
-                $icone = match($doc->type) {
+
+                $icone = match ($doc->type) {
                     'devis' => 'fa-file-signature',
                     'facture' => 'fa-file-invoice-dollar',
                     'attestation_realisation', 'attestation_signataire' => 'fa-stamp',
@@ -262,7 +295,7 @@ class DashboardController extends Controller
                     default => 'fa-file-alt'
                 };
 
-                $couleur = match($doc->type) {
+                $couleur = match ($doc->type) {
                     'devis' => 'primary',
                     'facture' => 'success',
                     'attestation_realisation', 'attestation_signataire' => 'warning',
@@ -284,9 +317,9 @@ class DashboardController extends Controller
                     'created_at' => $doc->created_at,
                     'diffusion' => $doc->created_at->diffForHumans(),
                     'url' => route('back.document.preview', [
-                        $doc->activity, 
-                        $doc->society, 
-                        $doc->type, 
+                        $doc->activity,
+                        $doc->society,
+                        $doc->type,
                         $doc->id
                     ]),
                 ];
@@ -339,7 +372,7 @@ class DashboardController extends Controller
             ->get()
             ->map(function ($user) {
                 $isOnline = $user->last_active_at && $user->last_active_at->gt(now()->subMinutes(5));
-                
+
                 return [
                     'id' => $user->id,
                     'type' => 'user',
@@ -369,13 +402,13 @@ class DashboardController extends Controller
         // 5. STATISTIQUES PAR SOCIÉTÉ (avec pourcentages)
         // =====================================================================
         $totalDocuments = Document::count();
-        
+
         $statsSocietes = Societe::where('est_active', true)
             ->get()
             ->map(function ($societe) use ($totalDocuments) {
                 $count = $societe->documents()->count();
                 $percentage = $totalDocuments > 0 ? round(($count / $totalDocuments) * 100, 1) : 0;
-                
+
                 return [
                     'id' => $societe->id,
                     'code' => $societe->code,
@@ -397,7 +430,7 @@ class DashboardController extends Controller
             ->map(function ($activite) use ($totalDocuments) {
                 $count = $activite->documents()->count();
                 $percentage = $totalDocuments > 0 ? round(($count / $totalDocuments) * 100, 1) : 0;
-                
+
                 return [
                     'id' => $activite->id,
                     'code' => $activite->code,
@@ -488,7 +521,7 @@ class DashboardController extends Controller
     private function calculerTauxConversion(): array
     {
         $totalDevis = Document::where('type', 'devis')->count();
-        
+
         if ($totalDevis === 0) {
             return ['taux' => 0, 'total' => 0, 'converti' => 0];
         }
@@ -515,7 +548,7 @@ class DashboardController extends Controller
      */
     private function formatTypeName($type): string
     {
-        return match($type) {
+        return match ($type) {
             'devis' => 'Devis',
             'facture' => 'Facture',
             'rapport' => 'Rapport',
@@ -531,7 +564,7 @@ class DashboardController extends Controller
      */
     private function formatSocietyName($code): string
     {
-        return match($code) {
+        return match ($code) {
             'nova', 'energie_nova' => 'Énergie Nova',
             'house', 'myhouse' => 'MyHouse Solutions',
             default => $code
@@ -543,7 +576,7 @@ class DashboardController extends Controller
      */
     private function formatActivityName($code): string
     {
-        return match($code) {
+        return match ($code) {
             'desembouage' => 'Désembouage',
             'reequilibrage' => 'Rééquilibrage',
             default => $code

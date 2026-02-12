@@ -348,10 +348,6 @@
                             <!-- Pagination -->
                             @if($documents->hasPages())
                                 <div class="d-flex justify-content-between align-items-center mt-4">
-                                    <div class="text-muted">
-                                        Affichage de {{ $documents->firstItem() }} à {{ $documents->lastItem() }} sur
-                                        {{ $documents->total() }} résultats
-                                    </div>
                                     <div>
                                         {{ $documents->withQueryString()->links() }}
                                     </div>

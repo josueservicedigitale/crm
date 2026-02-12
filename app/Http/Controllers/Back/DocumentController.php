@@ -18,6 +18,7 @@ use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Symfony\Polyfill\Intl\Normalizer\Normalizer;
 use Illuminate\Support\Facades\View;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 
 
