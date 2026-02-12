@@ -18,9 +18,13 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return view('back.dashboard');
-})->middleware(['auth', 'verified'])->name('home.dashboard');
+// Route::get('/dashboard', function () {
+//     return view('back.dashboard');
+// })->middleware(['auth', 'verified'])->name('home.dashboard');
+
+Route::get('/dashboard', [App\Http\Controllers\Back\DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('home.dashboard');
 
 // Auth routes (profil, etc.)
 Route::middleware('auth')->group(function () {
@@ -180,7 +184,7 @@ Route::prefix('back')->name('back.')->middleware('auth')->group(function () {
     // =====================================================================
     // 2.11 ROUTES AVEC 4 PARAMÈTRES (DOCUMENT ID)
     // =====================================================================
-    Route::get('/{activity}/{society}/{type}/{document}/preview', [DocumentController::class, 'preview'])->name('document.preview');
+    Route::get('/{activity}/{society}/{type}/{document}/preview', [DocumentController::class, 'previewPDF'])->name('document.preview');
     Route::get('/{activity}/{society}/{type}/{document}/show', [DocumentController::class, 'show'])->name('document.show');
     Route::get('/{activity}/{society}/{type}/{document}/edit', [DocumentController::class, 'edit'])->name('document.edit');
     Route::put('/{activity}/{society}/{type}/{document}', [DocumentController::class, 'update'])->name('document.update');

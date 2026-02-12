@@ -28,11 +28,7 @@
         @else
             <!-- Pour un nouveau document : bouton avec téléchargement automatique -->
             <button type="submit" name="action" value="create_and_download" class="btn btn-success btn-lg me-2">
-                <i class="fa fa-download me-2"></i> Créer et Télécharger PDF
-            </button>
-            
-            <button type="submit" name="action" value="create_only" class="btn btn-primary btn-lg">
-                <i class="fa fa-save me-2"></i> Créer seulement
+                <i class="fa fa-download me-2"></i>Télécharger PDF
             </button>
         @endif
     </div>

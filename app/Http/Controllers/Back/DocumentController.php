@@ -18,6 +18,12 @@ use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Symfony\Polyfill\Intl\Normalizer\Normalizer;
 use Illuminate\Support\Facades\View;
+
+
+
+
+
+
 class DocumentController extends Controller
 {
     protected PdfFillService $pdfFillService;
@@ -1750,8 +1756,78 @@ private function generateReference($society, $type)
 
         return $rules;
     }
+
+    private function generateFilename(Document $document): string
+    {
+        $prefix = match($document->type) {
+            'devis' => 'DEVIS',
+            'facture' => 'FACTURE',
+            'rapport' => 'RAPPORT',
+            'cahier_des_charges' => 'CDC',
+            'attestation_realisation' => 'ATTESTATION_REAL',
+            'attestation_signataire' => 'ATTESTATION_SIGN',
+            default => 'DOCUMENT'
+        };
+        
+        $reference = $document->reference ?? $document->numero ?? $document->id;
+        $date = now()->format('Ymd');
+        
+        return "{$prefix}_{$reference}_{$date}.pdf";
+    }
+
     /**
-     * Normaliser le nom de la société
+     * Télécharge le PDF (force le téléchargement)
      */
- 
+    public function download($activity, $society, $type, $document)
+    {
+        try {
+            $document = Document::findOrFail($document);
+            
+            $template = match($type) {
+                'devis' => 'pdf.devis',
+                'facture' => 'pdf.facture',
+                'rapport' => 'pdf.rapport',
+                'cahier_des_charges' => 'pdf.cahier-charges',
+                default => 'pdf.document'
+            };
+            
+            $data = $this->pdfFillService->prepareDocumentData($document);
+            $pdf = Pdf::loadView($template, $data);
+            $pdf->setPaper('A4', 'portrait');
+            
+            // ✅ download() force le téléchargement
+            return $pdf->download($this->generateFilename($document));
+            
+        } catch (\Exception $e) {
+            return back()->with('error', 'Erreur de téléchargement : ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Regénère et affiche le PDF
+     */
+    public function regeneratePDF($activity, $society, $type, $document)
+    {
+        try {
+            $document = Document::findOrFail($document);
+            
+            // Utiliser TON service pour générer ET sauvegarder
+            $path = $this->pdfFillService->generateAndSavePdf(
+                $document, 
+                "pdf.{$type}"
+            );
+            
+            // Rediriger vers l'aperçu du PDF généré
+            return redirect()->route('back.document.preview', [
+                'activity' => $activity,
+                'society' => $society,
+                'type' => $type,
+                'document' => $document->id
+            ]);
+            
+        } catch (\Exception $e) {
+            return back()->with('error', 'Erreur régénération PDF : ' . $e->getMessage());
+        }
+    }
 }
+ 

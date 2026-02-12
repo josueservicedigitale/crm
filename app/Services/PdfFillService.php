@@ -1,47 +1,5 @@
 <?php
 
-// namespace App\Services;
-
-// use App\Models\Document;
-// use Barryvdh\DomPDF\Facade\Pdf;
-// use Illuminate\Support\Facades\Storage;
-
-// class PdfFillService
-// {
-
-// public function generateAndSavePdf(Document $document, string $template)
-// {
-//     // 1️⃣ Préparer les données
-//     $data = ['document' => $document];
-
-//     // 2️⃣ Nom et chemin du PDF
-//     $filename = $document->reference . '.pdf';
-//     $folder = "documents/{$document->society}/{$document->activity}/{$document->type}";
-//     $fullPath = $folder . '/' . $filename;
-
-//     // 3️⃣ Créer les dossiers si inexistants
-//     if (!Storage::disk('public')->exists($folder)) {
-//         Storage::disk('public')->makeDirectory($folder, 0755, true);
-//     }
-
-//     // 4️⃣ Générer le PDF
-//     $pdf = Pdf::loadView($template, $data)
-//               ->setPaper('a4', 'portrait')
-//               ->setOption('defaultFont', 'DejaVu Sans');
-
-//     // 5️⃣ Sauvegarder sur disque public
-//     Storage::disk('public')->put($fullPath, $pdf->output());
-
-//     // 6️⃣ Mettre à jour le document en DB
-//     $document->file_path = 'storage/' . $fullPath;
-//     $document->pdf_generated_at = now();
-//     $document->save();
-
-//     return $document->file_path;
-// }
-
-// }
-
 
 namespace App\Services;
 
@@ -118,7 +76,7 @@ class PdfFillService
     /**
      * Préparer toutes les données du document de manière dynamique
      */
-    private function prepareDocumentData(Document $document): array
+   public function prepareDocumentData(Document $document): array // ← PUBLIC
     {
         // Récupérer toutes les colonnes du document
         $documentData = $document->toArray();
