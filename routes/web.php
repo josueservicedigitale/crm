@@ -54,6 +54,8 @@ Route::prefix('back')->name('back.')->middleware('auth')->group(function () {
     // Routes de sélection
     Route::get('/{activity}/{society}/{type}/choose', [DocumentController::class, 'chooseAction'])
         ->name('document.choose');
+    Route::get('/{activity}/{society}/{type}/choose-action', [DocumentController::class, 'chooseAction'])
+        ->name('document.choose-action');
     Route::get('/{activity}/{society}/{type}/select-devis', [DocumentController::class, 'selectDevis'])
         ->name('document.select-devis');
     Route::get('/{activity}/{society}/cahier-des-charges/select-devis', [DocumentController::class, 'selectDevisForCahier'])
@@ -85,6 +87,8 @@ Route::prefix('back')->name('back.')->middleware('auth')->group(function () {
         Route::post('/{activite}/toggle', [ActiviteController::class, 'toggle'])->name('toggle');
         Route::get('/stats', [ActiviteController::class, 'stats'])->name('stats');
         Route::get('/{activite}', [ActiviteController::class, 'show'])->name('show'); // ⚠️ APRÈS les routes spécifiques
+        Route::get('/{activite}/documents', [ActiviteController::class, 'documents'])->name('documents');
+
     });
 
     // =====================================================================

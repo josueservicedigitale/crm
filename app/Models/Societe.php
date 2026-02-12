@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Cache;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Intervention\Image\Color;
+use Illuminate\Support\Facades\DB;
 
 
 class Societe extends Model
@@ -68,7 +69,134 @@ class Societe extends Model
     }
 
 
+// =========================================================================
+// MÉTHODES STATISTIQUES MANQUANTES
+// =========================================================================
 
+/**
+ * Récupère les documents groupés par activité
+ */
+public function getDocumentsByActivity(): array
+{
+    return $this->documents()
+        ->select('activity', DB::raw('COUNT(*) as count'), DB::raw('SUM(montant_ttc) as total'))
+        ->whereNotNull('activity')
+        ->groupBy('activity')
+        ->get()
+        ->mapWithKeys(function ($item) {
+            return [
+                $item->activity => [
+                    'count' => $item->count,
+                    'total' => $item->total ?? 0,
+                    'percentage' => 0 // Sera calculé si besoin
+                ]
+            ];
+        })
+        ->toArray();
+}
+
+/**
+ * Récupère les top adresses de travaux
+ */
+public function getTopAdresses(int $limit = 5): array
+{
+    return $this->documents()
+        ->whereNotNull('adresse_travaux')
+        ->where('adresse_travaux', '!=', '')
+        ->select('adresse_travaux', DB::raw('COUNT(*) as count'))
+        ->groupBy('adresse_travaux')
+        ->orderByDesc('count')
+        ->limit($limit)
+        ->get()
+        ->mapWithKeys(function ($item) {
+            return [
+                $item->adresse_travaux => [
+                    'count' => $item->count,
+                    'adresse' => $item->adresse_travaux
+                ]
+            ];
+        })
+        ->toArray();
+}
+
+/**
+ * Récupère les statistiques d'évolution
+ */
+public function getEvolutionStats(int $months = 12): array
+{
+    return $this->documents()
+        ->select(
+            DB::raw('DATE_FORMAT(created_at, "%Y-%m") as period'),
+            DB::raw('COUNT(*) as count'),
+            DB::raw('SUM(montant_ttc) as total')
+        )
+        ->where('created_at', '>=', now()->subMonths($months))
+        ->groupBy('period')
+        ->orderBy('period', 'asc')
+        ->get()
+        ->map(function ($item) {
+            return [
+                'period' => $item->period,
+                'count' => (int) $item->count,
+                'total' => (float) ($item->total ?? 0),
+            ];
+        })
+        ->toArray();
+}
+
+/**
+ * Récupère les statistiques du dernier mois
+ */
+public function getLastMonthStats(): array
+{
+    $lastMonth = now()->subMonth();
+    
+    $documents = $this->documents()
+        ->whereYear('created_at', $lastMonth->year)
+        ->whereMonth('created_at', $lastMonth->month);
+    
+    $total = $documents->count();
+    $totalMontant = $documents->sum('montant_ttc');
+    
+    return [
+        'month' => $lastMonth->translatedFormat('F Y'),
+        'year' => $lastMonth->year,
+        'month_num' => $lastMonth->month,
+        'total_documents' => $total,
+        'total_montant' => $totalMontant,
+        'moyenne_montant' => $total > 0 ? round($totalMontant / $total, 2) : 0,
+        'par_type' => $documents->select('type', DB::raw('COUNT(*) as count'))
+            ->groupBy('type')
+            ->pluck('count', 'type')
+            ->toArray(),
+    ];
+}
+
+/**
+ * Calcule les pourcentages pour les statistiques
+ */
+public function calculatePercentages(array $stats): array
+{
+    $total = $stats['total_documents'] ?? 0;
+    
+    if ($total > 0 && isset($stats['par_type'])) {
+        foreach ($stats['par_type'] as $type => &$data) {
+            if (is_array($data)) {
+                $data['percentage'] = round(($data['count'] / $total) * 100, 1);
+            }
+        }
+    }
+    
+    if ($total > 0 && isset($stats['par_activite'])) {
+        foreach ($stats['par_activite'] as $activite => &$data) {
+            if (is_array($data)) {
+                $data['percentage'] = round(($data['count'] / $total) * 100, 1);
+            }
+        }
+    }
+    
+    return $stats;
+}
 
     /**
      * Récupère les statistiques avec cache

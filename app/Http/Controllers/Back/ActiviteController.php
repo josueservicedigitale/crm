@@ -8,6 +8,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Collection;
+use App\Models\Societe;
+
+
+
 
 class ActiviteController extends Controller
 {
@@ -293,5 +297,105 @@ public function toggle(Activite $activite)
             return back()->withErrors('Erreur lors de la suppression : ' . $e->getMessage());
         }
     }
+
+ public function show($code)
+    {
+        // Récupérer l'activité avec ses comptages
+        $activiteModel = Activite::where('code', $code)
+            ->withCount([
+                'documents as total_documents',
+                'documents as devis_count' => fn($q) => $q->where('type', 'devis'),
+                'documents as factures_count' => fn($q) => $q->where('type', 'facture'),
+                'documents as autres_count' => fn($q) => $q->whereNotIn('type', ['devis', 'facture']),
+                'documents as nova_count' => fn($q) => $q->where('society', 'nova'),
+                'documents as house_count' => fn($q) => $q->where('society', 'house'),
+                'documents as ce_mois' => fn($q) => $q->whereMonth('created_at', now()->month)
+                                                     ->whereYear('created_at', now()->year),
+            ])
+            ->firstOrFail();
+        
+        // Variables pour la vue
+        $nomActivite = $activiteModel->nom_formate ?? $activiteModel->nom;
+        $activite = $activiteModel->code;
+        
+        // Statistiques détaillées
+        $stats = [
+            'total_documents' => $activiteModel->total_documents ?? 0,
+            'devis_count' => $activiteModel->devis_count ?? 0,
+            'factures_count' => $activiteModel->factures_count ?? 0,
+            'autres_count' => $activiteModel->autres_count ?? 0,
+            'ce_mois' => $activiteModel->ce_mois ?? 0,
+            'societes' => [
+                'nova' => $activiteModel->nova_count ?? 0,
+                'house' => $activiteModel->house_count ?? 0,
+            ],
+            'pourcentages' => [
+                'nova' => $activiteModel->total_documents > 0 
+                    ? round(($activiteModel->nova_count / $activiteModel->total_documents) * 100, 1)
+                    : 0,
+                'house' => $activiteModel->total_documents > 0 
+                    ? round(($activiteModel->house_count / $activiteModel->total_documents) * 100, 1)
+                    : 0,
+                'devis' => $activiteModel->total_documents > 0 
+                    ? round(($activiteModel->devis_count / $activiteModel->total_documents) * 100, 1)
+                    : 0,
+                'factures' => $activiteModel->total_documents > 0 
+                    ? round(($activiteModel->factures_count / $activiteModel->total_documents) * 100, 1)
+                    : 0,
+            ]
+        ];
+        
+        // Documents récents
+        $documentsRecents = $activiteModel->documents()
+            ->with(['user'=> fn($q) => $q->select('id', 'name')])
+            ->latest()
+            ->limit(5)
+            ->get();
+        
+        // Évolution mensuelle (12 derniers mois)
+        $evolutionMensuelle = Document::where('activity', $activite)
+            ->select(
+                DB::raw('DATE_FORMAT(created_at, "%Y-%m") as mois'),
+                DB::raw('COUNT(*) as total'),
+                DB::raw('SUM(CASE WHEN type = "devis" THEN 1 ELSE 0 END) as devis'),
+                DB::raw('SUM(CASE WHEN type = "facture" THEN 1 ELSE 0 END) as factures')
+            )
+            ->where('created_at', '>=', now()->subMonths(12))
+            ->groupBy('mois')
+            ->orderBy('mois', 'desc')
+            ->get();
+        
+        // Top sociétés clientes
+        $topSocietes = $activiteModel->documents()
+            ->select('society', DB::raw('COUNT(*) as total'))
+            ->groupBy('society')
+            ->orderByDesc('total')
+            ->get();
+        
+        return view('back.activites.show', compact(
+            'activiteModel',
+            'nomActivite',
+            'activite',
+            'stats',
+            'documentsRecents',
+            'evolutionMensuelle',
+            'topSocietes'
+        ));
+    }
+
+    /**
+ * Affiche tous les documents d'une activité
+ */
+public function documents($code)
+{
+    $activite = Activite::where('code', $code)->firstOrFail();
+    $nomActivite = $activite->nom_formate ?? $activite->nom;
     
+    $documents = $activite->documents()
+        ->with(['user'])
+        ->orderByDesc('created_at')
+        ->paginate(20);
+    
+    return view('back.activites.documents', compact('activite', 'nomActivite', 'documents'));
+}
 }

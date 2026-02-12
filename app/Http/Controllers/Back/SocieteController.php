@@ -41,57 +41,63 @@ public function index()
     /**
      * Affiche le détail d'une société
      */
-    public function show(Societe $societe)
-    {
-        Log::info('🔍 Détail société consulté', ['societe_id' => $societe->id]);
-        
-        // Récupérer les statistiques
-        $stats = $societe->getStats();
-        
-        // Documents récents
-        $documentsRecents = $societe->documents()
-            ->with(['user', 'parent'])
-            ->latest()
-            ->take(10)
-            ->get();
-        
-        // Top activités
-        $topActivites = $societe->documents()
-            ->selectRaw('activity, COUNT(*) as total')
-            ->groupBy('activity')
-            ->orderByDesc('total')
-            ->limit(5)
-            ->get();
-        
-        // Top clients (par adresse)
-        $topClients = $societe->documents()
-            ->whereNotNull('adresse_travaux')
-            ->selectRaw('adresse_travaux, COUNT(*) as total')
-            ->groupBy('adresse_travaux')
-            ->orderByDesc('total')
-            ->limit(5)
-            ->get();
-        
-        // Évolution mensuelle
-        $evolutionMensuelle = Document::where('society', $societe->code)
-            ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, COUNT(*) as count')
-            ->groupBy('year', 'month')
-            ->orderBy('year', 'desc')
-            ->orderBy('month', 'desc')
-            ->limit(12)
-            ->get();
-        
-        return view('back.societes.show', compact(
-            'societe', 
-            'stats',
-            'documentsRecents',
-            'topActivites',
-            'topClients',
-            'evolutionMensuelle'
-        ));
-    }
+// public function show($code)
+// {
+//     // Récupérer la société
+//     $societeModel = Societe::where('code', $code)
+//         ->with('user')
+//         ->firstOrFail();
     
-    /**
+//     // Variables pour la vue
+//     $nomSociete = $societeModel->nom_formate ?? $societeModel->nom;
+//     $societe = $societeModel->code;
+    
+//     // ✅ STATISTIQUES DANS LE FORMAT ATTENDU PAR LA VUE
+//     $stats = [
+//         'total' => $societeModel->documents()->count(),
+//         'devis' => $societeModel->documents()->where('type', 'devis')->count(),
+//         'facture' => $societeModel->documents()->where('type', 'facture')->count(),
+//         'rapport' => $societeModel->documents()->where('type', 'rapport')->count(),
+//         'cahier_des_charges' => $societeModel->documents()->where('type', 'cahier_des_charges')->count(),
+//         'desembouage' => $societeModel->documents()->where('activity', 'desembouage')->count(),
+//         'reequilibrage' => $societeModel->documents()->where('activity', 'reequilibrage')->count(),
+//     ];
+    
+//     // Documents récents
+//     $documentsRecents = $societeModel->documents()
+//         ->with(['user'])
+//         ->latest()
+//         ->limit(10)
+//         ->get();
+    
+//     // Clients fréquents (adresses les plus utilisées)
+//     $clientsFrequents = $societeModel->documents()
+//         ->whereNotNull('adresse_travaux')
+//         ->where('adresse_travaux', '!=', '')
+//         ->select('adresse_travaux', DB::raw('COUNT(*) as total'), DB::raw('MAX(created_at) as dernier'))
+//         ->groupBy('adresse_travaux')
+//         ->orderByDesc('total')
+//         ->limit(6)
+//         ->get()
+//         ->map(function ($item) {
+//             return [
+//                 'adresse' => $item->adresse_travaux,
+//                 'total_documents' => (int) $item->total,
+//                 'dernier_document' => $item->dernier ? \Carbon\Carbon::parse($item->dernier) : null,
+//             ];
+//         })
+//         ->toArray();
+    
+//     return view('back.societes.show', compact(
+//         'societeModel',
+//         'nomSociete',
+//         'societe',
+//         'stats',           // ✅ Maintenant avec les bonnes clés !
+//         'documentsRecents',
+//         'clientsFrequents'
+//     ));
+// }
+ /**
      * Affiche le formulaire de création
      */
     public function create()
@@ -559,4 +565,106 @@ public function toggle(Societe $societe)
             'topDocuments'
         ));
     }
+
+     public function show($code)
+    {
+        // Récupérer la société avec ses relations
+        $societeModel = Societe::with(['user', 'documents' => function($query) {
+                $query->latest()->limit(10);
+            }])
+            ->where('code', $code)
+            ->firstOrFail();
+        
+        // Nom de la société pour l'affichage
+        $nomSociete = $societeModel->nom;
+        
+        // Code de la société pour les routes
+        $societe = $societeModel->code;
+        
+        // Récupérer les statistiques
+        $stats = $this->getStatistiques($societeModel);
+        
+        // Récupérer les documents récents
+        $documentsRecents = $societeModel->documents()
+            ->with(['user', 'activite'])
+            ->latest()
+            ->limit(10)
+            ->get();
+        
+        // Récupérer les clients/adresses fréquents
+        $clientsFrequents = $this->getClientsFrequents($societeModel);
+        
+        return view('back.societes.show', compact(
+            'societeModel',
+            'nomSociete',
+            'societe',
+            'stats',
+            'documentsRecents',
+            'clientsFrequents'
+        ));
+    }
+    
+    /**
+     * Get statistics for a society.
+     */
+    private function getStatistiques(Societe $societe): array
+    {
+        // Total des documents
+        $totalDocuments = $societe->documents()->count();
+        
+        // Statistiques par type de document
+        $statsByType = $societe->documents()
+            ->select('type', DB::raw('count(*) as total'))
+            ->groupBy('type')
+            ->pluck('total', 'type')
+            ->toArray();
+        
+        // Statistiques par activité
+        $statsByActivity = $societe->documents()
+            ->select('activity', DB::raw('count(*) as total'))
+            ->groupBy('activity')
+            ->pluck('total', 'activity')
+            ->toArray();
+        
+        // Construire le tableau des statistiques
+        return [
+            'total' => $totalDocuments,
+            'devis' => $statsByType['devis'] ?? 0,
+            'facture' => $statsByType['facture'] ?? 0,
+            'rapport' => $statsByType['rapport'] ?? 0,
+            'cahier_des_charges' => $statsByType['cahier_des_charges'] ?? 0,
+            'desembouage' => $statsByActivity['desembouage'] ?? 0,
+            'reequilibrage' => $statsByActivity['reequilibrage'] ?? 0,
+        ];
+    }
+    
+    /**
+     * Get frequent clients/addresses for a society.
+     */
+    private function getClientsFrequents(Societe $societe): array
+    {
+        // Récupérer les adresses les plus fréquentes dans les documents
+        $adressesFrequentes = $societe->documents()
+            ->select('adresse_travaux', DB::raw('count(*) as total'), DB::raw('MAX(created_at) as dernier'))
+            ->whereNotNull('adresse_travaux')
+            ->where('adresse_travaux', '!=', '')
+            ->groupBy('adresse_travaux')
+            ->orderByDesc('total')
+            ->limit(6)
+            ->get();
+        
+        $clientsFrequents = [];
+        
+        foreach ($adressesFrequentes as $adresse) {
+            $clientsFrequents[] = [
+                'adresse' => $adresse->adresse_travaux,
+                'total_documents' => $adresse->total,
+                'dernier_document' => $adresse->dernier ? \Carbon\Carbon::parse($adresse->dernier) : null,
+            ];
+        }
+        
+        return $clientsFrequents;
+    }
+
+
 }

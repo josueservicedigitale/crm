@@ -195,19 +195,34 @@ class Activite extends Model
     /**
      * Accessor pour le texte de la couleur contrastée
      */
-    public function getCouleurContrastAttribute()
-    {
-        // Fonction simple pour déterminer si le texte doit être clair ou foncé
-        $hex = str_replace('#', '', $this->couleur);
+   /**
+ * Accessor pour le texte de la couleur contrastée
+ */
+public function getCouleurContrastAttribute(): string
+{
+    if (!$this->couleur) {
+        return '#000000';
+    }
+
+    // Nettoyer le code couleur
+    $hex = ltrim($this->couleur, '#');
+    
+    // Convertir en RGB
+    if (strlen($hex) == 3) {
+        $r = hexdec(str_repeat(substr($hex, 0, 1), 2));
+        $g = hexdec(str_repeat(substr($hex, 1, 1), 2));
+        $b = hexdec(str_repeat(substr($hex, 2, 1), 2));
+    } else {
         $r = hexdec(substr($hex, 0, 2));
         $g = hexdec(substr($hex, 2, 2));
         $b = hexdec(substr($hex, 4, 2));
-        
-        // Formule de luminance
-        $luminance = (0.299 * $r + 0.587 * $g + 0.114 * $b) / 255;
-        
-        return $luminance > 0.5 ? '#000000' : '#FFFFFF';
     }
+
+    // Formule WCAG 2.1 pour la luminance relative
+    $luminance = (0.2126 * $r + 0.7152 * $g + 0.0722 * $b) / 255;
+
+    return $luminance > 0.5 ? '#000000' : '#FFFFFF';
+}
 
     /**
      * Mutator pour assurer un code valide

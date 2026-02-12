@@ -47,13 +47,13 @@
                         </div>
                     </div>
                     <div class="btn-group">
-                        <a href="{{ route('back.societe.edit', $societe) }}" 
+                        <a href="{{ route('back.societes.edit', $societe) }}" 
                            class="btn btn-outline-primary btn-action" 
                            data-bs-toggle="tooltip" 
                            title="Modifier la société">
                             <i class="fas fa-edit me-1"></i>Éditer
                         </a>
-                        <a href="{{ route('back.societe.index') }}" 
+                        <a href="{{ route('back.societes.index') }}" 
                            class="btn btn-outline-secondary btn-action"
                            data-bs-toggle="tooltip"
                            title="Retour à la liste">
@@ -247,7 +247,7 @@
                         </div>
 
                         <!-- Voir tous les documents -->
-                        <a href="{{ route('back.societe.documents', $societe) }}"
+                        <a href="{{ route('back.societes.documents', $societe) }}"
                            class="btn btn-outline-secondary btn-hover d-flex align-items-center justify-content-between">
                             <span>
                                 <i class="fas fa-list me-2"></i>
@@ -257,7 +257,7 @@
                         </a>
 
                         <!-- Statistiques détaillées -->
-                        <a href="{{ route('back.societe.stats', $societe) }}"
+                        <a href="{{ route('back.societes.stats', $societe) }}"
                            class="btn btn-outline-info btn-hover d-flex align-items-center justify-content-between">
                             <span>
                                 <i class="fas fa-chart-pie me-2"></i>
@@ -284,7 +284,7 @@
                             </h6>
                             <p class="text-muted small mb-0">{{ $documentsRecents->count() }} documents</p>
                         </div>
-                        <a href="{{ route('back.societe.documents', $societe) }}" 
+                        <a href="{{ route('back.societes.documents', $societe) }}" 
                            class="btn btn-outline-primary btn-sm">
                             Voir tout <i class="fas fa-arrow-right ms-1"></i>
                         </a>
