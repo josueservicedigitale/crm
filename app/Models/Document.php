@@ -78,4 +78,8 @@ class Document extends Model
         $random = strtoupper(substr(md5(uniqid()), 0, 6));
         return $prefix . '-' . $random;
     }
+    public function activite()
+{
+    return $this->belongsTo(Activite::class, 'activity', 'code');
+}
 }

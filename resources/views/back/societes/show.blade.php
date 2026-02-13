@@ -427,7 +427,7 @@
                                     @endif
                                 </div>
                                 <div class="card-footer bg-transparent border-0 pt-0">
-                                    <a href="{{ route('back.societe.documents', $societe) }}?search={{ urlencode($client['adresse']) }}"
+                                    <a href="{{ route('back.societes.documents', $societe) }}?search={{ urlencode($client['adresse']) }}"
                                        class="btn btn-sm btn-outline-primary w-100">
                                         <i class="fas fa-search me-1"></i>Voir documents
                                     </a>

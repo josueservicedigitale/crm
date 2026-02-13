@@ -1,20 +1,20 @@
 @extends('back.layouts.principal')
 
-@section('title', 'Réequilibrage - Énergie Nova')
+@section('title', 'Désembouage - ' . $societyName)
 
 @section('content')
-
 <div class="container-fluid pt-4 px-4">
 
-    <!-- Titre spécifique à la société sélectionnée -->
+    <!-- Titre dynamique -->
     <div class="row mb-4">
         <div class="col-12 text-center text-md-start">
-            <h4 class="fw-bold text-dark">
-                <i class="fa fa-building me-2 text-primary"></i>
-                Bienvenu sur le Réequilibrage – Énergie Nova {{ auth()->user()->name }}
+            <h4 class="fw-bold" style="color: {{ $societyColor }};">
+                <i class="fa fa-water me-2" style="color: {{ $societyColor }};"></i>
+                Bienvenue sur le Désembouage – {{ $societyName }} {{ auth()->user()->name }}
             </h4>
             <p class="text-muted mb-0">
-                Gestion des documents pour la société <span class="fw-semibold text-primary">Énergie Nova</span>.  
+                Gestion des documents pour la société 
+                <span class="fw-semibold" style="color: {{ $societyColor }};">{{ $societyName }}</span>.  
                 Sélectionnez le type de document à créer ou gérer ci-dessous.
             </p>
         </div>
@@ -22,7 +22,6 @@
 
     <!-- Cartes Documents -->
     <div class="row g-4">
-
         @php
             $documents = [
                 ['title'=>'Devis','icon'=>'fa-file-invoice-dollar','desc'=>'Création et suivi des devis clients','type'=>'devis'],
@@ -34,32 +33,39 @@
             ];
         @endphp
 
-       @foreach($documents as $doc)
+        @foreach($documents as $doc)
         <div class="col-sm-6 col-xl-4">
             <a href="{{ route('back.document.choose', [
                 'activity' => $activity,
                 'society'  => $society,
                 'type'     => $doc['type']
             ]) }}" class="text-decoration-none">
-
-
-
-                <div class="bg-light rounded shadow-sm h-100 card-hover d-flex flex-column justify-content-between p-4">
+                
+                <div class="bg-light rounded shadow-sm h-100 card-hover d-flex flex-column justify-content-between p-4"
+                     style="border-left: 5px solid {{ $societyColor }}; transition: all 0.3s ease;">
+                    
                     <div class="d-flex align-items-center justify-content-between mb-3">
-                        <i class="fa {{ $doc['icon'] }} fa-3x text-blue-gradient"></i>
-                        <span class="badge badge-blue">{{ $doc['title'] }}</span>
+                        <i class="fa {{ $doc['icon'] }} fa-3x" style="color: {{ $societyColor }};"></i>
+                        <span class="badge rounded-pill px-3 py-2" 
+                              style="background: {{ $societyColor }}20; color: {{ $societyColor }}; border: 1px solid {{ $societyColor }}40;">
+                            {{ $doc['title'] }}
+                        </span>
                     </div>
+                    
                     <h6 class="mb-1 fw-bold text-dark">{{ $doc['title'] }}</h6>
                     <p class="text-muted small mb-0">{{ $doc['desc'] }}</p>
                 </div>
             </a>
         </div>
         @endforeach
-
     </div>
 </div>
 
+<style>
+.card-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
+    border-left-width: 8px !important;
+}
+</style>
 @endsection
-
-
-

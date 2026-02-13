@@ -3,7 +3,323 @@
 @section('title', 'Dashboard CRM - ' . ($appName ?? '360INVEST'))
 
 @section('content')
-    <div class="container-fluid pt-4 px-4">
+<div class="container-fluid pt-4 px-4">
+    
+    <!-- ================================================================= -->
+    <!-- 🚀 BANNIÈRE D'ACCUEIL 3D - AVEC NOM DE L'UTILISATEUR -->
+    <!-- ================================================================= -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="welcome-container text-center py-5 px-3 rounded-4 shadow-lg position-relative overflow-hidden"
+                 style="background: linear-gradient(145deg, #1a1e2b 0%, #2d3346 100%); border-bottom: 5px solid #FFD700;">
+                
+                <!-- Effets de lumière 3D -->
+                <div class="glow-effect glow-1"></div>
+                <div class="glow-effect glow-2"></div>
+                <div class="glow-effect glow-3"></div>
+                
+                <!-- Icône de bienvenue avec avatar -->
+                <div class="welcome-icon mb-3 animate-float d-flex justify-content-center align-items-center gap-3">
+                    <div class="avatar-container position-relative">
+                        <div class="rounded-circle bg-warning bg-opacity-25 p-3 d-inline-flex align-items-center justify-content-center border border-3 border-warning shadow-lg"
+                             style="width: 90px; height: 90px; backdrop-filter: blur(5px);">
+                            @if(auth()->user()->avatar)
+                                <img src="{{ auth()->user()->avatar }}" alt="{{ auth()->user()->name }}" 
+                                     class="rounded-circle w-100 h-100 object-fit-cover">
+                            @else
+                                <span class="fw-bold text-warning" style="font-size: 2.5rem;">
+                                    {{ auth()->user()->getInitialesAttribute() ?? strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                                </span>
+                            @endif
+                        </div>
+                        <span class="position-absolute bottom-0 end-0 bg-success rounded-circle p-2 border border-2 border-white" 
+                              style="width: 18px; height: 18px;" 
+                              data-bs-toggle="tooltip" 
+                              title="En ligne">
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- TEXTE PRINCIPAL 3D CLIGNOTANT AVEC NOM -->
+                <h1 class="display-3 fw-extrabold mb-3 text-3d-pulse" 
+                    style="font-family: 'Poppins', 'Montserrat', sans-serif; text-shadow: 0 1px 0 #ccc, 0 2px 0 #c9c9c9, 0 3px 0 #bbb, 0 4px 0 #b9b9b9, 0 5px 0 #aaa, 0 6px 1px rgba(0,0,0,.1), 0 0 5px rgba(0,0,0,.1), 0 1px 3px rgba(0,0,0,.3), 0 3px 5px rgba(0,0,0,.2), 0 5px 10px rgba(0,0,0,.25), 0 10px 10px rgba(0,0,0,.2), 0 20px 20px rgba(0,0,0,.15);">
+                    <span class="pulse-text-red">WELCOME</span> 
+                    <span class="pulse-text-gold">TO</span> 
+                    <span class="pulse-text-gold">YOUR</span> 
+                    <span class="pulse-text-green">DASHBOARD</span>
+                </h1>
+                
+                <!-- NOM DE L'UTILISATEUR EN ÉNORME 3D -->
+                <h2 class="display-4 fw-black mb-3 text-user-name" 
+                    style="font-family: 'Montserrat', 'Poppins', sans-serif; letter-spacing: 5px; word-break: break-word;">
+                    <span class="pulse-user-name">{{ strtoupper(auth()->user()->name) }}</span>
+                </h2>
+                
+                <!-- RÔLE DE L'UTILISATEUR -->
+                <div class="mt-2 mb-3">
+                    <span class="badge bg-warning bg-opacity-25 text-warning px-4 py-2 rounded-pill border border-warning fs-6">
+                        <i class="fas fa-user-tie me-2"></i>
+                        {{ auth()->user()->role ?? 'Administrateur' }}
+                    </span>
+                </div>
+                
+                <!-- Date et heure en temps réel -->
+                <div class="mt-4 d-flex justify-content-center align-items-center gap-3 flex-wrap">
+                    <div class="badge bg-dark bg-opacity-50 px-4 py-3 rounded-pill border border-warning">
+                        <i class="far fa-calendar-alt text-warning me-2"></i>
+                        <span class="text-white fw-semibold">{{ now()->format('l d F Y') }}</span>
+                    </div>
+                    <div class="badge bg-dark bg-opacity-50 px-4 py-3 rounded-pill border border-info">
+                        <i class="far fa-clock text-info me-2"></i>
+                        <span class="text-white fw-semibold" id="liveClock">{{ now()->format('H:i:s') }}</span>
+                    </div>
+                    <div class="badge bg-success bg-opacity-25 px-4 py-3 rounded-pill border border-success">
+                        <i class="fas fa-circle text-success me-2" style="font-size: 10px;"></i>
+                        <span class="text-white fw-semibold">Connecté</span>
+                    </div>
+                </div>
+                
+                <!-- Indicateur de statut -->
+                <div class="position-absolute top-0 end-0 mt-4 me-4">
+                    <span class="badge bg-success bg-opacity-75 px-3 py-2 rounded-pill shadow-sm">
+                        <i class="fas fa-shield-alt me-1"></i> 
+                        Session active
+                    </span>
+                </div>
+                
+                <!-- Message personnalisé -->
+                <div class="position-absolute bottom-0 start-0 ms-4 mb-4">
+                    <span class="badge bg-info bg-opacity-25 px-3 py-2 rounded-pill border border-info">
+                        <i class="fas fa-smile-wink me-1"></i>
+                        Heureux de vous revoir !
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STYLES CSS PERSONNALISÉS -->
+    <style>
+        /* ✅ ANIMATIONS DE PULSATION RGB */
+        @keyframes pulseRed {
+            0%, 100% { color: #ff4d4d; text-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000, 0 0 60px #ff0000, 0 0 80px #ff0000; }
+            50% { color: #ffffff; text-shadow: 0 0 30px #ff6a6a, 0 0 50px #ff6a6a, 0 0 70px #ff6a6a, 0 0 90px #ff6a6a; }
+        }
+        
+        @keyframes pulseGreen {
+            0%, 100% { color: #6bff6b; text-shadow: 0 0 20px #00ff00, 0 0 40px #00ff00, 0 0 60px #00ff00, 0 0 80px #00ff00; }
+            50% { color: #ffffff; text-shadow: 0 0 30px #90ee90, 0 0 50px #90ee90, 0 0 70px #90ee90, 0 0 90px #90ee90; }
+        }
+        
+        @keyframes pulseGold {
+            0%, 100% { color: #FFD700; text-shadow: 0 0 20px #FFD700, 0 0 40px #FFD700, 0 0 60px #FFD700, 0 0 80px #FFD700; }
+            50% { color: #FFF8E7; text-shadow: 0 0 30px #FFE55C, 0 0 50px #FFE55C, 0 0 70px #FFE55C, 0 0 90px #FFE55C; }
+        }
+        
+        @keyframes pulseUserName {
+            0% { color: #FFD700; text-shadow: 0 0 10px #FFD700, 0 0 20px #FFD700, 0 0 30px #FFD700, 0 0 40px #FF8C00; }
+            25% { color: #FFA500; text-shadow: 0 0 15px #FFA500, 0 0 25px #FFA500, 0 0 35px #FFA500, 0 0 45px #FF4500; }
+            50% { color: #FF8C00; text-shadow: 0 0 20px #FF8C00, 0 0 30px #FF8C00, 0 0 40px #FF8C00, 0 0 50px #FF0000; }
+            75% { color: #FFA500; text-shadow: 0 0 15px #FFA500, 0 0 25px #FFA500, 0 0 35px #FFA500, 0 0 45px #FF4500; }
+            100% { color: #FFD700; text-shadow: 0 0 10px #FFD700, 0 0 20px #FFD700, 0 0 30px #FFD700, 0 0 40px #FF8C00; }
+        }
+        
+        .pulse-text-red {
+            animation: pulseRed 2s infinite ease-in-out;
+            display: inline-block;
+            font-weight: 900;
+        }
+        
+        .pulse-text-green {
+            animation: pulseGreen 2s infinite ease-in-out;
+            display: inline-block;
+            font-weight: 900;
+        }
+        
+        .pulse-text-gold {
+            animation: pulseGold 2s infinite ease-in-out;
+            display: inline-block;
+            font-weight: 900;
+            color: #FFD700;
+        }
+        
+        .pulse-user-name {
+            animation: pulseUserName 3s infinite ease-in-out;
+            display: inline-block;
+            font-weight: 900;
+            font-size: 3.5rem;
+            background: linear-gradient(45deg, #FFD700, #FFA500, #FF8C00, #FF4500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            letter-spacing: 8px;
+        }
+        
+        /* ✅ EFFET 3D AMÉLIORÉ */
+        .text-3d-pulse {
+            transform: perspective(500px) translateZ(20px);
+            letter-spacing: 4px;
+        }
+        
+        /* ✅ ANIMATION FLOTTANTE */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) perspective(500px) rotateX(5deg); }
+            50% { transform: translateY(-10px) perspective(500px) rotateX(0deg); }
+        }
+        
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        /* ✅ EFFETS DE LUMIÈRE DE FOND */
+        .glow-effect {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            z-index: 0;
+        }
+        
+        .glow-1 {
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 215, 0, 0.2);
+            top: -150px;
+            left: -100px;
+            animation: glowMove 20s infinite alternate;
+        }
+        
+        .glow-2 {
+            width: 400px;
+            height: 400px;
+            background: rgba(255, 77, 77, 0.15);
+            bottom: -200px;
+            right: -150px;
+            animation: glowMove 25s infinite alternate-reverse;
+        }
+        
+        .glow-3 {
+            width: 200px;
+            height: 200px;
+            background: rgba(107, 255, 107, 0.1);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: glowPulse 5s infinite;
+        }
+        
+        @keyframes glowMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 30px); }
+        }
+        
+        @keyframes glowPulse {
+            0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.3); }
+        }
+        
+        /* ✅ AVATAR */
+        .avatar-container {
+            transition: all 0.3s ease;
+        }
+        
+        .avatar-container:hover {
+            transform: scale(1.05);
+        }
+        
+        .object-fit-cover {
+            object-fit: cover;
+        }
+        
+        /* ✅ RESPONSIVE */
+        @media (max-width: 992px) {
+            .pulse-user-name {
+                font-size: 2.5rem !important;
+                letter-spacing: 4px;
+            }
+            .welcome-container h1 {
+                font-size: 2.2rem !important;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .pulse-user-name {
+                font-size: 2rem !important;
+                letter-spacing: 3px;
+            }
+            .welcome-container h1 {
+                font-size: 1.8rem !important;
+            }
+            .lead {
+                font-size: 1rem !important;
+            }
+            .badge {
+                font-size: 0.75rem;
+                padding: 0.5rem 1rem !important;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .pulse-user-name {
+                font-size: 1.5rem !important;
+                letter-spacing: 2px;
+            }
+            .welcome-container h1 {
+                font-size: 1.4rem !important;
+                letter-spacing: 2px;
+            }
+            .d-flex.gap-3 {
+                flex-direction: column;
+                gap: 0.5rem !important;
+            }
+            .rounded-circle {
+                width: 70px !important;
+                height: 70px !important;
+            }
+        }
+        
+        /* ✅ HORLOGE EN TEMPS RÉEL */
+        #liveClock {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+        }
+        
+        /* ✅ ANIMATION DE TEXTE */
+        .text-user-name {
+            animation: fadeInUp 1s ease;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+
+    <!-- SCRIPT POUR L'HORLOGE EN TEMPS RÉEL -->
+    <script>
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('liveClock').innerHTML = `${hours}:${minutes}:${seconds}`;
+        }
+        setInterval(updateClock, 1000);
+        
+        // Initialiser les tooltips Bootstrap
+        document.addEventListener('DOMContentLoaded', function() {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function(tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
+
         <!-- ================================================================= -->
         <!-- 1. KPI PRINCIPAUX - 4 CARTES AÉRÉES -->
         <!-- ================================================================= -->

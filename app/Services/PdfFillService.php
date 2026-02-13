@@ -1,110 +1,319 @@
 <?php
 
 
+// namespace App\Services;
+
+// use App\Models\Document;
+// use Barryvdh\DomPDF\Facade\Pdf;
+// use Illuminate\Support\Facades\Storage;
+// use Illuminate\Support\Facades\Log;
+
+// class PdfFillService
+// {
+//     public function generateAndSavePdf(Document $document, string $template)
+//     {
+//         try {
+    
+//             $data = $this->prepareDocumentData($document);
+
+          
+//             if (!view()->exists($template)) {
+//                 Log::error("Template PDF non trouvé : {$template}");
+//                 throw new \Exception("Template PDF introuvable : {$template}");
+//             }
+
+//             $filename = $document->reference . '_' . now()->format('Ymd_His') . '.pdf';
+//             $folder = "documents/{$document->society}/{$document->activity}/{$document->type}";
+//             $fullPath = $folder . '/' . $filename;
+
+//             if (!Storage::disk('public')->exists($folder)) {
+//                 Storage::disk('public')->makeDirectory($folder, 0755, true);
+//             }
+
+//             $pdf = Pdf::loadView($template, $data)
+//                 ->setPaper('a4', 'portrait')
+//                 ->setOption('defaultFont', 'DejaVu Sans')
+//                 ->setOption('isHtml5ParserEnabled', true)
+//                 ->setOption('isRemoteEnabled', true)
+//                 ->setOption('chroot', public_path());
+
+//             Storage::disk('public')->put($fullPath, $pdf->output());
+
+//             if (!Storage::disk('public')->exists($fullPath)) {
+//                 throw new \Exception("Échec de la création du fichier PDF");
+//             }
+
+//             $document->file_path = 'storage/' . $fullPath;
+//             $document->pdf_generated_at = now();
+//             $document->save();
+
+//             Log::info("PDF généré avec succès", [
+//                 'document_id' => $document->id,
+//                 'path' => $fullPath,
+//                 'template' => $template,
+//                 'data_fields' => array_keys($data['document_data'] ?? [])
+//             ]);
+
+//             return $document->file_path;
+
+//         } catch (\Exception $e) {
+//             Log::error("Erreur génération PDF", [
+//                 'document_id' => $document->id,
+//                 'template' => $template,
+//                 'error' => $e->getMessage(),
+//                 'trace' => $e->getTraceAsString()
+//             ]);
+//             throw $e;
+//         }
+//     }
+
+//     /**
+//      */
+//    public function prepareDocumentData(Document $document): array // ← PUBLIC
+//     {
+//         $documentData = $document->toArray();
+
+//         if ($document->relationLoaded('user')) {
+//             $documentData['user'] = $document->user;
+//         }
+
+//         if ($document->relationLoaded('parent')) {
+//             $documentData['parent'] = $document->parent;
+//             if ($document->parent) {
+//                 $documentData = array_merge($document->parent->toArray(), $documentData);
+//             }
+//         }
+
+//         $formattedData = $this->formatData($documentData);
+
+//         $additionalData = [
+//             'today' => now()->format('d/m/Y'),
+//             'today_iso' => now()->format('Y-m-d'),
+//             'year' => now()->format('Y'),
+//             'month' => now()->format('m'),
+//             'society_name' => $this->getSocietyName($document->society),
+//             'activity_name' => $this->getActivityName($document->activity),
+//             'type_name' => $this->getTypeName($document->type),
+//         ];
+
+//         return [
+//             'document' => $document, 
+//             'data' => $formattedData,
+//             'raw' => $documentData,  
+//             'meta' => $additionalData,
+//             'reference' => $document->reference,
+//             'client_nom' => $documentData['client_nom'] ?? $documentData['nom_residence'] ?? '',
+//             'adresse_travaux' => $documentData['adresse_travaux'] ?? '',
+//             'montant_ttc' => $documentData['montant_ttc'] ?? 0,
+//         ] + $formattedData; 
+//     }
+
+//     private function formatData(array $data): array
+//     {
+//         $formatted = [];
+
+//         foreach ($data as $key => $value) {
+//             $formatted[$key] = $value;
+
+//             if (str_contains($key, 'date') || str_contains($key, 'created') || str_contains($key, 'updated')) {
+//                 if ($value && !empty($value)) {
+//                     try {
+//                         $formatted[$key . '_formatted'] = \Carbon\Carbon::parse($value)->format('d/m/Y');
+//                         $formatted[$key . '_iso'] = \Carbon\Carbon::parse($value)->format('Y-m-d');
+//                     } catch (\Exception $e) {
+//                     }
+//                 }
+//             }
+
+//             if (
+//                 str_contains($key, 'montant') ||
+//                 str_contains($key, 'prix') ||
+//                 str_contains($key, 'total') ||
+//                 str_contains($key, 'tva') ||
+//                 str_contains($key, 'ht') ||
+//                 str_contains($key, 'ttc') ||
+//                 str_contains($key, 'prime') ||
+//                 str_contains($key, 'reste')
+//             ) {
+//                 if (is_numeric($value)) {
+//                     $formatted[$key . '_formatted'] = number_format(floatval($value), 2, ',', ' ') . ' €';
+//                     $formatted[$key . '_euros'] = number_format(floatval($value), 2, ',', ' ');
+//                 }
+//             }
+
+//             if (is_bool($value)) {
+//                 $formatted[$key . '_text'] = $value ? 'Oui' : 'Non';
+//             }
+//         }
+
+//         if (isset($data['montant_ht']) && !isset($data['montant_ttc'])) {
+//             $tva = $data['tva'] ?? 20;
+//             $montantTTC = $data['montant_ht'] * (1 + $tva / 100);
+//             $formatted['montant_ttc_calcule'] = $montantTTC;
+//             $formatted['montant_ttc_calcule_formatted'] = number_format($montantTTC, 2, ',', ' ') . ' €';
+//         }
+
+//         return $formatted;
+//     }
+
+    
+//     private function getSocietyName(string $code): string
+//     {
+//         $societies = [
+//             'nova' => 'Énergie Nova',
+//             'energie_nova' => 'Énergie Nova',
+//             'house' => 'MyHouse Solutions',
+//             'myhouse' => 'MyHouse Solutions',
+//             'patrimoine' => 'Patrimoine',
+//             'patrimoine_immobilier' => 'Patrimoine',
+//         ];
+
+//         return $societies[$code] ?? $code;
+//     }
+
+//     private function getActivityName(string $code): string
+//     {
+//         $activities = [
+//             'desembouage' => 'Désembouage',
+//             'reequilibrage' => 'Rééquilibrage',
+//         ];
+
+//         return $activities[$code] ?? $code;
+//     }
+
+   
+//     private function getTypeName(string $code): string
+//     {
+//         $types = [
+//             'devis' => 'Devis',
+//             'facture' => 'Facture',
+//             'rapport' => 'Rapport',
+//             'cahier_des_charges' => 'Cahier des Charges',
+//             'attestation_realisation' => 'Attestation de Réalisation',
+//             'attestation_signataire' => 'Attestation Signataire',
+//         ];
+
+//         return $types[$code] ?? $code;
+//     }
+// }
+
+
+
 namespace App\Services;
 
 use App\Models\Document;
+use App\Models\Societe;
+use App\Models\Activite;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 
 class PdfFillService
 {
-    public function generateAndSavePdf(Document $document, string $template)
-    {
-        try {
-            // 1️⃣ Préparer TOUTES les données dynamiquement
-            $data = $this->prepareDocumentData($document);
-
-            // 2️⃣ Vérifier que le template existe
-            if (!view()->exists($template)) {
-                Log::error("Template PDF non trouvé : {$template}");
-                throw new \Exception("Template PDF introuvable : {$template}");
-            }
-
-            // 3️⃣ Nom et chemin du PDF
-            $filename = $document->reference . '_' . now()->format('Ymd_His') . '.pdf';
-            $folder = "documents/{$document->society}/{$document->activity}/{$document->type}";
-            $fullPath = $folder . '/' . $filename;
-
-            // 4️⃣ Créer les dossiers
-            if (!Storage::disk('public')->exists($folder)) {
-                Storage::disk('public')->makeDirectory($folder, 0755, true);
-            }
-
-            // 5️⃣ Générer le PDF avec TOUTES les données
-            $pdf = Pdf::loadView($template, $data)
-                ->setPaper('a4', 'portrait')
-                ->setOption('defaultFont', 'DejaVu Sans')
-                ->setOption('isHtml5ParserEnabled', true)
-                ->setOption('isRemoteEnabled', true)
-                ->setOption('chroot', public_path());
-
-            // 6️⃣ Sauvegarder
-            Storage::disk('public')->put($fullPath, $pdf->output());
-
-            // Vérifier que le fichier est créé
-            if (!Storage::disk('public')->exists($fullPath)) {
-                throw new \Exception("Échec de la création du fichier PDF");
-            }
-
-            // 7️⃣ Mettre à jour le document
-            $document->file_path = 'storage/' . $fullPath;
-            $document->pdf_generated_at = now();
-            $document->save();
-
-            Log::info("PDF généré avec succès", [
-                'document_id' => $document->id,
-                'path' => $fullPath,
-                'template' => $template,
-                'data_fields' => array_keys($data['document_data'] ?? [])
-            ]);
-
-            return $document->file_path;
-
-        } catch (\Exception $e) {
-            Log::error("Erreur génération PDF", [
-                'document_id' => $document->id,
-                'template' => $template,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            throw $e;
+  public function generateAndSavePdf(Document $document, string $template)
+{
+    try {
+        Log::info('🚀 DÉBUT génération PDF', [
+            'document_id' => $document->id,
+            'template' => $template
+        ]);
+        
+        // 1️⃣ Vérifier que le template existe
+        if (!view()->exists($template)) {
+            Log::error("❌ Template inexistant", ['template' => $template]);
+            throw new \Exception("Template non trouvé: {$template}");
         }
+        
+        Log::info('✅ Template existe');
+        
+        // 2️⃣ Préparer les données
+        $data = $this->prepareDocumentData($document);
+        Log::info('✅ Données préparées', ['keys' => array_keys($data)]);
+        
+        // 3️⃣ Générer le PDF
+        $pdf = Pdf::loadView($template, $data);
+        Log::info('✅ PDF généré en mémoire');
+        
+        // 4️⃣ Sauvegarder
+        $filename = $this->generateFilename($document);
+        $folder = $this->generateFolderPath($document);
+        $fullPath = $folder . '/' . $filename;
+        
+        Storage::disk('public')->makeDirectory($folder, 0755, true);
+        Storage::disk('public')->put($fullPath, $pdf->output());
+        
+        Log::info('✅ PDF sauvegardé', ['path' => $fullPath]);
+        
+        // 5️⃣ Mettre à jour le document
+        $document->file_path = 'storage/' . $fullPath;
+        $document->pdf_generated_at = now();
+        $document->save();
+        
+        return $document->file_path;
+        
+    } catch (\Exception $e) {
+        Log::error('❌ ERREUR COMPLÈTE', [
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString()
+        ]);
+        throw $e;
     }
+}
 
     /**
-     * Préparer toutes les données du document de manière dynamique
+     * 🎯 Préparer toutes les données du document de manière dynamique
      */
-   public function prepareDocumentData(Document $document): array // ← PUBLIC
+    public function prepareDocumentData(Document $document): array
     {
         // Récupérer toutes les colonnes du document
         $documentData = $document->toArray();
 
-        // Ajouter les relations si elles existent
-        if ($document->relationLoaded('user')) {
-            $documentData['user'] = $document->user;
+        // ✅ CHARGER LES RELATIONS SI NÉCESSAIRE
+        if (!$document->relationLoaded('user')) {
+            $document->load('user');
+        }
+        if (!$document->relationLoaded('parent')) {
+            $document->load('parent');
         }
 
-        if ($document->relationLoaded('parent')) {
-            $documentData['parent'] = $document->parent;
-            // Fusionner les données du parent si nécessaire
-            if ($document->parent) {
-                $documentData = array_merge($document->parent->toArray(), $documentData);
+        // Ajouter les relations
+        if ($document->user) {
+            $documentData['user'] = $document->user->toArray();
+        }
+
+        if ($document->parent) {
+            $documentData['parent'] = $document->parent->toArray();
+            // Fusionner les données du parent (sans écraser)
+            foreach ($document->parent->toArray() as $key => $value) {
+                if (!isset($documentData[$key]) || empty($documentData[$key])) {
+                    $documentData[$key] = $value;
+                }
             }
         }
+
+        // ✅ RÉCUPÉRER LES INFOS DE LA SOCIÉTÉ DEPUIS LA BDD
+        $societe = Societe::where('code', $document->society)->first();
+        $documentData['societe'] = $societe ? $societe->toArray() : null;
+        
+        // ✅ RÉCUPÉRER LES INFOS DE L'ACTIVITÉ DEPUIS LA BDD
+        $activite = Activite::where('code', $document->activity)->first();
+        $documentData['activite'] = $activite ? $activite->toArray() : null;
 
         // Formater les données spécifiques
         $formattedData = $this->formatData($documentData);
 
-        // Données supplémentaires utiles pour les templates
+        // Données supplémentaires avec infos BDD
         $additionalData = [
             'today' => now()->format('d/m/Y'),
             'today_iso' => now()->format('Y-m-d'),
             'year' => now()->format('Y'),
             'month' => now()->format('m'),
-            'society_name' => $this->getSocietyName($document->society),
-            'activity_name' => $this->getActivityName($document->activity),
+            'society_name' => $this->getSocietyNameFromDB($document->society, $societe),
+            'society_color' => $societe->couleur ?? '#0d6efd',
+            'society_icon' => $societe->icon ?? 'fa-building',
+            'activity_name' => $this->getActivityNameFromDB($document->activity, $activite),
             'type_name' => $this->getTypeName($document->type),
         ];
 
@@ -113,17 +322,72 @@ class PdfFillService
             'data' => $formattedData, // Données formatées
             'raw' => $documentData,   // Données brutes
             'meta' => $additionalData,
+            'societe' => $societe,    // Modèle société complet
+            'activite' => $activite,   // Modèle activité complet
             // Pour compatibilité, on garde aussi les données à la racine
             'reference' => $document->reference,
             'client_nom' => $documentData['client_nom'] ?? $documentData['nom_residence'] ?? '',
             'adresse_travaux' => $documentData['adresse_travaux'] ?? '',
             'montant_ttc' => $documentData['montant_ttc'] ?? 0,
-            // Ajouter tous les champs dynamiquement
-        ] + $formattedData; // Fusionner pour accès direct dans la vue
+        ] + $formattedData;
     }
 
     /**
-     * Formater les données (dates, montants, etc.)
+     * 🔍 Trouver un template de secours
+     */
+ private function findFallbackTemplate(Document $document): ?string
+{
+    $societe = Societe::findByCode($document->society);
+    $folder = $societe?->pdf_folder ?? $document->society;
+
+    $attempts = [
+        "pdf.{$folder}.{$document->activity}.{$document->type}",
+        "pdf.default.{$document->activity}.{$document->type}",
+        "pdf.default.default.{$document->type}",
+        "pdf.default.default.document",
+    ];
+
+    foreach ($attempts as $attempt) {
+        if (view()->exists($attempt)) {
+            return $attempt;
+        }
+    }
+
+    return null;
+}
+
+    /**
+     * 📁 Générer un nom de fichier unique
+     */
+    private function generateFilename(Document $document): string
+    {
+        $prefix = strtoupper($document->type);
+        $reference = $document->reference ?? $document->numero ?? $document->id;
+        $date = now()->format('Ymd_His');
+        $random = substr(md5(uniqid()), 0, 6);
+        
+        return "{$prefix}_{$reference}_{$date}_{$random}.pdf";
+    }
+
+    /**
+     * 📁 Générer le chemin de dossier
+     */
+   private function generateFolderPath(Document $document): string
+{
+    $societe = Societe::findByCode($document->society);
+
+    $folder = $societe?->pdf_folder ?? $document->society;
+
+    $activity = $document->activity;
+    $type = $document->type;
+    $year = now()->format('Y');
+    $month = now()->format('m');
+
+    return "documents/{$folder}/{$activity}/{$type}/{$year}/{$month}";
+}
+
+    /**
+     * 📝 Formater les données
      */
     private function formatData(array $data): array
     {
@@ -179,8 +443,31 @@ class PdfFillService
     }
 
     /**
-     * Helper pour les noms de société
+     * 🏢 Nom de société depuis la BDD
      */
+    private function getSocietyNameFromDB(string $code, ?Societe $societe): string
+    {
+        if ($societe) {
+            return $societe->nom_formate;
+        }
+        
+        // Fallback sur le mapping existant
+        return $this->getSocietyName($code);
+    }
+
+    /**
+     * 🎯 Nom d'activité depuis la BDD
+     */
+    private function getActivityNameFromDB(string $code, ?Activite $activite): string
+    {
+        if ($activite) {
+            return $activite->nom_formate ?? $activite->nom;
+        }
+        
+        // Fallback sur le mapping existant
+        return $this->getActivityName($code);
+    }
+
     private function getSocietyName(string $code): string
     {
         $societies = [
@@ -188,14 +475,13 @@ class PdfFillService
             'energie_nova' => 'Énergie Nova',
             'house' => 'MyHouse Solutions',
             'myhouse' => 'MyHouse Solutions',
+            'patrimoine' => 'Patrimoine Immobilier',
+            'patrimoine_immobilier' => 'Patrimoine Immobilier',
         ];
 
-        return $societies[$code] ?? $code;
+        return $societies[$code] ?? ucfirst(str_replace('_', ' ', $code));
     }
 
-    /**
-     * Helper pour les noms d'activité
-     */
     private function getActivityName(string $code): string
     {
         $activities = [
@@ -203,12 +489,9 @@ class PdfFillService
             'reequilibrage' => 'Rééquilibrage',
         ];
 
-        return $activities[$code] ?? $code;
+        return $activities[$code] ?? ucfirst(str_replace('_', ' ', $code));
     }
 
-    /**
-     * Helper pour les noms de type
-     */
     private function getTypeName(string $code): string
     {
         $types = [
@@ -220,6 +503,6 @@ class PdfFillService
             'attestation_signataire' => 'Attestation Signataire',
         ];
 
-        return $types[$code] ?? $code;
+        return $types[$code] ?? ucfirst(str_replace('_', ' ', $code));
     }
 }

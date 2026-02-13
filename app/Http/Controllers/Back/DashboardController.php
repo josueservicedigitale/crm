@@ -114,6 +114,9 @@ class DashboardController extends Controller
                     'energie_nova' => 'Énergie Nova',
                     'house' => 'MyHouse',
                     'myhouse' => 'MyHouse',
+                    'patrimoine' => 'Patrimoine',
+                    'patrimoine_immobilier' => 'Patrimoine',
+
                 ];
                 $nom = $noms[$item->society] ?? $item->society;
                 return [$nom => $item->total];
@@ -200,6 +203,8 @@ class DashboardController extends Controller
                 $societeNom = match ($doc->society) {
                     'nova', 'energie_nova' => 'Nova',
                     'house', 'myhouse' => 'House',
+                    'patrimoine' => 'Patrimoine',
+                    'patrimoine_immobilier' => 'Patrimoine',
                     default => $doc->society
                 };
 
@@ -214,6 +219,7 @@ class DashboardController extends Controller
                 $couleurSociete = match ($doc->society) {
                     'nova', 'energie_nova' => 'primary',
                     'house', 'myhouse' => 'success',
+                    'patrimoine', 'patrimoine' => 'sky',
                     default => 'secondary'
                 };
 
@@ -413,10 +419,20 @@ class DashboardController extends Controller
                     'id' => $societe->id,
                     'code' => $societe->code,
                     'nom' => $societe->nom_formate ?? $societe->nom,
-                    'couleur' => $societe->couleur ?? ($societe->code === 'nova' ? '#0d6efd' : '#198754'),
+                    'couleur' => $societe->couleur ?? match ($societe->code) {
+                        'nova' => '#0d6efd',        // primary
+                        'patrimoine' => '#4FC3F7',  // sky bleu clair
+                        default => '#198754',       // success (vert)
+                    },
+
                     'documents_count' => $count,
                     'percentage' => $percentage,
-                    'icon' => $societe->icon ?? ($societe->code === 'nova' ? 'fa-building' : 'fa-home'),
+                    'icon' => $societe->icon ?? match ($societe->code) {
+                        'nova' => 'fa-building',
+                        'patrimoine' => 'fa-landmark',
+                        default => 'fa-home',
+                    },
+
                 ];
             })
             ->sortByDesc('documents_count')
@@ -567,6 +583,8 @@ class DashboardController extends Controller
         return match ($code) {
             'nova', 'energie_nova' => 'Énergie Nova',
             'house', 'myhouse' => 'MyHouse Solutions',
+            'patrimoine' => 'Patrimoine',
+            'patrimoine_immobilier' => 'Patrimoine',
             default => $code
         };
     }

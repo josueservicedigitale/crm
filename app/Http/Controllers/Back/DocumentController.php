@@ -19,7 +19,9 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Symfony\Polyfill\Intl\Normalizer\Normalizer;
 use Illuminate\Support\Facades\View;
 use Illuminate\Pagination\LengthAwarePaginator;
-
+use App\Models\Societe;        // ← AJOUTE CETTE LIGNE !
+use App\Models\Activite;   
+use Intervention\Image\Color;
 
 
 
@@ -35,224 +37,655 @@ class DocumentController extends Controller
     }
 
 
-    public function dashboard($activity, $society)
-    {
-        // Normaliser la société
-        $normalizedSociety = $this->normalizeSociety($society);
+    // public function dashboard($activity, $society)
+    // {
+    //     // Normaliser la société
+    //     $normalizedSociety = $this->normalizeSociety($society);
 
-        // Utiliser les noms normalisés pour les vues
-        $views = [
-            'energie_nova' => [  // Utiliser le nom normalisé
-                'desembouage' => 'back.dossiers.nova.novadesembouageboard',
-                'reequilibrage' => 'back.dossiers.nova.novaboard',
-            ],
-            'myhouse' => [  // Utiliser le nom normalisé
-                'desembouage' => 'back.dossiers.house.housedesembouageboard',
-                'reequilibrage' => 'back.dossiers.house.houseboard',
-            ],
+    //     // Utiliser les noms normalisés pour les vues
+    //     $views = [
+    //         'energie_nova' => [  // Utiliser le nom normalisé
+    //             'desembouage' => 'back.dossiers.nova.novadesembouageboard',
+    //             'reequilibrage' => 'back.dossiers.nova.novaboard',
+    //         ],
+    //         'myhouse' => [  // Utiliser le nom normalisé
+    //             'desembouage' => 'back.dossiers.house.housedesembouageboard',
+    //             'reequilibrage' => 'back.dossiers.house.houseboard',
+    //         ],
+    //         'patrimoine' => [  // Utiliser le nom normalisé
+    //             'desembouage' => 'back.dossiers.patrimoine.patrimoinedesembouageboard',
+    //             'reequilibrage' => 'back.dossiers.patrimoine.patrimoineboard',
+    //         ],
+    //     ];
+
+    //     // Vérifier avec le nom normalisé
+    //     abort_if(!isset($views[$normalizedSociety][$activity]), 404);
+
+    //     // Toutes les requêtes doivent utiliser le nom normalisé
+    //     $stats = [
+    //         'total' => Document::where('society', $normalizedSociety)  // ← ICI
+    //             ->where('activity', $activity)
+    //             ->count(),
+    //         'devis' => Document::where('society', $normalizedSociety)
+    //             ->where('activity', $activity)
+    //             ->where('type', 'devis')
+    //             ->count(),
+    //         'factures' => Document::where('society', $normalizedSociety)
+    //             ->where('activity', $activity)
+    //             ->where('type', 'facture')
+    //             ->count(),
+    //         'rapports' => Document::where('society', $normalizedSociety)
+    //             ->where('activity', $activity)
+    //             ->where('type', 'rapport')
+    //             ->count(),
+    //         'cahiers' => Document::where('society', $normalizedSociety)
+    //             ->where('activity', $activity)
+    //             ->where('type', 'cahier_des_charges')
+    //             ->count(),
+    //         'attestations' => Document::where('society', $normalizedSociety)
+    //             ->where('activity', $activity)
+    //             ->whereIn('type', ['attestation_realisation', 'attestation_signataire'])
+    //             ->count(),
+    //         'ce_mois' => Document::where('society', $normalizedSociety)
+    //             ->where('activity', $activity)
+    //             ->whereMonth('created_at', now()->month)
+    //             ->count(),
+    //         'cette_semaine' => Document::where('society', $normalizedSociety)
+    //             ->where('activity', $activity)
+    //             ->where('created_at', '>=', now()->subWeek())
+    //             ->count(),
+    //     ];
+
+    //     // Documents récents
+    //     $recentDocuments = Document::where('society', $normalizedSociety)
+    //         ->where('activity', $activity)
+    //         ->latest()
+    //         ->take(5)
+    //         ->get();
+
+    //     // Meilleurs clients - Utiliser nom_residence ou adresse_travaux comme identifiant
+    //     // Puisqu'il n'y a pas de colonne client_nom, on utilise nom_residence
+    //     $topClients = Document::where('society', $normalizedSociety)
+    //         ->where('activity', $activity)
+    //         ->whereNotNull('nom_residence') // Utiliser nom_residence au lieu de client_nom
+    //         ->where('nom_residence', '!=', '') // Exclure les chaînes vides
+    //         ->selectRaw('nom_residence as client_nom, COUNT(*) as total, SUM(montant_ttc) as total_montant')
+    //         ->groupBy('nom_residence')
+    //         ->orderByDesc('total')
+    //         ->limit(5)
+    //         ->get();
+
+    //     // Si nom_residence est vide, utiliser adresse_travaux
+    //     if ($topClients->isEmpty()) {
+    //         $topClients = Document::where('society', $normalizedSociety)
+    //             ->where('activity', $activity)
+    //             ->whereNotNull('adresse_travaux')
+    //             ->where('adresse_travaux', '!=', '')
+    //             ->selectRaw('SUBSTRING(adresse_travaux, 1, 50) as client_nom, COUNT(*) as total, SUM(montant_ttc) as total_montant')
+    //             ->groupBy('adresse_travaux')
+    //             ->orderByDesc('total')
+    //             ->limit(5)
+    //             ->get();
+    //     }
+
+    //     return view($views[$normalizedSociety][$activity], compact(
+    //         'activity',
+    //         'society',
+    //         'recentDocuments',
+    //         'stats',
+    //         'topClients'
+    //     ));
+    // }
+
+    
+    
+    
+    
+ public function dashboard($activity, $society)
+{
+    // 1️⃣ Normaliser la société (garder le code normalisé pour les requêtes)
+    $normalizedSociety = $this->normalizeSociety($society);
+    
+    // 2️⃣ Garder le code original pour l'affichage (si besoin)
+    $originalSociety = $society;
+    
+    // 3️⃣ Récupérer la société depuis la BDD (avec le code normalisé)
+    $societe = Societe::where('code', $normalizedSociety)->first();
+    
+    // 4️⃣ Si la société n'existe pas en BDD, utiliser des valeurs par défaut
+    if (!$societe) {
+        Log::warning('⚠️ Société non trouvée en BDD', [
+            'original' => $originalSociety,
+            'normalized' => $normalizedSociety
+        ]);
+        
+        // Créer un objet virtuel avec des valeurs par défaut
+        $societe = (object) [
+            'nom_formate' => $this->getSocietyDisplayName($normalizedSociety, $originalSociety),
+            'couleur' => $this->getSocietyColor($normalizedSociety),
+            'icon' => $this->getSocietyIcon($normalizedSociety),
         ];
+    }
+    
+    // 5️⃣ Propriétés pour la vue
+    $societyName = $societe->nom_formate ?? $this->getSocietyDisplayName($normalizedSociety, $originalSociety);
+    $societyColor = $societe->couleur ?? $this->getSocietyColor($normalizedSociety);
+    $societyIcon = $societe->icon ?? $this->getSocietyIcon($normalizedSociety);
+    
+    // 6️⃣ Vue générique
+    $viewName = "back.dossiers.generic.{$activity}";
+    
+    if (!view()->exists($viewName)) {
+        abort(500, "Vue générique non trouvée: {$viewName}");
+    }
+    
+    // 7️⃣ Statistiques (TOUJOURS avec le code normalisé)
+    $stats = $this->getDashboardStats($normalizedSociety, $activity);
+    $recentDocuments = $this->getRecentDocuments($normalizedSociety, $activity);
+    $topClients = $this->getTopClients($normalizedSociety, $activity);
+    
+    Log::info('✅ Dashboard avec normalisation', [
+        'original' => $originalSociety,
+        'normalized' => $normalizedSociety,
+        'activity' => $activity,
+        'society_name' => $societyName,
+        'color' => $societyColor
+    ]);
+    
+    return view($viewName, compact(
+        'activity',
+        'society',           // Code original (ex: 'nova', 'house')
+        'normalizedSociety', // Code normalisé (ex: 'energie_nova')
+        'societyName',
+        'societyColor',
+        'societyIcon',
+        'stats',
+        'recentDocuments',
+        'topClients'
+    ));
+}
 
-        // Vérifier avec le nom normalisé
-        abort_if(!isset($views[$normalizedSociety][$activity]), 404);
+/**
+ * Nom d'affichage de la société
+ */
+private function getSocietyDisplayName($normalizedCode, $originalCode = null)
+{
+    $displayNames = [
+        'energie_nova' => 'Énergie Nova',
+        'myhouse' => 'MyHouse Solutions',
+        'patrimoine' => 'Patrimoine Immobilier',
+    ];
+    
+    return $displayNames[$normalizedCode] ?? ucfirst($originalCode ?? $normalizedCode);
+}
 
-        // Toutes les requêtes doivent utiliser le nom normalisé
-        $stats = [
-            'total' => Document::where('society', $normalizedSociety)  // ← ICI
+/**
+ * Couleur de la société
+ */
+private function getSocietyColor($normalizedCode)
+{
+    $colors = [
+        'energie_nova' => '#0d6efd',  // Bleu
+        'myhouse' => '#198754',       // Vert
+        'patrimoine' => '#0dcaf0',    // Bleu ciel
+    ];
+    
+    return $colors[$normalizedCode] ?? '#6c757d'; // Gris par défaut
+}
+
+/**
+ * Icône de la société
+ */
+private function getSocietyIcon($normalizedCode)
+{
+    $icons = [
+        'energie_nova' => 'fa-building',
+        'myhouse' => 'fa-home',
+        'patrimoine' => 'fa-landmark',
+    ];
+    
+    return $icons[$normalizedCode] ?? 'fa-building';
+}
+
+/**
+ * Statistiques du dashboard
+ */
+  private function getDashboardStats($society, $activity)
+    {
+        return [
+            'total' => Document::where('society', $society)
                 ->where('activity', $activity)
                 ->count(),
-            'devis' => Document::where('society', $normalizedSociety)
+            'devis' => Document::where('society', $society)
                 ->where('activity', $activity)
                 ->where('type', 'devis')
                 ->count(),
-            'factures' => Document::where('society', $normalizedSociety)
+            'factures' => Document::where('society', $society)
                 ->where('activity', $activity)
                 ->where('type', 'facture')
                 ->count(),
-            'rapports' => Document::where('society', $normalizedSociety)
+            'rapports' => Document::where('society', $society)
                 ->where('activity', $activity)
                 ->where('type', 'rapport')
                 ->count(),
-            'cahiers' => Document::where('society', $normalizedSociety)
+            'cahiers' => Document::where('society', $society)
                 ->where('activity', $activity)
                 ->where('type', 'cahier_des_charges')
                 ->count(),
-            'attestations' => Document::where('society', $normalizedSociety)
+            'attestations' => Document::where('society', $society)
                 ->where('activity', $activity)
                 ->whereIn('type', ['attestation_realisation', 'attestation_signataire'])
                 ->count(),
-            'ce_mois' => Document::where('society', $normalizedSociety)
+            'ce_mois' => Document::where('society', $society)
                 ->where('activity', $activity)
                 ->whereMonth('created_at', now()->month)
+                ->whereYear('created_at', now()->year)
                 ->count(),
-            'cette_semaine' => Document::where('society', $normalizedSociety)
+            'cette_semaine' => Document::where('society', $society)
                 ->where('activity', $activity)
                 ->where('created_at', '>=', now()->subWeek())
                 ->count(),
         ];
+    }
 
-        // Documents récents
-        $recentDocuments = Document::where('society', $normalizedSociety)
+    /**
+     * Récupère les documents récents
+     */
+    private function getRecentDocuments($society, $activity, $limit = 5)
+    {
+        return Document::where('society', $society)
             ->where('activity', $activity)
+            ->with('user')
             ->latest()
-            ->take(5)
+            ->take($limit)
             ->get();
-
-        // Meilleurs clients - Utiliser nom_residence ou adresse_travaux comme identifiant
-        // Puisqu'il n'y a pas de colonne client_nom, on utilise nom_residence
-        $topClients = Document::where('society', $normalizedSociety)
+    }
+/**
+ * Top clients par adresse
+ */
+private function getTopClients($society, $activity, $limit = 5)
+    {
+        $topClients = Document::where('society', $society)
             ->where('activity', $activity)
-            ->whereNotNull('nom_residence') // Utiliser nom_residence au lieu de client_nom
-            ->where('nom_residence', '!=', '') // Exclure les chaînes vides
+            ->whereNotNull('nom_residence')
+            ->where('nom_residence', '!=', '')
             ->selectRaw('nom_residence as client_nom, COUNT(*) as total, SUM(montant_ttc) as total_montant')
             ->groupBy('nom_residence')
             ->orderByDesc('total')
-            ->limit(5)
+            ->limit($limit)
             ->get();
 
-        // Si nom_residence est vide, utiliser adresse_travaux
         if ($topClients->isEmpty()) {
-            $topClients = Document::where('society', $normalizedSociety)
+            $topClients = Document::where('society', $society)
                 ->where('activity', $activity)
                 ->whereNotNull('adresse_travaux')
                 ->where('adresse_travaux', '!=', '')
                 ->selectRaw('SUBSTRING(adresse_travaux, 1, 50) as client_nom, COUNT(*) as total, SUM(montant_ttc) as total_montant')
                 ->groupBy('adresse_travaux')
                 ->orderByDesc('total')
-                ->limit(5)
+                ->limit($limit)
                 ->get();
         }
 
-        return view($views[$normalizedSociety][$activity], compact(
-            'activity',
-            'society',
-            'recentDocuments',
-            'stats',
-            'topClients'
-        ));
+        return $topClients;
     }
+private function getSocietyName($society)
+{
+    $names = [
+        'energie_nova' => 'Énergie Nova',
+        'nova' => 'Énergie Nova',
+        'myhouse' => 'MyHouse Solutions',
+        'house' => 'MyHouse Solutions',
+        'patrimoine' => 'Patrimoine Immobilier',
+    ];
+    return $names[$society] ?? ucfirst($society);
+}
 
-    private function normalizeSociety($society)
-    {
-        $mapping = [
-            'nova' => 'energie_nova',
-            'house' => 'myhouse',
-            'energie_nova' => 'energie_nova',
-            'myhouse' => 'myhouse'
-        ];
+    // private function normalizeSociety($society)
+    // {
+    //     $mapping = [
+    //         'nova' => 'energie_nova',
+    //         'house' => 'myhouse',
+    //         'energie_nova' => 'energie_nova',
+    //         'myhouse' => 'myhouse',
+    //         'patrimoine' => 'patrimoine',
+    //         'patrimoine_immobilier' => 'patrimoine',
+    //     ];
 
-        return $mapping[$society] ?? $society;
-    }
+    //     return $mapping[$society] ?? $society;
+    // }
 
 
+//     private function normalizeSociety($society)
+// {
+//     $mapping = [
+//         // Énergie Nova
+//         'nova' => 'energie_nova',
+//         'energie_nova' => 'energie_nova',
+        
+//         // MyHouse
+//         'house' => 'myhouse',
+//         'myhouse' => 'myhouse',
+        
+//         // Patrimoine
+//         'patrimoine' => 'patrimoine',
+//         'patrimoine_immobilier' => 'patrimoine',
+//     ];
+
+//     return $mapping[$society] ?? $society;
+// }
+
+private function normalizeSociety($society)
+{
+    $mapping = [
+        // Énergie Nova
+        'nova' => 'energie_nova',
+        'energie_nova' => 'energie_nova',
+        
+        // MyHouse
+        'house' => 'myhouse',
+        'myhouse' => 'myhouse',
+        
+        // Patrimoine
+        'patrimoine' => 'patrimoine',
+        'patrimoine_immobilier' => 'patrimoine',
+    ];
+
+    return $mapping[$society] ?? $society;
+}
 
 
-    public function allDashboards()
-    {
-        Log::info('🌐 Tous les dashboards consultés', ['user_id' => auth()->id()]);
+    // public function allDashboards()
+    // {
+    //     Log::info('🌐 Tous les dashboards consultés', ['user_id' => auth()->id()]);
 
-        // Activités disponibles
-        $activites = [
-            'desembouage' => [
-                'nom' => 'Désembouage',
-                'icon' => 'fa-water',
-                'color' => 'primary',
-                'description' => 'Nettoyage et désembouage des circuits de chauffage'
-            ],
-            'reequilibrage' => [
-                'nom' => 'Rééquilibrage',
-                'icon' => 'fa-balance-scale',
-                'color' => 'info',
-                'description' => 'Rééquilibrage des circuits hydrauliques'
-            ]
-        ];
+    //     // Activités disponibles
+    //     $activites = [
+    //         'desembouage' => [
+    //             'nom' => 'Désembouage',
+    //             'icon' => 'fa-water',
+    //             'color' => 'primary',
+    //             'description' => 'Nettoyage et désembouage des circuits de chauffage'
+    //         ],
+    //         'reequilibrage' => [
+    //             'nom' => 'Rééquilibrage',
+    //             'icon' => 'fa-balance-scale',
+    //             'color' => 'info',
+    //             'description' => 'Rééquilibrage des circuits hydrauliques'
+    //         ]
+    //     ];
 
-        // Sociétés disponibles
-        $societes = [
-            'nova' => [
-                'nom' => 'Énergie Nova',
-                'icon' => 'fa-building',
-                'color' => 'success',
-                'description' => 'Spécialiste en solutions énergétiques'
-            ],
-            'house' => [
-                'nom' => 'MyHouse Solutions',
-                'icon' => 'fa-home',
-                'color' => 'warning',
-                'description' => 'Solutions résidentielles innovantes'
-            ]
-        ];
+    //     // Sociétés disponibles
+    //     $societes = [
+    //         'nova' => [
+    //             'nom' => 'Énergie Nova',
+    //             'icon' => 'fa-building',
+    //             'color' => 'success',
+    //             'description' => 'Spécialiste en solutions énergétiques'
+    //         ],
+    //         'house' => [
+    //             'nom' => 'MyHouse Solutions',
+    //             'icon' => 'fa-home',
+    //             'color' => 'warning',
+    //             'description' => 'Solutions résidentielles innovantes'
+    //         ],
+    //         'patrimoine' => [
+    //             'nom' => 'Patrimoine Immobilier',
+    //             'icon' => 'fa-landmark',
+    //             'color' => 'info',
+    //             'description' => 'Services de gestion patrimoniale'
+    //         ]
+    //     ];
 
-        // Statistiques par activité
-        $activitesAvecStats = [];
-        foreach ($activites as $key => $activite) {
-            $activitesAvecStats[$key] = array_merge($activite, [
-                'documents_count' => Document::where('activity', $key)->count()
-            ]);
-        }
+    //     // Statistiques par activité
+    //     $activitesAvecStats = [];
+    //     foreach ($activites as $key => $activite) {
+    //         $activitesAvecStats[$key] = array_merge($activite, [
+    //             'documents_count' => Document::where('activity', $key)->count()
+    //         ]);
+    //     }
 
-        // Statistiques par société
-        $societesAvecStats = [];
-        foreach ($societes as $key => $societe) {
-            $societesAvecStats[$key] = array_merge($societe, [
-                'documents_count' => Document::where('society', $key)->count()
-            ]);
-        }
+    //     // Statistiques par société
+    //     $societesAvecStats = [];
+    //     foreach ($societes as $key => $societe) {
+    //         $societesAvecStats[$key] = array_merge($societe, [
+    //             'documents_count' => Document::where('society', $key)->count()
+    //         ]);
+    //     }
 
-        // Toutes les combinaisons
-        $combinaisons = [];
-        foreach ($activitesAvecStats as $activiteCode => $activiteInfo) {
-            foreach ($societesAvecStats as $societeCode => $societeInfo) {
-                $combinaisons[] = [
-                    'activite_code' => $activiteCode,
-                    'activite_nom' => $activiteInfo['nom'],
-                    'activite_icon' => $activiteInfo['icon'],
-                    'activite_color' => $activiteInfo['color'],
-                    'societe_code' => $societeCode,
-                    'societe_nom' => $societeInfo['nom'],
-                    'societe_icon' => $societeInfo['icon'],
-                    'societe_color' => $societeInfo['color'],
-                    'documents_count' => Document::where('activity', $activiteCode)
-                        ->where('society', $societeCode)
-                        ->count(),
-                    'devis_count' => Document::where('activity', $activiteCode)
-                        ->where('society', $societeCode)
-                        ->where('type', 'devis')
-                        ->count(),
-                    'factures_count' => Document::where('activity', $activiteCode)
-                        ->where('society', $societeCode)
-                        ->where('type', 'facture')
-                        ->count(),
-                    'rapports_count' => Document::where('activity', $activiteCode)
-                        ->where('society', $societeCode)
-                        ->where('type', 'rapport')
-                        ->count(),
-                ];
-            }
-        }
+    //     // Toutes les combinaisons
+    //     $combinaisons = [];
+    //     foreach ($activitesAvecStats as $activiteCode => $activiteInfo) {
+    //         foreach ($societesAvecStats as $societeCode => $societeInfo) {
+    //             $combinaisons[] = [
+    //                 'activite_code' => $activiteCode,
+    //                 'activite_nom' => $activiteInfo['nom'],
+    //                 'activite_icon' => $activiteInfo['icon'],
+    //                 'activite_color' => $activiteInfo['color'],
+    //                 'societe_code' => $societeCode,
+    //                 'societe_nom' => $societeInfo['nom'],
+    //                 'societe_icon' => $societeInfo['icon'],
+    //                 'societe_color' => $societeInfo['color'],
+    //                 'documents_count' => Document::where('activity', $activiteCode)
+    //                     ->where('society', $societeCode)
+    //                     ->count(),
+    //                 'devis_count' => Document::where('activity', $activiteCode)
+    //                     ->where('society', $societeCode)
+    //                     ->where('type', 'devis')
+    //                     ->count(),
+    //                 'factures_count' => Document::where('activity', $activiteCode)
+    //                     ->where('society', $societeCode)
+    //                     ->where('type', 'facture')
+    //                     ->count(),
+    //                 'rapports_count' => Document::where('activity', $activiteCode)
+    //                     ->where('society', $societeCode)
+    //                     ->where('type', 'rapport')
+    //                     ->count(),
+    //             ];
+    //         }
+    //     }
 
-        // Statistiques globales
-        $statsGlobales = [
-            'total_documents' => Document::count(),
-            'total_activites' => count($activitesAvecStats),
-            'total_societes' => count($societesAvecStats),
-            'total_combinaisons' => count($combinaisons),
-            'documents_ce_mois' => Document::whereMonth('created_at', now()->month)->count(),
-            'documents_semaine' => Document::where('created_at', '>=', now()->subWeek())->count(),
-        ];
+    //     // Statistiques globales
+    //     $statsGlobales = [
+    //         'total_documents' => Document::count(),
+    //         'total_activites' => count($activitesAvecStats),
+    //         'total_societes' => count($societesAvecStats),
+    //         'total_combinaisons' => count($combinaisons),
+    //         'documents_ce_mois' => Document::whereMonth('created_at', now()->month)->count(),
+    //         'documents_semaine' => Document::where('created_at', '>=', now()->subWeek())->count(),
+    //     ];
 
-        return view('back.all-dashboards', compact(
-            'activites',
-            'societes',
-            'activitesAvecStats',
-            'societesAvecStats',
-            'combinaisons',
-            'statsGlobales'
-        ));
-    }
+    //     return view('back.all-dashboards', compact(
+    //         'activites',
+    //         'societes',
+    //         'activitesAvecStats',
+    //         'societesAvecStats',
+    //         'combinaisons',
+    //         'statsGlobales'
+    //     ));
+    // }
     // =========================================================================
     // VUES GLOBALES DE DOCUMENTS
     // =========================================================================
 
+    
+    public function allDashboards()
+{
+    Log::info('🌐 Tous les dashboards consultés', ['user_id' => auth()->id()]);
+
+    // =====================================================================
+    // 1️⃣ ACTIVITÉS DEPUIS LA BASE DE DONNÉES
+    // =====================================================================
+    $activitesModel = Activite::where('est_active', true)
+        ->orderBy('nom')
+        ->get();
+    
+    $activites = [];
+    $activitesAvecStats = [];
+    
+    foreach ($activitesModel as $act) {
+        // Format pour l'affichage
+        $activites[$act->code] = [
+            'nom' => $act->nom_formate ?? $act->nom,
+            'icon' => $act->icon ?? 'fa-tasks',
+            'color' => $this->getBootstrapColor($act->couleur), // Conversion hex → Bootstrap
+            'description' => $act->description ?? "Gestion des documents d'activité",
+        ];
+        
+        // Avec statistiques
+        $docCount = Document::where('activity', $act->code)->count();
+        $activitesAvecStats[$act->code] = array_merge($activites[$act->code], [
+            'documents_count' => $docCount,
+            'devis_count' => Document::where('activity', $act->code)->where('type', 'devis')->count(),
+            'factures_count' => Document::where('activity', $act->code)->where('type', 'facture')->count(),
+        ]);
+    }
+
+    // =====================================================================
+    // 2️⃣ SOCIÉTÉS DEPUIS LA BASE DE DONNÉES
+    // =====================================================================
+    $societesModel = Societe::where('est_active', true)
+        ->orderBy('nom')
+        ->get();
+    
+    $societes = [];
+    $societesAvecStats = [];
+    
+    foreach ($societesModel as $soc) {
+        // Format pour l'affichage
+        $societes[$soc->code] = [
+            'nom' => $soc->nom_formate ?? $soc->nom,
+            'icon' => $soc->icon ?? 'fa-building',
+            'color' => $this->getBootstrapColor($soc->couleur),
+            'description' => $soc->description ?? "Gestion documentaire",
+        ];
+        
+        // Avec statistiques
+        $docCount = Document::where('society', $soc->code)->count();
+        $societesAvecStats[$soc->code] = array_merge($societes[$soc->code], [
+            'documents_count' => $docCount,
+            'devis_count' => Document::where('society', $soc->code)->where('type', 'devis')->count(),
+            'factures_count' => Document::where('society', $soc->code)->where('type', 'facture')->count(),
+        ]);
+    }
+
+    // =====================================================================
+    // 3️⃣ TOUTES LES COMBINAISONS ACTIVITÉ × SOCIÉTÉ
+    // =====================================================================
+    $combinaisons = [];
+    
+    foreach ($activitesAvecStats as $activiteCode => $activiteInfo) {
+        foreach ($societesAvecStats as $societeCode => $societeInfo) {
+            $documentsCount = Document::where('activity', $activiteCode)
+                ->where('society', $societeCode)
+                ->count();
+            
+            // N'afficher que si au moins 1 document (optionnel)
+            // if ($documentsCount == 0) continue;
+            
+            $combinaisons[] = [
+                'activite_code' => $activiteCode,
+                'activite_nom' => $activiteInfo['nom'],
+                'activite_icon' => $activiteInfo['icon'],
+                'activite_color' => $activiteInfo['color'],
+                'societe_code' => $societeCode,
+                'societe_nom' => $societeInfo['nom'],
+                'societe_icon' => $societeInfo['icon'],
+                'societe_color' => $societeInfo['color'],
+                'documents_count' => $documentsCount,
+                'devis_count' => Document::where('activity', $activiteCode)
+                    ->where('society', $societeCode)
+                    ->where('type', 'devis')
+                    ->count(),
+                'factures_count' => Document::where('activity', $activiteCode)
+                    ->where('society', $societeCode)
+                    ->where('type', 'facture')
+                    ->count(),
+                'rapports_count' => Document::where('activity', $activiteCode)
+                    ->where('society', $societeCode)
+                    ->where('type', 'rapport')
+                    ->count(),
+                'url' => route('back.dashboard', [
+                    'activity' => $activiteCode,
+                    'society' => $societeCode
+                ]),
+            ];
+        }
+    }
+
+    // Trier les combinaisons par nombre de documents (décroissant)
+    usort($combinaisons, function($a, $b) {
+        return $b['documents_count'] <=> $a['documents_count'];
+    });
+
+    // =====================================================================
+    // 4️⃣ STATISTIQUES GLOBALES
+    // =====================================================================
+    $statsGlobales = [
+        'total_documents' => Document::count(),
+        'total_activites' => $activitesModel->count(),
+        'total_societes' => $societesModel->count(),
+        'total_combinaisons' => count($combinaisons),
+        'documents_ce_mois' => Document::whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->count(),
+        'documents_semaine' => Document::where('created_at', '>=', now()->subWeek())->count(),
+        'documents_ajourdhui' => Document::whereDate('created_at', today())->count(),
+        'top_activite' => $activitesAvecStats ? array_key_first($activitesAvecStats) : null,
+        'top_societe' => $societesAvecStats ? array_key_first($societesAvecStats) : null,
+    ];
+
+    Log::info('✅ allDashboards dynamique', [
+        'activites' => $activitesModel->count(),
+        'societes' => $societesModel->count(),
+        'combinaisons' => count($combinaisons),
+        'total_docs' => $statsGlobales['total_documents']
+    ]);
+
+    return view('back.all-dashboards', compact(
+        'activites',
+        'societes',
+        'activitesAvecStats',
+        'societesAvecStats',
+        'combinaisons',
+        'statsGlobales'
+    ));
+}
+
+/**
+ * Convertit une couleur hexadécimale en classe Bootstrap
+ */
+private function getBootstrapColor($hexColor)
+{
+    // Si pas de couleur, retourner une classe par défaut
+    if (!$hexColor) {
+        return 'primary';
+    }
+    
+    // Mapper les couleurs hex courantes vers Bootstrap
+    $map = [
+        '#0d6efd' => 'primary',
+        '#198754' => 'success',
+        '#0dcaf0' => 'info',
+        '#ffc107' => 'warning',
+        '#dc3545' => 'danger',
+        '#6c757d' => 'secondary',
+        '#212529' => 'dark',
+    ];
+    
+    // Chercher dans le mapping
+    foreach ($map as $hex => $class) {
+        if (strcasecmp($hexColor, $hex) == 0) {
+            return $class;
+        }
+    }
+    
+    // Si non trouvé, retourner primary par défaut
+    return 'primary';
+}
+    
+    
+    
     public function tousDocuments(Request $request)
     {
         Log::info('📄 Tous les documents consultés', ['user_id' => auth()->id()]);
@@ -325,31 +758,89 @@ class DocumentController extends Controller
         return view('back.documents.search', compact('documents', 'search'));
     }
 
+    // public function creationRapide()
+    // {
+    //     Log::info('⚡ Page création rapide consultée', ['user_id' => auth()->id()]);
+
+    //     $activites = [
+    //         'desembouage' => 'Désembouage',
+    //         'reequilibrage' => 'Rééquilibrage'
+    //     ];
+
+    //     $societes = [
+    //         'nova' => 'Énergie Nova',
+    //         'house' => 'MyHouse Solutions',
+    //         'patrimoine' => 'Patrimoine Immobilier'
+
+    //     ];
+
+    //     $types = [
+    //         'devis' => 'Devis',
+    //         'facture' => 'Facture',
+    //         'rapport' => 'Rapport',
+    //         'cahier_des_charges' => 'Cahier des charges',
+    //         'attestation_realisation' => 'Attestation de réalisation',
+    //         'attestation_signataire' => 'Attestation signataire'
+    //     ];
+
+    //     return view('back.documents.creation-rapide', compact('activites', 'societes', 'types'));
+    // }
+
+
+
     public function creationRapide()
-    {
-        Log::info('⚡ Page création rapide consultée', ['user_id' => auth()->id()]);
+{
+    Log::info('⚡ Page création rapide consultée', ['user_id' => auth()->id()]);
 
-        $activites = [
-            'desembouage' => 'Désembouage',
-            'reequilibrage' => 'Rééquilibrage'
-        ];
-
-        $societes = [
-            'nova' => 'Énergie Nova',
-            'house' => 'MyHouse Solutions'
-        ];
-
-        $types = [
-            'devis' => 'Devis',
-            'facture' => 'Facture',
-            'rapport' => 'Rapport',
-            'cahier_des_charges' => 'Cahier des charges',
-            'attestation_realisation' => 'Attestation de réalisation',
-            'attestation_signataire' => 'Attestation signataire'
-        ];
-
-        return view('back.documents.creation-rapide', compact('activites', 'societes', 'types'));
+    // =====================================================================
+//ajout
+    // =====================================================================
+    $activitesModel = Activite::where('est_active', true)
+        ->orderBy('nom')
+        ->get();
+    
+    $activites = [];
+    foreach ($activitesModel as $act) {
+        $activites[$act->code] = $act->nom_formate ?? $act->nom;
     }
+
+    // =====================================================================
+//ajout
+    // =====================================================================
+    $societesModel = Societe::where('est_active', true)
+        ->orderBy('nom')
+        ->get();
+    
+    $societes = [];
+    foreach ($societesModel as $soc) {
+        $societes[$soc->code] = $soc->nom_formate ?? $soc->nom;
+    }
+
+    // =====================================================================
+ //ajout
+    // =====================================================================
+    // Option A: Garder en dur car les types sont fixes
+    $types = [
+        'devis' => 'Devis',
+        'facture' => 'Facture',
+        'rapport' => 'Rapport',
+        'cahier_des_charges' => 'Cahier des charges',
+        'attestation_realisation' => 'Attestation de réalisation',
+        'attestation_signataire' => 'Attestation signataire'
+    ];
+    
+    // Option B: Si tu veux encore plus de flexibilité, depuis une table
+    // $types = TypeDocument::where('est_actif', true)->pluck('nom', 'code')->toArray();
+
+    Log::info('✅ Création rapide dynamique', [
+        'activites_trouvees' => count($activites),
+        'societes_trouvees' => count($societes),
+        'types_disponibles' => count($types)
+    ]);
+
+    return view('back.documents.creation-rapide', compact('activites', 'societes', 'types'));
+}
+
 
 
     public function chooseAction($activity, $society, $type)
@@ -1352,7 +1843,7 @@ private function generateReference($society, $type)
 
     /**
      * Génère un PDF dynamique à partir d'un template Blade
-/**
+
  * Génère un PDF dynamique à partir d'un template Blade
  */
     /**
@@ -1488,82 +1979,136 @@ private function generateReference($society, $type)
             throw $e;
         }
     }
-    private function getPdfView(Document $document): string
-    {
-        // Mapping des noms de société pour les templates PDF
-        $pdfSocietyMapping = [
-            'energie_nova' => 'nova',    // Dans l'URL: energie_nova, template: nova
-            'myhouse' => 'house',        // Dans l'URL: myhouse, template: house
-            'nova' => 'nova',           // Compatibilité
-            'house' => 'house'          // Compatibilité
-        ];
 
-        $templateSociety = $pdfSocietyMapping[$document->society] ?? $document->society;
+private function getPdfView(Document $document): string
+{
+    $activity = $document->activity;
+    $type = $document->type;
 
-        $view = "pdf.{$templateSociety}.{$document->activity}.{$document->type}";
+    // 🔎 On récupère la société via son code
+    $societe = Societe::findByCode($document->society);
 
-        // Log pour debug
-        Log::info('📄 PDF View Mapping', [
-            'document_society' => $document->society,
-            'template_society' => $templateSociety,
-            'view' => $view,
-            'view_exists' => view()->exists($view)
-        ]);
+    // 📁 Dossier réel à utiliser
+    $folder = $societe?->pdf_folder ?? $document->society;
 
-        if (!view()->exists($view)) {
-            // Liste toutes les vues disponibles pour debug
-            $availableViews = [];
-            $basePath = resource_path('views/pdf');
+    // 1️⃣ Template spécifique société
+    $specificView = "pdf.{$folder}.{$activity}.{$type}";
+    if (view()->exists($specificView)) {
+        return $specificView;
+    }
 
-            foreach (['nova', 'house'] as $societyDir) {
-                foreach (['desembouage', 'reequilibrage'] as $activityDir) {
-                    $typesPath = "{$basePath}/{$societyDir}/{$activityDir}";
-                    if (is_dir($typesPath)) {
-                        $files = scandir($typesPath);
-                        foreach ($files as $file) {
-                            if (str_ends_with($file, '.blade.php')) {
-                                $type = str_replace('.blade.php', '', $file);
-                                $availableViews[] = "pdf.{$societyDir}.{$activityDir}.{$type}";
-                            }
-                        }
+    // 2️⃣ Fallback vers default
+    $defaultView = "pdf.default.{$activity}.{$type}";
+    if (view()->exists($defaultView)) {
+        return $defaultView;
+    }
+
+    // 3️⃣ Si rien trouvé
+    throw new \Exception(
+        "Aucun template trouvé pour société [{$folder}] activité [{$activity}] type [{$type}]"
+    );
+}
+
+
+/**
+ * 🔍 Cherche des templates alternatifs
+ */
+private function findAlternativePdfViews(Document $document, string $templateFolder): array
+{
+    $alternatives = [];
+    $basePath = resource_path('views/pdf');
+    
+    // Chemins possibles à explorer
+    $searchPaths = [
+        // 1. Même société, même activité, type différent
+        ["{$basePath}/{$templateFolder}/{$document->activity}"],
+        // 2. Même société, toutes activités
+        ["{$basePath}/{$templateFolder}"],
+        // 3. Société 'default', même activité
+        ["{$basePath}/default/{$document->activity}"],
+        // 4. Société 'default', toutes activités
+        ["{$basePath}/default"],
+    ];
+    
+    foreach ($searchPaths as $paths) {
+        foreach ($paths as $path) {
+            if (is_dir($path)) {
+                $files = scandir($path);
+                foreach ($files as $file) {
+                    if (str_ends_with($file, '.blade.php')) {
+                        $type = str_replace('.blade.php', '', $file);
+                        $relativePath = str_replace(resource_path('views') . '/', '', $path);
+                        $alternatives[] = str_replace('/', '.', $relativePath) . '.' . $type;
                     }
                 }
             }
-
-            Log::error('❌ PDF template not found', [
-                'requested_view' => $view,
-                'available_views' => $availableViews
-            ]);
-
-            throw new \Exception("Template PDF non trouvé: {$view}. Disponibles: " . implode(', ', $availableViews));
         }
-
-        return $view;
     }
+    
+    return array_unique($alternatives);
+}
+
+
+
+    //ajout 
+
     private function getAvailablePdfViews()
-    {
-        $views = [];
+{
+    $views = [];
+    $basePath = resource_path('views/pdf');
 
-        // Scanner les dossiers PDF
-        $basePath = resource_path('views/pdf');
+   
+    if (!is_dir($basePath)) {
+        Log::warning('📁 Dossier PDF non trouvé', ['path' => $basePath]);
+        return [];
+    }
 
-        foreach (['nova', 'house'] as $society) {
-            foreach (['desembouage', 'reequilibrage'] as $activity) {
-                $typesPath = "{$basePath}/{$society}/{$activity}";
-                if (is_dir($typesPath)) {
-                    $files = scandir($typesPath);
-                    foreach ($files as $file) {
-                        if (str_ends_with($file, '.blade.php')) {
-                            $type = str_replace('.blade.php', '', $file);
-                            $views[] = "pdf.{$society}.{$activity}.{$type}";
-                        }
+    // Lister tous les dossiers de sociétés
+    $societyDirs = array_filter(scandir($basePath), function($item) use ($basePath) {
+        return is_dir($basePath . '/' . $item) && !in_array($item, ['.', '..']);
+    });
+
+    Log::info('📂 Dossiers PDF trouvés', ['societes' => $societyDirs]);
+
+    foreach ($societyDirs as $society) {
+        $societyPath = "{$basePath}/{$society}";
+        
+        // Lister les dossiers d'activités
+        $activityDirs = array_filter(scandir($societyPath), function($item) use ($societyPath) {
+            return is_dir($societyPath . '/' . $item) && !in_array($item, ['.', '..']);
+        });
+
+        foreach ($activityDirs as $activity) {
+            $typesPath = "{$societyPath}/{$activity}";
+            
+            if (is_dir($typesPath)) {
+                $files = scandir($typesPath);
+                foreach ($files as $file) {
+                    if (str_ends_with($file, '.blade.php')) {
+                        $type = str_replace('.blade.php', '', $file);
+                        $view = "pdf.{$society}.{$activity}.{$type}";
+                        $views[] = $view;
+                        
+                        Log::debug('📄 Template PDF trouvé', ['view' => $view]);
                     }
                 }
             }
         }
-
-        return $views;
     }
+
+   
+    sort($views);
+    
+    Log::info('📚 Templates PDF disponibles', [
+        'total' => count($views),
+        'societes' => $societyDirs,
+        'preview' => array_slice($views, 0, 5)
+    ]);
+
+    return $views;
+}
+
+
     /**
      * Prépare les données pour le template PDF
      */
