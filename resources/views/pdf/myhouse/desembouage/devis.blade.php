@@ -384,7 +384,7 @@
     <!-- Page 2 -->
     <div class="page-start">
         <div class="content-container">
-            <img src="{{ public_path('assets/img/house/Devis_files/Image_002.jpg') }}" alt="Logo" class="logo"
+            <img src="{{ public_path('assets/img/house/Devis_files/Image_001.jpg') }}" alt="Logo" class="logo"
                 style="margin: 0 auto;">
 
             <div class="mt-15">
@@ -513,7 +513,7 @@
     <!-- Page 3 -->
     <div class="page-start">
         <div class="content-container">
-            <img src="{{ public_path('assets/img/house/Devis_files/Image_003.jpg') }}" alt="Logo" class="logo"
+            <img src="{{ public_path('assets/img/house/Devis_files/Image_001.jpg') }}" alt="Logo" class="logo"
                 style="margin: 0 auto;">
 
             <div class="mt-15">

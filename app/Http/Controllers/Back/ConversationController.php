@@ -4,160 +4,328 @@ namespace App\Http\Controllers\Back;
 
 use App\Http\Controllers\Controller;
 use App\Models\Conversation;
+use App\Models\Message;
 use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use App\Events\MessageSent;
 use App\Events\UserTyping;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class ConversationController extends Controller
 {
     /**
-     * Liste toutes les conversations de l'utilisateur connecté
+     * Affiche la liste des conversations
      */
-public function index()
-{
-    $user = Auth::user();
-    $conversations = $user->conversations()
-        ->with(['users', 'lastMessage.user']) // ✅ plus de where('user_id', '!=', ...)
-        ->orderByDesc(
-            Conversation::select('created_at')
-                ->from('messages')
-                ->whereColumn('conversation_id', 'conversations.id')
-                ->latest()
-                ->limit(1)
-        )
-        ->get();
+    public function index()
+    {
+        $conversations = auth()->user()->conversations()
+            ->with([
+                'users',
+                'lastMessage',
+                'messages' => function ($q) {
+                    $q->latest()->limit(1);
+                }
+            ])
+            ->get();
 
-    return view('back.messagerie.index', compact('conversations'));
-}
+        $unreadCount = auth()->user()->unreadMessagesCount();
+
+        return view('back.messagerie.index', compact('conversations', 'unreadCount'));
+    }
 
     /**
      * Affiche une conversation spécifique
      */
     public function show(Conversation $conversation)
     {
-        // Vérifier que l'utilisateur est participant
-        if (!$conversation->users->contains(Auth::id())) {
+        // Vérifier que l'utilisateur participe à la conversation
+        if (!$conversation->users->contains(auth()->id())) {
             abort(403);
         }
 
         $messages = $conversation->messages()
             ->with('user')
-            ->orderBy('created_at')
-            ->paginate(50);
+            ->orderBy('created_at', 'asc')
+            ->paginate(50)
+            ->items();
 
-        // Marquer comme lu
-        $conversation->users()->updateExistingPivot(Auth::id(), [
-            'last_read_at' => now()
-        ]);
 
-        $otherUser = $conversation->users->where('id', '!=', Auth::id())->first();
+        $otherUser = $conversation->users()
+            ->where('users.id', '!=', auth()->id())
+            ->first();
 
         return view('back.messagerie.show', compact('conversation', 'messages', 'otherUser'));
     }
 
     /**
-     * Démarrer une conversation avec un autre utilisateur
+     * Envoyer un message texte
      */
-    public function startWithUser(User $user)
-    {
-        if ($user->id === Auth::id()) {
-            return back()->with('error', 'Vous ne pouvez pas discuter avec vous-même.');
+
+    
+public function sendMessage(Request $request, $conversationId)
+{
+    try {
+        // ✅ Gérer à la fois le texte et les fichiers
+        $conversation = Conversation::findOrFail($conversationId);
+
+        if (!$conversation->users->contains(auth()->id())) {
+            return response()->json(['error' => 'Non autorisé'], 403);
         }
 
-        // Rechercher une conversation privée existante entre les deux
-        $conversation = Conversation::where('is_group', false)
-            ->whereHas('users', fn($q) => $q->where('user_id', Auth::id()))
-            ->whereHas('users', fn($q) => $q->where('user_id', $user->id))
-            ->first();
-
-        if (!$conversation) {
-            $conversation = Conversation::create(['is_group' => false]);
-            $conversation->users()->attach([Auth::id(), $user->id]);
+        // Si c'est un upload de fichier (multipart/form-data)
+        if ($request->hasFile('file')) {
+            return $this->uploadFile($request, $conversationId);
         }
 
-        return redirect()->route('back.messagerie.show', $conversation);
-    }
-
-    /**
-     * Envoyer un message (AJAX)
-     */
-    public function sendMessage(Request $request, Conversation $conversation)
-    {
-        $request->validate(['body' => 'required|string|max:5000']);
-
-        if (!$conversation->users->contains(Auth::id())) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
-        $message = $conversation->messages()->create([
-            'user_id' => Auth::id(),
-            'body' => $request->body,
-            'is_read' => false,
+        // Sinon, message texte
+        $request->validate([
+            'body' => 'required|string|max:5000'
         ]);
 
-        // Charger la relation user pour le broadcast
+        $message = Message::create([
+            'conversation_id' => $conversationId,
+            'user_id' => auth()->id(),
+            'body' => $request->body,
+            'created_at' => now(),
+        ]);
+
         $message->load('user');
 
-        // Diffuser l'événement aux autres participants
         broadcast(new MessageSent($message))->toOthers();
 
-        return response()->json([
-            'id' => $message->id,
-            'body' => $message->body,
-            'created_at' => $message->created_at->format('H:i'),
-            'user' => [
-                'id' => $message->user->id,
-                'name' => $message->user->name,
-            ],
+        return response()->json($message);
+
+    } catch (\Exception $e) {
+        Log::error('❌ Erreur envoi message:', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
         ]);
+
+        return response()->json([
+            'error' => 'Erreur lors de l\'envoi du message: ' . $e->getMessage()
+        ], 500);
     }
-
+}
     /**
-     * Indicateur de frappe (AJAX)
+     * ✅ NOUVELLE MÉTHODE : Upload de fichier
      */
-    public function typing(Request $request, Conversation $conversation)
-    {
-        $request->validate(['is_typing' => 'required|boolean']);
-
-        broadcast(new UserTyping(Auth::user(), $conversation, $request->is_typing))->toOthers();
-
-        return response()->json(['success' => true]);
-    }
-
     /**
-     * Marquer tous les messages comme lus (AJAX)
+     * Upload de fichier dans une conversation
      */
-    public function markAsRead(Conversation $conversation)
-    {
-        $conversation->users()->updateExistingPivot(Auth::id(), [
+   /**
+ * Upload de fichier dans une conversation
+ */
+public function uploadFile(Request $request, $conversationId)
+{
+    try {
+        Log::info('📤 Upload de fichier démarré', [
+            'conversation_id' => $conversationId,
+            'user_id' => auth()->id()
+        ]);
+
+        $request->validate([
+            'file' => 'required|file|max:10240|mimes:jpeg,png,jpg,gif,mp4,mov,avi,pdf,doc,docx,xls,xlsx,zip,rar,txt',
+        ]);
+
+        $conversation = Conversation::findOrFail($conversationId);
+
+        if (!$conversation->users->contains(auth()->id())) {
+            Log::warning('⛔ Upload non autorisé', [
+                'user_id' => auth()->id(),
+                'conversation_id' => $conversationId
+            ]);
+            return response()->json(['error' => 'Non autorisé'], 403);
+        }
+
+        $file = $request->file('file');
+
+        if (!$file->isValid()) {
+            throw new \Exception('Fichier invalide');
+        }
+
+        // Générer un nom unique
+        $timestamp = time();
+        $originalName = $file->getClientOriginalName();
+        $extension = $file->getClientOriginalExtension();
+        $cleanName = preg_replace('/[^a-zA-Z0-9_.-]/', '_', pathinfo($originalName, PATHINFO_FILENAME));
+        $fileName = $timestamp . '_' . $cleanName . '.' . $extension;
+
+        // Stocker le fichier
+        $path = $file->storeAs('chat-files/' . $conversationId, $fileName, 'public');
+
+        Log::info('📁 Fichier sauvegardé', [
+            'path' => $path,
+            'original_name' => $originalName,
+            'size' => $file->getSize()
+        ]);
+
+        // Créer le message avec le fichier
+        $message = Message::create([
+            'conversation_id' => $conversationId,
+            'user_id' => auth()->id(),
+            'body' => '',
+            'file_path' => $path,
+            'file_name' => $originalName,
+            'file_type' => $file->getMimeType(),
+            'file_size' => $file->getSize(),
+            'is_read' => false,
+            'created_at' => now(),
+        ]);
+
+        // Charger la relation user
+        $message->load('user');
+
+        Log::info('✅ Message avec fichier créé', [
+            'message_id' => $message->id,
+            'file_name' => $message->file_name
+        ]);
+
+        // Mettre à jour last_read_at pour l'expéditeur
+        $conversation->users()->updateExistingPivot(auth()->id(), [
             'last_read_at' => now()
         ]);
 
-        return response()->json(['success' => true]);
+        // Broadcast
+        broadcast(new MessageSent($message))->toOthers();
+
+        // ✅ Retourner le message avec tous les accesseurs
+        return response()->json([
+            'id' => $message->id,
+            'body' => $message->body,
+            'file_path' => $message->file_path,
+            'file_name' => $message->file_name,
+            'file_type' => $message->file_type,
+            'file_size' => $message->file_size,
+            'file_url' => $message->file_url,
+            'file_icon' => $message->file_icon,
+            'formatted_size' => $message->formatted_size,
+            'user_id' => $message->user_id,
+            'user' => [
+                'id' => $message->user->id,
+                'name' => $message->user->name
+            ],
+            'created_at' => $message->created_at->toISOString()
+        ]);
+
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        Log::error('❌ Validation erreur upload:', [
+            'errors' => $e->errors()
+        ]);
+        return response()->json([
+            'error' => 'Fichier invalide. Types acceptés: images, vidéos, PDF, documents (max 10MB)'
+        ], 422);
+
+    } catch (\Exception $e) {
+        Log::error('❌ Erreur upload fichier:', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+}
+    /**
+     * Marquer les messages comme lus
+     */
+    public function markAsRead($conversationId)
+    {
+        try {
+            $conversation = Conversation::findOrFail($conversationId);
+
+            Message::where('conversation_id', $conversationId)
+                ->where('user_id', '!=', auth()->id())
+                ->where('is_read', false)
+                ->update(['is_read' => true]);
+
+            return response()->json(['success' => true]);
+
+        } catch (\Exception $e) {
+            Log::error('❌ Erreur markAsRead:', ['error' => $e->getMessage()]);
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     /**
-     * Dropdown AJAX pour la navbar (rechargement en temps réel)
+     * Indicateur de frappe
+     */
+
+
+
+
+    public function typing(Request $request, $conversationId)
+    {
+        try {
+            $request->validate([
+                'is_typing' => 'required|boolean'
+            ]);
+
+            $conversation = Conversation::findOrFail($conversationId);
+
+            broadcast(new UserTyping(
+                $conversationId,
+                auth()->id(),
+                auth()->user()->name,
+                $request->is_typing
+            ))->toOthers();
+
+            return response()->json(['success' => true]);
+
+        } catch (\Exception $e) {
+            Log::error('❌ Erreur typing:', ['error' => $e->getMessage()]);
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Démarrer une conversation avec un utilisateur
+     */
+    public function startWithUser(User $user)
+    {
+        // Vérifier qu'on ne démarre pas avec soi-même
+        if ($user->id === auth()->id()) {
+            return redirect()->back()->with('error', 'Vous ne pouvez pas démarrer une conversation avec vous-même');
+        }
+
+        // Chercher une conversation existante
+        $conversation = Conversation::whereHas('users', function ($q) {
+            $q->where('user_id', auth()->id());
+        })->whereHas('users', function ($q) use ($user) {
+            $q->where('user_id', $user->id);
+        })->first();
+
+        // Si aucune conversation n'existe, en créer une
+        if (!$conversation) {
+            $conversation = Conversation::create([
+                'is_group' => false
+            ]);
+
+            $conversation->users()->attach([auth()->id(), $user->id]);
+        }
+
+        return redirect()->route('back.messagerie.show', $conversation->id);
+    }
+
+    /**
+     * Récupérer les messages non lus pour le dropdown
      */
     public function dropdown()
     {
-        $user = Auth::user();
-        $conversations = $user->conversations()
-            ->with(['users' => fn($q) => $q->where('user_id', '!=', $user->id), 'lastMessage.user'])
-            ->orderByDesc(
-                Conversation::select('created_at')
-                    ->from('messages')
-                    ->whereColumn('conversation_id', 'conversations.id')
-                    ->latest()
-                    ->limit(1)
-            )
-            ->limit(5)
+        $unreadMessages = Message::whereHas('conversation', function ($q) {
+            $q->whereHas('users', function ($q2) {
+                $q2->where('users.id', auth()->id());
+            });
+        })
+            ->where('user_id', '!=', auth()->id())
+            ->where('is_read', false)
+            ->with(['user', 'conversation'])
+            ->latest()
+            ->take(10)
             ->get();
 
-        $unreadCount = $user->unreadMessagesCount();
+        $unreadCount = auth()->user()->unreadMessagesCount();
 
-        return view('back.partials.messages-dropdown', compact('conversations', 'unreadCount'))->render();
+        return response()->json([
+            'messages' => $unreadMessages,
+            'count' => $unreadCount
+        ]);
     }
 }

@@ -1,7 +1,13 @@
 import './bootstrap';
 
-import Alpine from 'alpinejs';
+import Alpine from 'alpinejs'
+import chat from './components/chat'
 
-window.Alpine = Alpine;
+window.Alpine = Alpine
 
-Alpine.start();
+Alpine.data('chat', chat)
+
+Alpine.start()
+
+
+

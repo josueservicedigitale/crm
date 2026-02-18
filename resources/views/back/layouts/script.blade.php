@@ -48,7 +48,6 @@
             updateOnlineStatus(window.onlineUsers);
         }
     });
-    
 
 </script>
 

@@ -7,11 +7,62 @@
     <a href="#" class="sidebar-toggler flex-shrink-0">
         <i class="fa fa-bars"></i>
     </a>
+<form class="d-none d-md-flex ms-4 position-relative" action="{{ route('back.search.global') }}" method="GET">
+    <div class="input-group">
+        <input class="form-control border-0" 
+               type="search" 
+               name="q" 
+               id="search-input"
+               placeholder="Rechercher..."
+               value="{{ request('q') }}"
+               autocomplete="off"
+               minlength="2"
+               required>
+        <button class="btn btn-primary" type="submit">
+            <i class="fas fa-search"></i>
+        </button>
+    </div>
+    <div id="search-suggestions" class="position-absolute bg-white shadow-lg rounded mt-2 w-100" style="top: 100%; z-index: 1000; display: none;"></div>
+</form>
 
-    <form class="d-none d-md-flex ms-4">
-        <input class="form-control border-0" type="search" placeholder="Search">
-    </form>
+<script>
+document.getElementById('search-input').addEventListener('input', function(e) {
+    const query = e.target.value;
+    const suggestionsBox = document.getElementById('search-suggestions');
+    
+    if (query.length < 2) {
+        suggestionsBox.style.display = 'none';
+        return;
+    }
+    
+    fetch(`/back/search/ajax?q=${encodeURIComponent(query)}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.results.length > 0) {
+                let html = '<div class="list-group">';
+                data.results.forEach(item => {
+                    html += `<a href="${item.url}" class="list-group-item list-group-item-action">
+                        <i class="fas ${item.type === 'document' ? 'fa-file-alt' : 'fa-building'} me-2"></i>
+                        ${item.text}
+                        <small class="text-muted ms-2">(${item.type})</small>
+                    </a>`;
+                });
+                html += '</div>';
+                suggestionsBox.innerHTML = html;
+                suggestionsBox.style.display = 'block';
+            } else {
+                suggestionsBox.style.display = 'none';
+            }
+        });
+});
 
+// Cacher les suggestions en cliquant ailleurs
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('#search-input')) {
+        document.getElementById('search-suggestions').style.display = 'none';
+    }
+});
+</script>
     <div class="navbar-nav align-items-center ms-auto">
 
 

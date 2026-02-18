@@ -2,11 +2,8 @@
 
 namespace App\Events;
 
-use App\Models\Conversation;
-use App\Models\User;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -16,33 +13,30 @@ class UserTyping implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $user;
-    public $conversation;
+    public $conversationId;
+    public $userId;
+    public $userName;
     public $isTyping;
 
-    public function __construct(User $user, Conversation $conversation, bool $isTyping)
+    public function __construct($conversationId, $userId, $userName, $isTyping)
     {
-        $this->user = $user;
-        $this->conversation = $conversation;
+        $this->conversationId = $conversationId;
+        $this->userId = $userId;
+        $this->userName = $userName;
         $this->isTyping = $isTyping;
     }
 
     public function broadcastOn()
     {
-        return new PrivateChannel('conversation.' . $this->conversation->id);
-    }
-
-    public function broadcastAs()
-    {
-        return 'user.typing';
+        return new PrivateChannel('conversation.' . $this->conversationId);
     }
 
     public function broadcastWith()
     {
         return [
-            'user_id' => $this->user->id,
-            'user_name' => $this->user->name,
-            'is_typing' => $this->isTyping,
+            'user_id' => $this->userId,
+            'user_name' => $this->userName,
+            'is_typing' => $this->isTyping
         ];
     }
 }

@@ -78,23 +78,19 @@ Route::prefix('back')->name('back.')->middleware('auth')->group(function () {
     Route::get('/users/{user}/conversation', [ConversationController::class, 'startWithUser'])->name('messagerie.start');
     Route::get('/messages/dropdown', [ConversationController::class, 'dropdown'])->name('messagerie.dropdown');
 
-    // =====================================================================
-    // 2.3 ROUTES CRUD POUR ACTIVITÉS (AVEC NOMS DE ROUTES SPÉCIFIQUES)
-    // =====================================================================
-    Route::prefix('activites')->name('activites.')->group(function () {
-        Route::get('/', [ActiviteController::class, 'index'])->name('index');
-        Route::get('/create', [ActiviteController::class, 'create'])->name('create');
-        Route::post('/', [ActiviteController::class, 'store'])->name('store');
-        Route::get('/{activite}/edit', [ActiviteController::class, 'edit'])->name('edit');
-        Route::put('/{activite}', [ActiviteController::class, 'update'])->name('update');
-        Route::delete('/{activite}', [ActiviteController::class, 'destroy'])->name('destroy');
-        Route::post('/{activite}/toggle', [ActiviteController::class, 'toggle'])->name('toggle');
-        Route::get('/stats', [ActiviteController::class, 'stats'])->name('stats');
-        Route::get('/{activite}', [ActiviteController::class, 'show'])->name('show'); // ⚠️ APRÈS les routes spécifiques
-        Route::get('/{activite}/documents', [ActiviteController::class, 'documents'])->name('documents');
-
-    });
-
+   // =====================================================================
+// 2.2 ROUTES DE MESSAGERIE (À METTRE AVANT LES ROUTES À 2 PARAMÈTRES)
+// =====================================================================
+Route::prefix('conversations')->name('messagerie.')->group(function () {
+    Route::get('/', [ConversationController::class, 'index'])->name('index');
+    Route::get('/{conversation}', [ConversationController::class, 'show'])->name('show');
+    Route::post('/{conversation}/send', [ConversationController::class, 'sendMessage'])->name('send');
+    Route::post('/{conversation}/upload', [ConversationController::class, 'uploadFile'])->name('upload'); // ✅ NOUVELLE ROUTE
+    Route::post('/{conversation}/typing', [ConversationController::class, 'typing'])->name('typing');
+    Route::post('/{conversation}/read', [ConversationController::class, 'markAsRead'])->name('read');
+    Route::get('/users/{user}/conversation', [ConversationController::class, 'startWithUser'])->name('start');
+    Route::get('/messages/dropdown', [ConversationController::class, 'dropdown'])->name('dropdown');
+});
     // =====================================================================
     // 2.4 ROUTES CRUD POUR SOCIÉTÉS
     // =====================================================================
@@ -111,6 +107,25 @@ Route::prefix('back')->name('back.')->middleware('auth')->group(function () {
         Route::get('/{societe}/export', [SocieteController::class, 'export'])->name('export');
         Route::get('/{societe}/stats', [SocieteController::class, 'stats'])->name('stats');
     });
+
+    // =====================================================================
+// ROUTES POUR ACTIVITÉS
+// =====================================================================
+Route::prefix('activites')->name('activites.')->group(function () {
+    // Routes principales
+    Route::get('/', [ActiviteController::class, 'index'])->name('index');
+    Route::get('/create', [ActiviteController::class, 'create'])->name('create');
+    Route::post('/', [ActiviteController::class, 'store'])->name('store');
+    Route::get('/stats', [ActiviteController::class, 'stats'])->name('stats');
+    
+    // Routes avec paramètre {activite} (attention à l'ordre !)
+    Route::get('/{activite}', [ActiviteController::class, 'show'])->name('show');
+    Route::get('/{activite}/edit', [ActiviteController::class, 'edit'])->name('edit');
+    Route::put('/{activite}', [ActiviteController::class, 'update'])->name('update');
+    Route::delete('/{activite}', [ActiviteController::class, 'destroy'])->name('destroy');
+    Route::post('/{activite}/toggle', [ActiviteController::class, 'toggle'])->name('toggle');
+    Route::get('/{activite}/documents', [ActiviteController::class, 'documents'])->name('documents');
+});
 
     // =====================================================================
     // 2.5 ROUTES CRUD POUR UTILISATEURS
@@ -210,6 +225,12 @@ Route::post('/logout-other-sessions', function (Request $request) {
 })->middleware('auth')->name('logout.other');
 
 // =========================================================================
-// 4. AUTH ROUTES
+// 5recherche globale
 // =========================================================================
+
+
+Route::prefix('back')->name('back.')->middleware('auth')->group(function () {
+    Route::get('/search', [App\Http\Controllers\Back\SearchController::class, 'global'])->name('search.global');
+    Route::get('/ajax', [App\Http\Controllers\Back\SearchController::class, 'ajax'])->name('ajax');
+});
 require __DIR__ . '/auth.php';
