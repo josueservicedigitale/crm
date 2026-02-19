@@ -1,217 +1,727 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-<meta charset="UTF-8">
-<title>Facture {{ $document->reference_facture }}</title>
+    <meta charset="UTF-8" />
+    <title>Facture - MY HOUSE</title>
 
-<style>
-    body {
-        font-family: DejaVu Sans, sans-serif;
-        font-size: 9.5pt;
-        color: #000;
-        margin: 15px;
-        line-height: 1.35;
-    }
+    <style>
+        /* =========================
+       DOMPDF SAFE SETTINGS
+    ========================== */
+        @page {
+            margin: 18mm 14mm;
+        }
 
-    h1 {
-        font-size: 13pt;
-        color: #FFF;
-        background-color: #81A150;
-        padding: 5px;
-        margin: 5px 0;
-    }
+        /* page = feuille PDF */
+        .page {
+            page-break-after: always;
+        }
 
-    h3 {
-        font-size: 10pt;
-        margin: 8px 0 4px 0;
-    }
+        /* ZONE SÛRE (marges internes réelles) */
+        .content {
+            padding: 6mm 6mm 8mm 6mm;
+            /* marge interne en plus du @page */
+        }
 
-    h4 {
-        font-size: 9pt;
-        margin: 4px 0;
-    }
+        /* IMPORTANT: tout ce qui est “plein écran” doit rester dans la zone */
+        table,
+        img,
+        .footer-line {
+            width: 100%;
+            max-width: 100%;
+        }
 
-    p { margin: 3px 0; }
+        /* évite que les bordures/paddings fassent dépasser */
+        .main-table,
+        .strip,
+        .devis-bar,
+        .infos {
+            box-sizing: border-box;
+        }
 
-    table {
-        border-collapse: collapse;
-        width: 100%;
-        margin-top: 8px;
-    }
 
-    td, th {
-        border: 1px solid #000;
-        padding: 5px;
-        vertical-align: top;
-    }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-    th {
-        background-color: #81A150;
-        color: #FFF;
-        font-weight: bold;
-    }
+        html,
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 9pt;
+            color: #000;
+        }
 
-    ul {
-        margin: 3px 0 3px 15px;
-        padding: 0;
-    }
+        /* une page PDF */
+        .page {
+            page-break-after: always;
+        }
 
-    li { margin-bottom: 2px; }
+        .page:last-child {
+            page-break-after: auto;
+        }
 
-    .small-text { font-size: 8.8pt; }
+        /* évite les débordements horizontaux */
+        img,
+        table {
+            max-width: 100%;
+        }
 
-    .signature-box {
-        border: 1px dashed #000;
-        height: 120px;
-        margin-top: 15px;
-        padding: 8px;
-    }
+        td,
+        th,
+        p,
+        li,
+        div {
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
 
-    .page-break {
-        page-break-before: always;
-    }
+        /* =========================
+       COLORS (comme capture)
+    ========================== */
+        :root {
+            --green: #7aa84a;
+            /* bande verte */
+            --green-dark: #6e9b43;
+            --border: #2b2b2b;
+            /* traits tableau */
+            --gray: #e9e9e9;
+            /* bloc bas page 2 */
+        }
 
-    @page {
-        margin: 18mm 15mm;
-    }
+        /* =========================
+       HEADER (logo + barre devis)
+    ========================== */
+        .header {
+            margin-bottom: 6mm;
+        }
 
-    table { page-break-inside: auto; }
-    tr { page-break-inside: avoid; }
-    thead { display: table-header-group; }
-</style>
+        .header-top {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .header-top td {
+            vertical-align: top;
+            border: none;
+        }
+
+        .logo-wrap {
+            width: 55%;
+        }
+
+        .logo-wrap img {
+            height: 16mm;
+            width: auto;
+        }
+
+        .devis-bar {
+            margin-top: 2mm;
+            background-color: #80A150;
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .devis-bar td {
+            border: none;
+            padding: 2mm 3mm;
+            background: var(--green);
+            color: #fff;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: .2px;
+        }
+
+        /* =========================
+       INFOS (adresse / société)
+    ========================== */
+        .infos {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            margin-bottom: 6mm;
+        }
+
+        .infos td {
+            border: none;
+            vertical-align: top;
+            padding: 0;
+            font-size: 8.5pt;
+            line-height: 1.25;
+        }
+
+        .infos .left {
+            width: 58%;
+            padding-right: 6mm;
+        }
+
+        .infos .right {
+            width: 42%;
+        }
+
+        .muted {
+            color: #222;
+        }
+
+        .b {
+            font-weight: bold;
+        }
+
+        .mt2 {
+            margin-top: 2mm;
+        }
+
+        .mt3 {
+            margin-top: 3mm;
+        }
+
+        .mt4 {
+            margin-top: 4mm;
+        }
+
+        /* =========================
+       MAIN TABLE (page 1)
+    ========================== */
+        .main-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            border: 1px solid var(--border);
+        }
+
+        .main-table th,
+        .main-table td {
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            vertical-align: top;
+            padding: 4mm 3mm;
+        }
+
+        .main-table thead th {
+            background: var(--green);
+            color: #fff;
+            font-weight: bold;
+            text-align: left;
+            padding: 2.6mm 3mm;
+        }
+
+        /* largeurs colonnes (comme capture) */
+        .col-detail {
+            width: 63%;
+        }
+
+        .col-qte {
+            width: 9%;
+            text-align: center;
+        }
+
+        .col-pu {
+            width: 10%;
+            text-align: center;
+        }
+
+        .col-total {
+            width: 10%;
+            text-align: center;
+        }
+
+        .col-tva {
+            width: 8%;
+            text-align: center;
+        }
+
+        .detail p {
+            margin: 0 0 2mm 0;
+        }
+
+        .detail .title {
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-top: 2mm;
+        }
+
+        .detail ul {
+            margin: 2mm 0 2mm 5mm;
+            padding-left: 4mm;
+        }
+
+        .detail li {
+            margin: 0 0 1mm 0;
+        }
+
+        /* Page 1 : numéros alignés verticalement au bon endroit */
+        .numbers {
+            font-size: 8.5pt;
+            line-height: 1.35;
+            text-align: right;
+            padding-top: 0;
+        }
+
+        .numbers .sp {
+            height: 33mm;
+        }
+
+        /* espace avant les 2 lignes de prix (à ajuster si besoin) */
+
+        .numbers .row {
+            padding: 2mm 0;
+            border-top: 0;
+        }
+
+        /* =========================
+       PAGE 2 TOP STRIP (la bande verte avec colonnes)
+       (juste l’entête, sans gros tableau)
+    ========================== */
+        .strip {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            margin-top: 2mm;
+            margin-bottom: 0;
+        }
+
+        .strip td {
+            border: none;
+            background: var(--green);
+            color: #fff;
+            font-weight: bold;
+            padding: 2.6mm 3mm;
+        }
+
+        .strip .s-detail {
+            width: 63%;
+            text-align: left;
+        }
+
+        .strip .s-qte {
+            width: 9%;
+            text-align: center;
+        }
+
+        .strip .s-pu {
+            width: 10%;
+            text-align: center;
+        }
+
+        .strip .s-total {
+            width: 10%;
+            text-align: center;
+        }
+
+        .strip .s-tva {
+            width: 8%;
+            text-align: center;
+        }
+
+        /* =========================
+       PAGE 2 CONTENT (bas)
+    ========================== */
+        .p2-content {
+            margin-top: 80mm;
+            /* grand blanc comme capture */
+        }
+
+        .section-h {
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 0 0 2mm 0;
+            font-size: 8.5pt;
+        }
+
+        .para {
+            font-size: 8.2pt;
+            line-height: 1.25;
+            margin: 0 0 4mm 0;
+        }
+
+        .gray-box {
+            background: var(--gray);
+            border: 1px solid #cfcfcf;
+            padding: 4mm 4mm;
+            margin-top: 6mm;
+        }
+
+        .sign-total {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .sign-total td {
+            border: none;
+            vertical-align: top;
+        }
+
+        .sign-total .sign {
+            width: 62%;
+            padding-right: 6mm;
+            font-size: 8pt;
+        }
+
+        .sign-total .tot {
+            width: 38%;
+            font-size: 8.5pt;
+        }
+
+        .totals {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .totals td {
+            border: none;
+            padding: 1mm 0;
+        }
+
+        .totals .lbl {
+            text-align: right;
+            padding-right: 3mm;
+        }
+
+        .totals .val {
+            text-align: right;
+            font-weight: bold;
+        }
+
+        .totals .highlight {
+            color: #7b6a00;
+        }
+
+        /* reste à payer en jaune/olive */
+
+        .pay-mode {
+            margin-top: 3mm;
+            font-size: 8pt;
+        }
+
+        /* =========================
+       FOOTER (ligne + texte + page)
+    ========================== */
+    
+        .footer-line {
+           position: fixed;
+            bottom: 10mm;
+            left: 0;
+            right: 0;
+            font-size: 8pt;
+            color: #333;
+            text-align: center;
+            border-top: 1px solid #80A150;
+            padding-top: 3mm;
+            width: 100%;
+        }
+
+        .footer-text {
+            text-align: center;
+            font-size: 7.8pt;
+            color: #111;
+            line-height: 1.25;
+        }
+
+        .page-no {
+            text-align: right;
+            font-size: 8pt;
+            margin-top: 1mm;
+            color: #111;
+        }
+    </style>
 </head>
 
 <body>
 
-<!-- =================== PAGE 1 =================== -->
+    <!-- ===================== PAGE 1 ===================== -->
+    <div class="page">
+        <div class="content">
+            <div class="header">
+                <table class="header-top">
+                    <tr>
+                        <td class="logo-wrap">
+                            <img src="{{ public_path('assets/img/house/Devis_files/Image_001.jpg') }}" alt="MY HOUSE">
+                        </td>
+                        <td></td>
+                    </tr>
+                </table>
 
-<img src="{{ public_path('assets/img/rehouse/Facture_files/Image_001.jpg') }}" width="180">
+                <table class="devis-bar">
+                    <tr>
+                        <td>Facture {{ $document->reference_facture }}</td>
+                    </tr>
+                </table>
+            </div>
 
-<h1>FACTURE {{ $document->reference_facture }}</h1>
-<p>Date : {{ $document->date_facture }}</p>
+            <table class="infos">
+                <tr>
+                    <td class="left">
+                        <div class="muted"><span class="b">Date :</span>
+                            {{ \Carbon\Carbon::parse($document->date_facture)->format('d/m/Y') }}</div>
 
-<table>
-<tr>
-<td style="width:50%;">
-    <h4>Adresse des travaux :</h4>
-    <p>{{ $document->adresse_travaux }}</p>
-    <p>@php
-$parcelles = array_filter([
-    $document->parcelle_1,
-    $document->parcelle_2,
-    $document->parcelle_3,
-    $document->parcelle_4
-]);
-@endphp
+                        <div class="mt2 muted b" style="text-transform:uppercase;">Adresse des travaux :</div>
+                        <div class="muted">{{ $document->adresse_travaux }}</div>
 
-@if(count($parcelles))
-<p><strong>Parcelles cadastrales :</strong> {{ implode(', ', $parcelles) }}</p>
-@endif
-</p>
-    <p>N° immatriculation : {{ $document->numero_immatriculation }}</p>
-    <p>Nombre bâtiments : {{ $document->nombre_batiments }}</p>
-    <p>Détails bâtiments : {{ $document->details_batiments }}</p>
-    <p>Nom résidence : {{ $document->nom_residence }}</p>
-    <p>Date travaux : {{ $document->date_travaux }}</p>
-    <p>Date désembouage : {{ $document->date_desembouage }}</p>
-</td>
+                        <div class="mt2 muted"><span class="b">Parcelle cadastrale :</span>
+                            {{ $document->parcelle_cadastrale ?? '' }}</div>
+                        <div class="muted"><span class="b">N° immatriculation :</span>
+                            {{ $document->numero_immatriculation ?? '' }}</div>
+                        <div class="muted"><span class="b">Nombre bâtiments :</span>
+                            {{ $document->nombre_batiments ?? '' }}</div>
+                        <div class="muted"><span class="b">Détails bâtiments :</span>
+                            {{ $document->details_batiments ?? '' }}</div>
+                        <div class="muted"><span class="b">Nom de résidence :</span>
+                            {{ $document->nom_residence ?? '' }}</div>
+                        <div class="muted"><span class="b">Date travaux :</span> {{ $document->date_travaux ?? '' }}
+                        </div>
+                        <div class="muted"><span class="b">Date de désembouage :</span>
+                            {{ $document->dates_previsionnelles ?? '' }}</div>
+                    </td>
 
-<td style="width:50%;">
-    <p><strong>BBR MAINTENANCE</strong></p>
-    <p>Siret : 93146162800030</p>
-    <p>78 Avenue des Champs Élysées, 75008 Paris</p>
-    <p>Tél : 01 85 09 74 35</p>
-    <p>Mail : tech@bbrmaintenance.fr</p>
-    <p>Représenté par : M. Poulin Thomas</p>
-</td>
-</tr>
-</table>
+                    <td class="right">
+                        <div class="b" style="text-transform:uppercase;">
+                            {{ $document->fournisseur_nom ?? 'BBR MAINTENANCE' }}</div>
+                        <div class="mt2 muted"><span class="b">Siret :</span> {{ $document->fournisseur_siret ?? '' }}
+                        </div>
+                        <div class="muted"><span class="b">Adresse :</span> {{ $document->fournisseur_adresse ?? '' }}
+                        </div>
+                        <div class="muted"><span class="b">Tel :</span> {{ $document->fournisseur_tel ?? '' }}</div>
+                        <div class="muted"><span class="b">Mail :</span> {{ $document->fournisseur_email ?? '' }}</div>
+                        <div class="muted"><span class="b">Représenté par :</span>
+                            {{ $document->fournisseur_representant ?? '' }}</div>
+                        <div class="muted"><span class="b">Fonction :</span> {{ $document->fournisseur_fonction ?? '' }}
+                        </div>
+                    </td>
+                </tr>
+            </table>
 
-<table>
-<thead>
-<tr>
-<th>Détail</th>
-<th>Qté</th>
-<th>P.U HT</th>
-<th>Total HT</th>
-<th>TVA</th>
-</tr>
-</thead>
+            <table class="main-table">
+                <thead>
+                    <tr>
+                        <th class="col-detail">Détail</th>
+                        <th class="col-qte">Quantité</th>
+                        <th class="col-pu">P.U HT</th>
+                        <th class="col-total">Total HT</th>
+                        <th class="col-tva">TVA</th>
+                    </tr>
+                </thead>
 
-<tbody>
-<tr>
-<td class="small-text">
-Réglage des organes d’équilibrage d’une installation de chauffage à eau chaude.<br>
-Kwh Cumac : <b>{{ $document->wh_cumac }}</b> — Prime CEE : <b>{{ $document->prime_cee }}</b> €<br>
-Installation : <b>{{ $document->type }}</b> — Puissance chaudière : {{ $document->puissance_chaudiere }} Kw<br>
-Logements concernés : <b>{{ $document->nombre_logements }}</b><br><br>
+                <tbody>
+                    <tr>
+                        <td class="detail">
+                            <p>
+                                {{ $document->detail_principal ?? "Réglage des organes d’équilibrage d’une installation de chauffage à eau chaude, opération entrant dans le dispositif de prime C.E.E. (Certificat d’Economie d’Energie), conforme aux recommandations de la fiche technique N° BAR-SE-104." }}
+                            </p>
 
-<b>Détail de la prestation :</b>
-<ul>
-<li>Réglage des organes d’équilibrage</li>
-<li>Mise en place matériel d’équilibrage</li>
-<li>Relevé sur site</li>
-<li>Plan du sous-sol</li>
-<li>Synoptique des colonnes</li>
-<li>Note de calcul des débits</li>
-<li>Réglage pompe chauffage</li>
-<li>Mesure de débit</li>
-<li>Tableau des températures</li>
-</ul>
+                            <div class="mt3">
+                                <p><span class="b">Kwh Cumac :</span> {{ $document->wh_cumac }}</p>
+                                <p><span class="b">Prime CEE :</span>
+                                    {{ number_format($document->prime_cee, 2, ',', ' ') }} €</p>
+                                <p>Matériel(s) fourni(s) et mis en place par notre société
+                                    {{ $document->client_nom ?? "MY HOUSE" }}, représentée par
+                                    {{ $document->client_representant ?? "" }}, SIRET
+                                    {{ $document->client_siret ?? "" }}</p>
+                            </div>
 
-<b>Compris dans les travaux :</b>
-<ul>
-<li>Dépose et enlèvement ancien appareil</li>
-<li>Protection et nettoyage chantier</li>
-<li>Remplissage et purge installation</li>
-</ul>
-</td>
+                            <div class="mt3">
+                                <p class="b">Installation collective de chauffage alimentée par une chaudière hors
+                                    condensation</p>
+                                <p>Puissance nominale de la chaudière : <span
+                                        class="b">{{ $document->puissance_chaudiere }}</span> kW</p>
+                                <p>Nombre de logements concernés : <span
+                                        class="b">{{ $document->nombre_logements }}</span></p>
+                            </div>
 
-<td style="text-align:center;">1</td>
-<td style="text-align:right;">{{ $document->montant_ht }} €</td>
-<td style="text-align:right;">{{ $document->montant_ht }} €</td>
-<td style="text-align:center;">5,5 %</td>
-</tr>
-</tbody>
-</table>
+                            <div class="mt4 b" style="text-transform:uppercase;">Détail de la prestation</div>
 
-<!-- =================== PAGE 2 =================== -->
-<div class="page-break"></div>
+                            <p class="mt2">1 - Réglage des organes d’équilibrage d’une installation de chauffage à eau
+                                chaude, destiné à assurer une température uniforme dans tous les locaux :</p>
 
-<img src="{{ public_path('assets/img/rehouse/Facture_files/Image_001.jpg') }}" width="180">
+                            <p class="mt2">2 - Mise en place matériel d’équilibrage :</p>
+                            <ul>
+                                <li>Relevé sur site de l’installation</li>
+                                <li>Réalisation d’un plan du sous-sol des PDC</li>
+                                <li>Réalisation d’un synoptique des colonnes</li>
+                                <li>Réalisation d’une note de calcul des puissances de débits et réglages théoriques par
+                                    logement</li>
+                                <li>Réglage du point de fonctionnement de la pompe chauffage</li>
+                                <li>Réalisation d’une mesure de débit sur les PDC et antennes</li>
+                                <li>Un tableau d’enregistrement des températures moyennes sur un échantillon des
+                                    logements, après équilibrage</li>
+                                <li>L’écart de température entre l’appartement le plus chauffé et le moins chauffé doit
+                                    être strictement inférieur à 2°C</li>
+                            </ul>
 
-<h1>FACTURE {{ $document->reference_facture }}</h1>
-<p>Date : {{ $document->date_facture }}</p>
+                            <div class="mt3 b" style="text-transform:uppercase;">Compris dans les travaux :</div>
+                            <ul>
+                                <li>La dépose et l’enlèvement de votre ancien appareil</li>
+                                <li>La protection et le nettoyage du chantier</li>
+                                <li>Le remplissage et la purge de votre installation</li>
+                            </ul>
+                        </td>
 
-<h3>Conditions de paiement</h3>
-<p class="small-text">
-Les travaux ou prestations objet du présent document donneront lieu à une contribution financière de EBS ENERGIE (SIREN 533 333 118). Le montant est estimé à 7 614,60 €.
-</p>
+                        <!-- colonnes chiffrées : comme capture (2 lignes) -->
+                        <td class="numbers">
+                            <div class="sp"></div>
+                            <div class="row">1</div>
+                            <div class="row">1</div>
+                        </td>
 
-<h3>Totaux</h3>
-<table>
-<tr><th>Total H.T</th><td>{{ $document->montant_ht }} €</td></tr>
-<tr><th>Total TVA 5,5%</th><td>{{ $document->montant_tva }} €</td></tr>
-<tr><th>Total TTC</th><td>{{ $document->montant_ttc }} €</td></tr>
-<tr><th>Prime CEE</th><td>{{ $document->prime_cee }} €</td></tr>
-<tr><th>Reste à payer</th><td><strong>{{ $document->reste_a_charge }} €</strong></td></tr>
-</table>
+                        <td class="numbers">
+                            <div class="sp"></div>
+                            <div class="row">{{ number_format($document->ligne1_pu_ht ?? 5315.68, 2, ',', ' ') }} €
+                            </div>
+                            <div class="row">{{ number_format($document->ligne2_pu_ht ?? 1771.90, 2, ',', ' ') }} €
+                            </div>
+                        </td>
 
-<p>Mode de paiement : Chèques, virement ou espèce</p>
+                        <td class="numbers">
+                            <div class="sp"></div>
+                            <div class="row">{{ number_format($document->ligne1_total_ht ?? 5315.68, 2, ',', ' ') }} €
+                            </div>
+                            <div class="row">{{ number_format($document->ligne2_total_ht ?? 1771.90, 2, ',', ' ') }} €
+                            </div>
+                        </td>
 
-<h3>Gestion des déchets</h3>
-<p class="small-text">
-Gestion, évacuation et traitement des déchets de chantier comprenant la main d’œuvre liée à la dépose, le tri, le transport et le traitement.
-</p>
+                        <td class="numbers" style="text-align:center;">
+                            <div class="sp"></div>
+                            <div class="row">5,5 %</div>
+                            <div class="row">5,5 %</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
 
-<p><img src="{{ public_path('assets/img/rehouse/Facture_files/Image_003.png') }}" width="350"></p>
+            <div class="footer-line">
+                <div class="footer-text">
+                    MY HOUSE au capital de 7 500 € - Code APE 4322B - SIRET :
+                    {{ $document->client_siret ?? "89155603000466" }} - rcs Pau - N° TVA Intracom :
+                    {{ $document->client_tva ?? "FR12891556003" }}<br>
+                    Tél. : {{ $document->client_tel ?? "05 59 60 21 51" }} Mail :
+                    {{ $document->client_email ?? "contact@myhouse64.fr" }}
+                </div>
+                <div class="page-no">1/2</div>
+            </div>
 
-<h3>Signature</h3>
-<p><b>Signature, date, cachet commercial & mention « Bon pour accord » :</b></p>
+        </div>
+    </div>
+    <!-- ===================== PAGE 2 ===================== -->
+    <div class="page">
+        <div class="content">
+            <div class="header">
+                <table class="header-top">
+                    <tr>
+                        <td class="logo-wrap">
+                            <img src="{{ public_path('assets/img/house/Devis_files/Image_001.jpg') }}" alt="MY HOUSE">
+                        </td>
+                        <td></td>
+                    </tr>
+                </table>
 
-<div class="signature-box">
-Nom, prénom et fonction du signataire :
-</div>
+                <table class="devis-bar">
+                    <tr>
+                        <td>FACTURE {{ $document->reference_facture }}</td>
+                    </tr>
+                </table>
+
+                <!-- la bande verte avec intitulés colonnes (comme capture page 2) -->
+                <table class="strip">
+                    <tr>
+                        <td class="s-detail">Détail</td>
+                        <td class="s-qte">Quantité</td>
+                        <td class="s-pu">P.U HT</td>
+                        <td class="s-total">Total HT</td>
+                        <td class="s-tva">TVA</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- grand espace blanc + contenu en bas -->
+            <div class="p2-content">
+
+                <div class="section-h">Conditions de paiement</div>
+                <div class="para">
+                    « Les travaux ou prestations objet du présent document donneront lieu à une contribution financière
+                    de
+                    EBS ENERGIE (SIREN 533 333 118), versée par EBS ENERGIE dans le cadre de son rôle incitatif sous
+                    forme de prime,
+                    directement ou via son (ses) mandataire(s), sous réserve de l’engagement du fournisseur
+                    exclusivement à
+                    EBS ENERGIE des documents nécessaires à la valorisation des opérations au titre du dispositif des
+                    Certificats
+                    d’Économies d’Énergie et sous réserve de la validation de l’éligibilité du dossier par EBS ENERGIE
+                    puis par
+                    l’autorité administrative compétente.<br><br>
+                    Le montant de cette contribution financière, hors champ d’application de la TVA, est susceptible de
+                    varier en
+                    fonction des travaux effectivement réalisés et du volume des CEE attribués à l’opération et est
+                    estimé à
+                    {{ number_format($document->prime_cee, 2, ',', ' ') }} € »
+                </div>
+
+                <div class="section-h">Gestion des déchets</div>
+                <div class="para">
+                    Gestion, évacuation et traitements des déchets de chantier comprenant la main d’œuvre liée à la
+                    dépose et au tri,
+                    le transport des déchets de chantiers vers un ou plusieurs points de collecte et coûts de
+                    traitement.
+                </div>
+
+                <div class="gray-box">
+                    <table class="sign-total">
+                        <tr>
+                            <td class="sign">
+                                <div class="b">Signature, date, cachet commercial & mention « Bon pour accord » :</div>
+                                <div>Nom, prénom et fonction du signataire</div>
+                            </td>
+
+                            <td class="tot">
+                                <table class="totals">
+                                    <tr>
+                                        <td class="lbl">Total H.T</td>
+                                        <td class="val">{{ number_format($document->montant_ht, 2, ',', ' ') }} €</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="lbl">Total TVA {{ $document->taux_tva ?? '20' }}%</td>
+                                        <td class="val">{{ number_format($document->montant_tva, 2, ',', ' ') }} €</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="lbl">Total TTC</td>
+                                        <td class="val">{{ number_format($document->montant_ttc, 2, ',', ' ') }} €</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="lbl">* Prime CEE</td>
+                                        <td class="val">- {{ number_format($document->prime_cee, 2, ',', ' ') }} €</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="lbl b highlight">Reste à payer</td>
+                                        <td class="val highlight">
+                                            {{ number_format($document->reste_a_charge, 2, ',', ' ') }} €</td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div class="pay-mode">Mode de paiement : Chèques, virement ou espèce</div>
+                </div>
+
+            </div>
+
+            <div class="footer-line">
+                <div class="footer-text">
+                    MY HOUSE au capital de 7 500 € - Code APE 4322B - SIRET :
+                    {{ $document->client_siret ?? "89155603000466" }} - rcs Pau - N° TVA Intracom :
+                    {{ $document->client_tva ?? "FR12891556003" }}<br>
+                    Tél. : {{ $document->client_tel ?? "05 59 60 21 51" }} Mail :
+                    {{ $document->client_email ?? "contact@myhouse64.fr" }}
+                </div>
+                <div class="page-no">2/2</div>
+            </div>
+        </div>
+    </div>
 
 </body>
+
 </html>

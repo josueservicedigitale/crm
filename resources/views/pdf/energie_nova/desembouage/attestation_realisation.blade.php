@@ -1,283 +1,344 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <title>Attestation de réalisation</title>
-    <style>
-        body {
-            font-family: DejaVu Sans, sans-serif;
-            font-size: 10pt;
-            line-height: 1.4;
-            margin: 20px;
-        }
-        h1, h2 {
-            text-align: center;
-            margin: 8px 0;
-        }
-        h1 {
-            color: #6C6;
-            font-size: 16pt;
-        }
-        h2 {
-            color: #00007F;
-            font-size: 12pt;
-        }
-        h3 {
-            color: #036;
-            font-size: 10pt;
-            text-align: left;
-            margin-top: 15px;
-        }
-        p { margin: 4px 0; }
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            margin: 10px 0;
-        }
-        td {
-            border: 1px solid #000;
-            padding: 4px;
-            vertical-align: top;
-        }
-        ul { margin: 0; padding-left: 15pt; }
-        li { margin-bottom: 4pt; }
+  <meta charset="UTF-8" />
+  <title>Attestation de réalisation d'opération CEE</title>
 
-        /* Bandeau logos */
-        .header-logos {
-            width: 100%;
-            display: flex;
-            justify-content: flex-start;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        .header-logos img {
-            height: 50px; /* taille réduite */
-            width: auto;
-        }
-        .header-logos img:last-child {
-            margin-left: auto;
-        }
+  <style>
+    /* ===================== DOMPDF SAFE ===================== */
+    @page { margin: 14mm 14mm; }
 
-        /* Encadré titre */
-        .title-box {
-            border: 1px solid #ccc; /* bordure légère */
-            padding: 10px;
-            margin: 10px auto;
-            display: inline-block;
-        }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        /* Signature */
-        .signature {
-            width: 100px;
-            height: auto;
-            margin-top: 10px;
-        }
+    html, body{
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 10pt;
+      color:#111;
+    }
 
-        /* Saut de page */
-        .page-break {
-            page-break-before: always;
-        }
-    </style>
+    :root{
+      --green:#2ea44f;
+      --blue:#1c2f8a;
+      --border-green:#86c89a;
+      --muted:#666;
+    }
+
+    img{ max-width:100%; height:auto; }
+    table{ width:100%; border-collapse: collapse; table-layout: fixed; }
+
+    /* ===================== PAGE ===================== */
+    .page{
+      position: relative;
+      page-break-after: always;
+      /* IMPORTANT: on réserve de la place pour footer + num page */
+      padding-bottom: 24mm;
+    }
+    .page:last-child{ page-break-after: auto; }
+
+    /* Zone sûre interne */
+    .content{ padding: 6mm 6mm 0 6mm; }
+
+    /* ===================== HEADER ===================== */
+    .hdr{ padding: 0 6mm; margin-top: 2mm; }
+    .hdr-table td{ border:none; vertical-align: top; }
+
+    .logo-left{ width: 60mm; }
+    .logo-right{ width: 45mm; text-align:right; }
+
+    .logo-left img, .logo-right img{ height: 18mm; }
+
+    .top-title-box{
+      margin-top: 4mm;
+      border: 1.5px solid var(--border-green);
+      padding: 5mm 6mm;
+      text-align: center;
+    }
+    .top-title-box .t1{ color: var(--green); font-weight: 900; font-size: 12pt; margin-bottom: 2mm; }
+    .top-title-box .t2{ color: var(--blue);  font-weight: 900; font-size: 10.5pt; margin-bottom: 1mm; }
+    .top-title-box .t3{ color: var(--blue);  font-weight: 900; font-size: 10.5pt; }
+
+    /* ===================== TEXT UTILS ===================== */
+    .brand-green{ color: var(--green); font-weight: 800; }
+    .title-blue{ color: var(--blue); font-weight: 800; }
+    .tiny{ font-size: 7.8pt; }
+    .muted{ color: var(--muted); }
+    .name{ font-weight: 900; }
+
+    /* ===================== PARTY BLOCK ===================== */
+    .party{ margin-top: 5mm; padding: 0 6mm; }
+    .party td{ border:none; vertical-align: top; }
+    .party .col{ width: 50%; }
+
+    .party h4{ font-size: 10pt; margin-bottom: 2mm; font-weight: 900; }
+
+    .party .kv{
+      margin-top: 2mm;
+      font-size: 8.6pt;
+      line-height: 1.35;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+    .party .kv b{
+      color: var(--blue);
+      font-weight: 900;
+      display: inline-block;
+      min-width: 22mm;
+    }
+
+    /* ===================== SECTIONS ===================== */
+    .section{ margin-top: 6mm; padding: 0 6mm; }
+    .h-section{ color: var(--blue); font-weight: 900; font-size: 11pt; margin-bottom: 3mm; }
+    .h-sub{ color: var(--green); font-weight: 900; font-size: 10.3pt; margin-top: 4mm; margin-bottom: 2mm; }
+
+    /* ===================== GREEN TABLE ===================== */
+    .green-table{ border: 1.5px solid var(--border-green); margin-top: 3mm; }
+    .green-table td{
+      border:none;
+      padding: 2.2mm 3mm;
+      vertical-align: top;
+      font-size: 8.8pt;
+      line-height: 1.25;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+    .green-table .k{ width: 40%; color:#333; }
+    .green-table .v{ width: 60%; color:#111; }
+
+    /* ===================== BULLETS ===================== */
+    ul.bul{ margin-left: 7mm; margin-top: 1.5mm; margin-bottom: 2mm; }
+    ul.bul li{ margin: 1.2mm 0; font-size: 8.8pt; line-height: 1.25; }
+
+    /* ===================== CERT PAGE ===================== */
+    .cert{ padding: 0 6mm; margin-top: 5mm; }
+    .cert p{ font-size: 9pt; line-height: 1.35; margin: 2mm 0; }
+
+    .signature{ margin-top: 10mm; text-align: center; font-size: 9pt; }
+    .signature .place{ margin-top: 6mm; font-weight: 700; }
+    .signature .sig-name{ margin-top: 1mm; font-weight: 900; }
+    .signature .sig-role{ margin-top: 1mm; font-size: 8.5pt; }
+
+    .stamp{ margin-top: 10mm; text-align: center; }
+    .stamp img{ height: 24mm; }
+
+    /* ===================== FOOTER (fixed) ===================== */
+    /* IMPORTANT: On le met DANS chaque page (scopé),
+       et on réserve padding-bottom pour éviter chevauchement. */
+    .footer{
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 10mm;
+      text-align: center;
+      font-size: 7.8pt;
+      color:#333;
+      line-height: 1.25;
+      border-top: 1px solid #bbb;
+      padding-top: 3mm;
+      margin: 0 6mm;
+    }
+    .page-no{
+      position: absolute;
+      right: 6mm;
+      bottom: 4mm;
+      font-size: 8pt;
+      color:#333;
+    }
+  </style>
 </head>
+
 <body>
 
-<!-- Logos - Page 1 -->
-<table width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:15px;">
-    <tr>
-        <td width="50%" align="left" style="border:none; padding:0;">
-            <img src="file://{{ public_path('assets/img/nova/attestation_realisation_files/logo1.png') }}" height="50">
-        </td>
-        <td width="50%" align="right" style="border:none; padding:0;">
-            <img src="file://{{ public_path('assets/img/nova/attestation_realisation_files/logo2.png') }}" height="50">
-        </td>
-    </tr>
-</table>
+  <!-- ===================== PAGE 1 (GARANTI: 1ère page) ===================== -->
+  <div class="page">
 
-<!-- Titre principal -->
-<h1>ATTESTATION DE RÉALISATION D'OPÉRATION CEE</h1>
-<h2>Fiche BAR-SE-109</h2>
-<h2>Désembouage de système de chauffage collectif</h2>
+    <div class="hdr">
+      <table class="hdr-table">
+        <tr>
+          <td class="logo-left">
+            <img src="{{ public_path('assets/img/nova/attestation_realisation_files/logo1.png') }}" alt="ENERGIENOVA">
+          </td>
+          <td></td>
+          <td class="logo-right">
+            <img src="{{ public_path('assets/img/nova/attestation_realisation_files/logo2.png') }}" alt="QUALISAV">
+          </td>
+        </tr>
+      </table>
 
-<!-- Société - STATIQUE -->
-<h3>Entreprise</h3>
-<p><b>ENERGIE NOVA</b></p>
-<p>60 Rue François 1er, 75008 PARIS</p>
-<p>SIRET : 933 487 795 00017</p>
-<p>Représenté par M. TAMOYAN Hamlet, Président</p>
-<p>Tél : 0767847049 – Email : direction@energie-nova.com</p>
-<p>RC Décennale ERGO contrat n° 25076156863</p>
-<p>Qualification Qualisav Spécialité Désembouage N° 31376 – ID N° S01810</p>
+      <div class="top-title-box">
+        <div class="t1">ATTESTATION DE RÉALISATION D'OPÉRATION CEE</div>
+        <div class="t2">FICHE BAR-SE-109</div>
+        <div class="t3">DÉSEMBOUAGE DE SYSTÈME DE CHAUFFAGE COLLECTIF</div>
+      </div>
+    </div>
 
-<!-- Bénéficiaire - STATIQUE -->
-<h3>Bénéficiaire</h3>
-<p><b>RABATHERM HECS</b></p>
-<p>21 Rue d'Anjou, 92600 Asnières-sur-Seine</p>
-<p>SIRET : 44261333700033</p>
-<p>Email : contact@rabatherm-hecs.fr – Tél : 01 84 80 90 08</p>
-<p>Représenté par M. Offel De Villaucourt Charles, Gérant</p>
+    <div class="content">
 
-<!-- Informations techniques - DYNAMIQUE -->
-<h3>1. Informations techniques de l'opération</h3>
-<table>
-    <tr>
-        <td>Adresse du bâtiment</td>
-        <td>
-            {{ $document->adresse_travaux ?? '' }}
+      <table class="party">
+        <tr>
+          <td class="col">
+            <h4 class="brand-green">ENERGIE NOVA</h4>
+            <div class="kv tiny">
+              60 Rue FRANCOIS 1 ER<br>
+              75008 PARIS<br>
+              SIRET 933 487 795 00017
+            </div>
 
-        <</td>
-    </tr>
-    <tr>
-        <td>Nom de la residence</td>
-        <td> {{ $document->nom_residence ?? '' }}</td>
-    </tr>
-    <tr>
-        <td>Numero immatriculation</td>
-        <td>{{ $document->numero_immatriculation ?? '' }}</td>
-    </tr>
-    <tr>
-        <td>Parcelles cadastrales</td>
-        <td>
-            @php
-                $parcelles = [];
-                if(!empty($document->parcelle_1)) $parcelles[] = $document->parcelle_1;
-                if(!empty($document->parcelle_2)) $parcelles[] = $document->parcelle_2;
-                if(!empty($document->parcelle_3)) $parcelles[] = $document->parcelle_3;
-                if(!empty($document->parcelle_4)) $parcelles[] = $document->parcelle_4;
-            @endphp
-            
-            @if(count($parcelles) > 0)
-                {{ implode(', ', $parcelles) }}
-            @else
-                Non spécifié
-            @endif
-        </td>
-    </tr>
-    <tr>
-        <td>Nature de l'opération</td>
-        <td>{{ $document->activity ?? 'Désembouage de système de chauffage collectif' }}</td>
-    </tr>
-    <tr>
-        <td>Nombre de logements concernés</td>
-        <td>{{ $document->nombre_logements ?? '' }} logements</td>
-    </tr>
-    <tr><td>Zone hydrolique</td><td>{{ $document->zone_hydrolique ?? 'null' }}</td></tr>
-    <tr>
-        <td>Puissance chaudière</td>
-        <td>
-            {{ $document->puissance_chaudiere ?? 'Chaudière hors condensation' }} kW
-        </td>
-    </tr>
-    <tr>
-        <td>Nombre d'émetteurs désemboués</td>
-        <td>{{ $document->nombre_emetteurs ?? '' }} émetteurs</td>
-    </tr>
-    <tr>
-        <td>Volume d'eau total</td>
-        <td>
-            {{ $document->volume_circuit ?? '' }} L
-            @if(!empty($document->zone_climatique))
-                {{ $document->zone_climatique }}
-            @endif
-        </td>
-    </tr>
-    <tr>
-        <td>Période d'exécution</td>
-        <td>{{ $document->dates_previsionnelles ?? '' }}</td>
-    </tr>
-    <tr>
-        <td>Nombre de bâtiments</td>
-        <td> {{$document->nombre_batiments ?? '' }} bâtiments </td>
-    </tr>
-    <tr><td>Details batiments</td><td>{{ $document->details_batiments ?? '' }}</td></tr>
-    <tr>
-        <td>Nombre de filtres</td>
-        <td>{{ $document->nombre_filtres ?? '' }}</td>
-    </tr>
-</table>
+            <div class="kv tiny" style="margin-top:3mm;">
+              Représenté par <b>M.</b> <span class="name">TAMOYAN Hamlet</span>, en qualité de Président
+              <span class="muted">0767847049</span><br>
+              <span class="muted">direction@energie-nova.com</span>
+            </div>
 
-<!-- Saut de page -->
-<div class="page-break"></div>
+            <div class="kv tiny" style="margin-top:3mm;">
+              RC Décennale ERGO contrat n° 25076156863<br>
+              Qualification Qualisav Spécialité Désembouage N° 31376 - ID N° S01810
+            </div>
+          </td>
 
-<!-- Logos - Page 2 -->
-<table width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:15px;">
-    <tr>
-        <td width="50%" align="left" style="border:none; padding:0;">
-            <img src="file://{{ public_path('assets/img/nova/attestation_realisation_files/logo1.png') }}" height="50">
-        </td>
-        <td width="50%" align="right" style="border:none; padding:0;">
-            <img src="file://{{ public_path('assets/img/nova/attestation_realisation_files/logo2.png') }}" height="50">
-        </td>
-    </tr>
-</table>
+          <td class="col" style="padding-left:10mm;">
+            <h4 class="title-blue">BÉNÉFICIAIRE</h4>
+            <div class="kv tiny">
+              <b class="title-blue" style="min-width:auto; display:block;">
+                {{ $document->beneficiaire_nom ?? 'RABATHERM HECS' }}
+              </b>
+              {{ $document->beneficiaire_adresse ?? '21 RUE D\'ANJOU' }}<br>
+              {{ $document->beneficiaire_cp_ville ?? '92600 ASNIERES-SUR-SEINE' }}
+            </div>
 
-<!-- Étapes - Semi-statique avec données dynamiques -->
-<h3>2. Étapes de l'opération réalisée</h3>
-<ul>
-    <li><b>Préparation et Injection :</b> Diagnostic technique, injection de SENTINEL X800 (1% du volume d'eau), circulation générale.</li>
-    <li><b>Rinçage et Contrôle :</b> Évacuation complète, rinçage intensif (3x volume/réseau), remise en pression et purge d'air.</li>
-    <li><b>Protection et Finalisation :</b> 
-        @if(!empty($document->nombre_filtres))
-            Nettoyage de {{ $document->nombre_filtres }} filtres,
-        @else
-            Nettoyage filtres,
-        @endif
-        injection de SENTINEL X100 (1% du volume d'eau), contrôles finaux et mise en service.</li>
-</ul>
+            <div class="kv tiny" style="margin-top:3mm;">
+              <b>SIRET</b> {{ $document->beneficiaire_siret ?? '44261333700033' }}<br>
+              <b>MAIL</b> {{ $document->beneficiaire_mail ?? 'contact@rabatherm-hecs.fr' }}<br>
+              <b>TEL</b> {{ $document->beneficiaire_tel ?? '01 84 80 90 08' }}<br><br>
+              <b>REPRÉSENTÉ PAR</b> {{ $document->beneficiaire_representant ?? 'M. Offel de Villaucourt Charles' }}<br>
+              <b>FONCTION</b> {{ $document->beneficiaire_fonction ?? 'Gérant' }}
+            </div>
+          </td>
+        </tr>
+      </table>
 
-<!-- Certification - DYNAMIQUE -->
-<h3 style="color:#6C6;">3. Certification</h3>
-<p>Je soussigné, M. TAMOYAN Hamlet, Président de ENERGIE NOVA, atteste que :</p>
-<ul>
-    <li>Les travaux de désembouage ont été réalisés conformément aux techniques professionnelles et aux bonnes pratiques du secteur.</li>
-    <li>L'opération est conforme à la fiche CEE BAR-SE-109, au devis 
-        <strong>
-            @if(!empty($document->reference_devis))
-                {{ $document->reference_devis }} 
-            @endif
-            @if(!empty($document->date_devis))
-                du {{ $document->date_devis }}
-            @endif
-        </strong>, 
-        et aux normes techniques du ministère de la Transition énergétique.
-    </li>
-    <li>Les produits utilisés (SENTINEL X800/X100) sont agréés par le ministère de la Santé.</li>
-    @if(!empty($document->montant_ht) || !empty($document->montant_ttc))
-        <li>Montants financiers : 
-            @if(!empty($document->montant_ht))
-                HT: {{ $document->montant_ht }} €
-            @endif
-            @if(!empty($document->montant_ttc))
-                - TTC: {{ $document->montant_ttc }} €
-            @endif
-        </li>
-    @endif
-    @if(!empty($document->wh_cumac))
-        <li>Wh cumac : {{ $document->wh_cumac }}</li>
-    @endif
-    @if(!empty($document->prime_cee))
-        <li>Prime CEE : {{ $document->prime_cee }} €</li>
-    @endif
-    @if(!empty($document->reste_a_charge))
-        <li>Reste à charge : {{ $document->reste_a_charge }} €</li>
-    @endif
-    @if(!empty($document->somme))
-        <li>Somme totale : {{ $document->somme }} €</li>
-    @endif
-</ul>
+      <div class="section">
+        <div class="h-section">1. INFORMATIONS TECHNIQUES DE L'OPÉRATION</div>
 
-<!-- Signature - DYNAMIQUE -->
-<div style="text-align:right; margin-top:30px;">
-    <p>Fait à Paris, le {{ $document->date_signature ?? date('d/m/Y') }}</p>
-    <p><b>M. TAMOYAN Hamlet</b><br/>Président de ENERGIE NOVA</p>
-    
-    <!-- Signature dynamique -->
-    @if(!empty($document->file_path))
-        <img src="{{ $document->file_path }}" height="100" alt="Signature">
-    @else
-        <!-- Signature par défaut -->
-        <img src="{{ public_path('assets/img/nova/attestation_realisation_files/Image_012.png') }}" height="100">
-    @endif
-</div>
+        <table class="green-table">
+          <tr><td class="k">Adresse du bâtiment</td><td class="v">{{ $document->adresse_batiment ?? '66,70 Rue de Paris, 92100 Boulogne-Billancourt' }}</td></tr>
+          <tr><td class="k">Nature de l’opération</td><td class="v">Désembouage du système de distribution par boucle d’eau d’une installation collective de chauffage</td></tr>
+          <tr><td class="k">Type d’installation de chauffage</td><td class="v">{{ $document->type_installation ?? 'Chaudière hors condensation' }}</td></tr>
+          <tr><td class="k">Puissance nominale de la chaudière</td><td class="v">{{ $document->puissance_chaudiere ?? '820' }} kW</td></tr>
+          <tr><td class="k">Nombre d’émetteurs désemboués</td><td class="v">{{ $document->nombre_emetteurs ?? '639' }}</td></tr>
+          <tr><td class="k">Nature du réseau</td><td class="v">{{ $document->nature_reseau ?? 'Acier' }}</td></tr>
+          <tr><td class="k">Volume d’eau total du circuit</td><td class="v">{{ $document->volume_circuit ?? '7664' }} L</td></tr>
+          <tr><td class="k">Zone climatique</td><td class="v">{{ $document->zone_climatique ?? 'H1' }}</td></tr>
+          <tr><td class="k">Période d’exécution</td><td class="v">{{ $document->periode_execution ?? 'Du 29/09/2025 au 30/09/2025' }}</td></tr>
+          <tr><td class="k">Réactif désembouant utilisé</td><td class="v">{{ $document->produit_desembouant ?? 'SENTINEL X800' }}</td></tr>
+          <tr><td class="k">Réactif inhibiteur utilisé</td><td class="v">{{ $document->produit_inhibiteur ?? 'SENTINEL X100' }}</td></tr>
+          <tr><td class="k">Nombre de bâtiments</td><td class="v">{{ $document->nombre_batiments ?? '2' }}</td></tr>
+          <tr><td class="k">Bâtiments</td><td class="v">{{ $document->details_batiments ?? 'Bat A (99 Logs), Bat B (99 Logs)' }}</td></tr>
+        </table>
+      </div>
+
+    </div>
+
+    <div class="footer">
+      ENERGIE NOVA - SASU au capital de 5 000 € - 60 Rue FRANCOIS 1 ER 75008 PARIS<br>
+      SIRET : 933 487 795 00017 - APE 7112B
+    </div>
+    <div class="page-no">Page 1/2</div>
+
+  </div><!-- ✅ FIN PAGE 1 -->
+
+  <!-- ===================== PAGE 2 (GARANTI: 2ème page) ===================== -->
+  <div class="page">
+
+    <div class="hdr">
+      <table class="hdr-table">
+        <tr>
+          <td class="logo-left">
+            <img src="{{ public_path('assets/img/nova/attestation_realisation_files/logo1.png') }}" alt="ENERGIENOVA">
+          </td>
+          <td></td>
+          <td class="logo-right">
+            <img src="{{ public_path('assets/img/nova/attestation_realisation_files/logo2.png') }}" alt="QUALISAV">
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="content">
+
+      <div class="section" style="margin-top:6mm;">
+        <div class="h-section">2. ETAPES DE L’OPÉRATION RÉALISÉE</div>
+        <div class="tiny muted" style="margin-bottom:3mm;">
+          (Conformément à la procédure standard BAR-SE-109 et au descriptif facture)
+        </div>
+
+        <div class="h-sub">1. PRÉPARATION ET INJECTION</div>
+        <ul class="bul">
+          <li>Diagnostic technique initial (pression, étanchéité, températures)</li>
+          <li>Injection de {{ $document->produit_desembouant ?? 'SENTINEL X800' }} (dosage : 1% du volume d’eau)</li>
+          <li>Circulation générale (4h min. à 50-60°C) et par réseau (2h/sens)</li>
+        </ul>
+
+        <div class="h-sub">2. RINÇAGE ET CONTRÔLE</div>
+        <ul class="bul">
+          <li>Évacuation complète du désembouant et rinçage intensif (3x volume/réseau)</li>
+          <li>Remise en pression et purge d’air</li>
+        </ul>
+      </div>
+
+      <div class="section" style="margin-top:0;">
+        <div class="h-sub" style="margin-top:0;">3. PROTECTION ET FINALISATION</div>
+        <ul class="bul">
+          <li>Vérification/nettoyage des filtres existants</li>
+          <li>Injection de {{ $document->produit_inhibiteur ?? 'SENTINEL X100' }} (dosage : 1% du volume d’eau)</li>
+          <li>Contrôles finaux et mise en service</li>
+        </ul>
+      </div>
+
+      <div class="section" style="margin-top:7mm;">
+        <div class="h-sub" style="font-size:11pt;">3. CERTIFICATION</div>
+
+        <div class="cert">
+          <p>
+            Je soussigné, <span class="name">M. TAMOYAN Hamlet</span> président de
+            <span class="brand-green">ENERGIE NOVA</span>, atteste que :
+          </p>
+
+          <ul class="bul">
+            <li>Les travaux de désembouage ont été réalisés conformément aux techniques professionnelles et aux bonnes pratiques du secteur.</li>
+            <li>L’opération est conforme :
+              <ul class="bul" style="margin-top:2mm;">
+                <li>À la fiche CEE BAR-SE-109</li>
+                <li>Au devis référence {{ $document->reference_devis ?? 'ENR-2025-29-D868' }}</li>
+                <li>Aux normes techniques du ministère de la Transition énergétique.</li>
+              </ul>
+            </li>
+            <li>
+              Les produits utilisés ({{ $document->produit_desembouant ?? 'SENTINEL X800' }}/{{ $document->produit_inhibiteur ?? 'SENTINEL X100' }})
+              sont agréés par le ministère de la Santé.
+            </li>
+          </ul>
+
+          <div class="signature">
+            <div class="place">Fait à Paris, le {{ $document->date_certification ?? '01/10/2025' }}</div>
+            <div class="sig-name">M. TAMOYAN Hamlet</div>
+            <div class="sig-role">Président de <span class="brand-green">ENERGIE NOVA</span></div>
+
+            <div class="stamp">
+              <img src="{{ public_path('assets/img/nova/attestation_realisation_files/Image_012.png') }}" alt="Cachet ENERGIENOVA">
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="footer">
+      ENERGIE NOVA - SASU au capital de 5 000 € - 60 Rue FRANCOIS 1 ER 75008 PARIS<br>
+      SIRET : 933 487 795 00017 - APE 7112B
+    </div>
+    <div class="page-no">Page 2/2</div>
+
+  </div><!-- ✅ FIN PAGE 2 -->
 
 </body>
 </html>

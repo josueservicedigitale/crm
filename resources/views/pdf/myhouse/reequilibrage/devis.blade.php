@@ -110,16 +110,25 @@
         }
 
         .logo-wrap {
-            width: 55%;
+            width: 100mm;
+            height: 22mm;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
         }
 
         .logo-wrap img {
-            height: 16mm;
+            max-width: 100%;
+            max-height: 100%;
             width: auto;
+            height: auto;
+            display: block;
         }
 
         .devis-bar {
             margin-top: 2mm;
+            background-color: #80A150;
             width: 100%;
             border-collapse: collapse;
             table-layout: fixed;
@@ -129,7 +138,6 @@
             border: none;
             padding: 2mm 3mm;
             background: var(--green);
-            background-color: #80A150
             color: #fff;
             font-weight: bold;
             text-transform: uppercase;
@@ -321,7 +329,7 @@
        PAGE 2 CONTENT (bas)
     ========================== */
         .p2-content {
-            margin-top: 95mm;
+            margin-top: 80mm;
             /* grand blanc comme capture */
         }
 
@@ -402,9 +410,9 @@
         /* =========================
        FOOTER (ligne + texte + page)
     ========================== */
-    
+
         .footer-line {
-           position: fixed;
+            position: fixed;
             bottom: 10mm;
             left: 0;
             right: 0;
@@ -481,7 +489,8 @@
 
                     <td class="right">
                         <div class="b" style="text-transform:uppercase;">
-                            {{ $document->fournisseur_nom ?? 'BBR MAINTENANCE' }}</div>
+                            {{ $document->fournisseur_nom ?? 'BBR MAINTENANCE' }}
+                        </div>
                         <div class="mt2 muted"><span class="b">Siret :</span> {{ $document->fournisseur_siret ?? '' }}
                         </div>
                         <div class="muted"><span class="b">Adresse :</span> {{ $document->fournisseur_adresse ?? '' }}
@@ -521,7 +530,8 @@
                                 <p>Matériel(s) fourni(s) et mis en place par notre société
                                     {{ $document->client_nom ?? "MY HOUSE" }}, représentée par
                                     {{ $document->client_representant ?? "" }}, SIRET
-                                    {{ $document->client_siret ?? "" }}</p>
+                                    {{ $document->client_siret ?? "" }}
+                                </p>
                             </div>
 
                             <div class="mt3">
@@ -613,7 +623,7 @@
                 <table class="header-top">
                     <tr>
                         <td class="logo-wrap">
-                            <img src="{{ public_path('assets/img/myhouse/logo.png') }}" alt="MY HOUSE">
+                            <img src="{{ public_path('assets/img/house/Devis_files/Image_001.jpg') }}" alt="MY HOUSE">
                         </td>
                         <td></td>
                     </tr>
@@ -697,7 +707,8 @@
                                     <tr>
                                         <td class="lbl b highlight">Reste à payer</td>
                                         <td class="val highlight">
-                                            {{ number_format($document->reste_a_charge, 2, ',', ' ') }} €</td>
+                                            {{ number_format($document->reste_a_charge, 2, ',', ' ') }} €
+                                        </td>
                                     </tr>
                                 </table>
                             </td>

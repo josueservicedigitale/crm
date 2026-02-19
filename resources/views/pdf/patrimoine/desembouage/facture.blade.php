@@ -1,673 +1,971 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr" lang="fr">
+<html lang="fr">
+
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Facture {{ $document->reference_facture ?? '' }}</title>
-    <style type="text/css">
-        * {
-            margin: 0;
-            padding: 0;
-            font-family: DejaVu Sans, Arial, sans-serif;
-        }
-        
-        body {
-            font-size: 9px;
-            padding: 10px;
-        }
-        
-        .page-break {
-            page-break-before: always;
-            padding-top: 20px;
-        }
-        
-        .page-number {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 8px;
-            color: #666;
-        }
-        
-        .titre-facture {
-            background-color: #003366;
-            color: white;
-            padding: 5px 10px;
-            font-weight: bold;
-            font-size: 12px;
-            display: inline-block;
-            margin: 5px 0;
-        }
-        
-        .date-facture {
-            font-size: 10px;
-            margin: 2px 0;
-        }
-        
-        .bloc-parties {
-            background-color: #f5f5f5;
-            padding: 15px;
-            margin: 15px 0;
-            overflow: hidden;
-        }
-        
-        .parties-container {
-            width: 100%;
-            display: table;
-        }
-        
-        .partie-gauche, .partie-droite {
-            display: table-cell;
-            vertical-align: top;
-            width: 48%;
-        }
-        
-        .separateur {
-            display: table-cell;
-            width: 4%;
-            text-align: center;
-        }
-        
-        .titre-section {
-            font-weight: bold;
-            font-size: 9px;
-            margin: 8px 0 3px 0;
-            color: #036;
-        }
-        
-        .texte-normal {
-            font-size: 9px;
-            margin: 2px 0;
-            line-height: 1.1;
-        }
-        
-        .texte-petit {
-            font-size: 8px;
-            margin: 2px 0;
-            line-height: 1.1;
-        }
-        
-        .texte-gras {
-            font-weight: bold;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 10px 0;
-        }
-        
-        th {
-            background-color: #003366;
-            color: white;
-            padding: 8px 5px;
-            text-align: left;
-            font-weight: bold;
-            border: 1px solid #003366;
-            font-size: 10px;
-        }
-        
-        td {
-            padding: 5px;
-            border: 1px solid #ddd;
-            vertical-align: top;
-        }
-        
-        .col-detail {
-            width: 65%;
-        }
-        
-        .col-quantite {
-            width: 8%;
-            text-align: center;
-        }
-        
-        .col-pu {
-            width: 9%;
-            text-align: right;
-        }
-        
-        .col-total {
-            width: 9%;
-            text-align: center;
-        }
-        
-        .col-tva {
-            width: 9%;
-            text-align: center;
-        }
-        
-        .liste-diamant {
-            list-style-type: none;
-            padding-left: 0;
-            margin: 3px 0;
-        }
-        
-        .liste-diamant li {
-            margin: 2px 0;
-            padding-left: 12px;
-            position: relative;
-        }
-        
-        .liste-diamant li:before {
-            content: "•";
-            position: absolute;
-            left: 0;
-            font-size: 8px;
-        }
-        
-        .conditions-paiement {
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            padding: 8px;
-            background-color: #f9f9f9;
-        }
-        
-        .bloc-totaux {
-            width: 100%;
-            background-color: #f5f5f5;
-            border: 2px solid #003366;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        
-        .bloc-totaux td {
-            padding: 10px;
-            border: 1px solid #ccc;
-        }
-        
-        .signature-box {
-            border: 1px dashed #000;
-            height: 120px;
-            margin-top: 20px;
-            width: 100%;
-        }
-        
-        .align-left {
-            text-align: left;
-        }
-        
-        .align-center {
-            text-align: center;
-        }
-        
-        .align-right {
-            text-align: right;
-        }
-        
-        .espacement {
-            height: 10px;
-        }
-        
-        .image-logo {
-            max-width: 200px;
-            max-height: 40px;
-            margin: 5px 0;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Facture - PATRIMOINE</title>
+
+  <style>
+    /* ===========================
+       DOMPDF SAFE – MARGES GARANTIES
+       =========================== */
+
+    @page {
+      size: A4;
+      margin: 20mm 15mm;
+    }
+
+    :root {
+      --blue: #0b3b5b;
+      --blue2: #0a3550;
+      --green: #62b14f;
+      --border: #0b3b5b;
+      --tbl: #003366;
+      --gray: #f0f0f0;
+      --frame: 180mm;
+      /* 210 - 15 - 15 = 180mm : largeur imprimable */
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 9pt;
+      color: #000;
+      background: #fff;
+    }
+
+    /* Pages */
+    .page {
+      page-break-after: always;
+    }
+
+    .page:last-child {
+      page-break-after: auto;
+    }
+
+    /* ✅ CADRE IMPRIMABLE RÉEL : empêche tout débordement */
+    .page-content {
+      width: var(--frame);
+      margin: 5mm auto;
+      padding: 5mm;
+      /* le cadre fait déjà les marges */
+    }
+
+    /* Safety overflow */
+    img,
+    table,
+    div {
+      max-width: 100%;
+    }
+
+    img {
+      height: auto;
+    }
+
+    /* Wrap agressif */
+    td,
+    th,
+    p,
+    li,
+    div {
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    /* Typo */
+    .strong {
+      font-weight: 800;
+    }
+
+    .line {
+      margin: 1px 0;
+    }
+
+    .sectionTitle {
+      margin: 3mm 0 2mm 0;
+      font-weight: 800;
+      color: var(--blue);
+      text-transform: uppercase;
+      font-size: 9pt;
+    }
+
+    .subTitle {
+      margin: 2.5mm 0 1.5mm 0;
+      font-weight: 800;
+      color: var(--blue);
+      font-size: 8.7pt;
+      text-transform: uppercase;
+    }
+
+    .para {
+      margin: 1.2mm 0;
+      line-height: 1.25;
+    }
+
+    /* Tables dompdf safe */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      /* IMPORTANT */
+      margin: 4mm 0;
+    }
+
+    /* Header top (table) */
+    .top {
+      margin: 0 0 4mm 0;
+    }
+
+    .top-table {
+      margin: 0;
+    }
+
+    .top-table td {
+      border: none;
+      padding: 0;
+      vertical-align: top;
+    }
+
+    .brand-inner {
+      margin: 0;
+    }
+
+    .brand-inner td {
+      border: none;
+      padding: 0;
+    }
+
+   .brand-logo {
+    width: 100mm;
+    height: 22mm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+   
+}
+
+.brand-logo img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    display: block;
+}
+
+    .brand-name {
+      color: var(--green);
+      font-weight: 800;
+      font-size: 20pt;
+      letter-spacing: .5px;
+      padding-top: 4mm;
+    }
+
+    .refbox {
+      width: 85mm;
+      border: 2px solid var(--border);
+      border-collapse: collapse;
+      display: inline-table;
+      font-size: 10pt;
+      margin-top: 1mm;
+      background-color: #58a7f7;
+    }
+
+    .refbox td {
+      border: 2px solid var(--border);
+      padding: 6px 7px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .refbox .k {
+      width: 40%;
+      background: var(--blue);
+      color: #fff;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    /* 2 colonnes infos */
+    .cols {
+      margin: 0 0 3mm 0;
+    }
+
+    .cols td {
+      border: none;
+      padding: 0;
+      vertical-align: top;
+      font-size: 8.7pt;
+      line-height: 1.3;
+    }
+
+    .cols td.left {
+      padding-right: 10mm;
+    }
+
+    .cols h4 {
+      margin: 0 0 2mm 0;
+      font-size: 9pt;
+      color: var(--blue);
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+
+    /* Bloc encadré */
+    .box {
+      border: 2px solid var(--border);
+      padding: 6px 7px;
+      margin-top: 4mm;
+      font-size: 8.5pt;
+      line-height: 1.3;
+    }
+
+    .box .title {
+      font-weight: 800;
+      color: var(--blue);
+      text-transform: uppercase;
+      margin-bottom: 2mm;
+    }
+
+    .object {
+      margin-top: 3mm;
+      font-size: 8.7pt;
+      line-height: 1.3;
+    }
+
+    .object .label {
+      font-weight: 800;
+      color: var(--blue);
+    }
+
+    /* Table principale bleue */
+    table.main {
+      margin-top: 5mm;
+      font-size: 8.6pt;
+    }
+
+    table.main th,
+    table.main td {
+      border: 2px solid var(--border);
+      padding: 6px 7px;
+      vertical-align: top;
+    }
+
+    table.main thead th {
+      background: var(--blue);
+      background-color: #58a7f7;
+      color: #fff;
+      font-weight: 800;
+      text-transform: uppercase;
+      font-size: 8.8pt;
+      letter-spacing: .2px;
+    }
+
+    .w-detail {
+      width: 60%;
+    }
+
+    .w-qte {
+      width: 10%;
+      text-align: center;
+    }
+
+    .w-pu {
+      width: 12%;
+      text-align: center;
+    }
+
+    .w-total {
+      width: 12%;
+      text-align: center;
+    }
+
+    .w-tva {
+      width: 6%;
+      text-align: center;
+    }
+
+    /* Anti pages fantômes: éviter les colonnes vides énormes */
+    table.grid4 thead th:nth-child(1) {
+      width: 58%;
+    }
+
+    table.grid4 thead th:nth-child(2) {
+      width: 10%;
+      text-align: center;
+    }
+
+    table.grid4 thead th:nth-child(3) {
+      width: 10%;
+      text-align: center;
+    }
+
+    table.grid4 thead th:nth-child(4) {
+      width: 12%;
+      text-align: center;
+    }
+
+    table.grid4 thead th:nth-child(5) {
+      width: 10%;
+      text-align: center;
+    }
+
+    .avoid-break {
+      page-break-inside: avoid;
+    }
+
+    /* Footer */
+    .footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 7pt;
+      color: #2b2b2b;
+    }
+
+    .pageno {
+      margin-top: 2mm;
+      text-align: right;
+      font-size: 8pt;
+      color: #1b1b1b;
+    }
+
+    /* Page 4 bottom 2 colonnes */
+    .bottomRow {
+      margin-top: 6mm;
+    }
+
+    .bottomRow td {
+      border: none;
+      vertical-align: top;
+      padding: 0;
+    }
+
+    .paybox {
+      border: 2px solid var(--border);
+      padding: 8px;
+      font-size: 8.5pt;
+      line-height: 1.3;
+    }
+
+    .paybox .title {
+      font-weight: 800;
+      color: var(--blue);
+      text-transform: uppercase;
+      margin-bottom: 2mm;
+    }
+
+    .totals {
+      padding-left: 8mm;
+      font-size: 9pt;
+      line-height: 1.55;
+    }
+
+    .totals-table {
+      margin: 0;
+    }
+
+    .totals-table td {
+      border: none;
+      padding: 1mm 0;
+      font-weight: 800;
+    }
+
+    .totals-table .lbl {
+      color: var(--blue);
+      text-transform: uppercase;
+    }
+
+    .totals-table .val {
+      text-align: right;
+      width: 45mm;
+      color: #000;
+    }
+
+    .totals-table .big {
+      font-size: 10.5pt;
+      padding-top: 2mm;
+    }
+
+    .totals-table .rest {
+      font-size: 10.5pt;
+      padding-top: 3mm;
+    }
+  </style>
 </head>
+
 <body>
 
-<!-- Page 1 -->
-<div>
-    <!-- Logo -->
-    <div class="align-left">
-        <img class="image-logo" src="{{ public_path('assets/img/nova/Facture_files/Image_002.png') }}" alt="Logo">
-    </div>
+  <!-- ===================== PAGE 1 ===================== -->
+  <div class="page">
+    <div class="page-content">
 
-    <!-- Titre Facture -->
-    <div class="align-left">
-        <span class="titre-facture">FACTURE {{ $document->reference_facture ?? '' }}</span>
-    </div>
-    <p class="date-facture">Date : {{ $document->date_facture ?? date('d/m/Y') }}</p>
+      <div class="top">
+        <table class="top-table">
+          <tr>
+            <td class="brand">
+              <table class="brand-inner">
+                <tr>
+                  <td class="brand-logo">
+                    <img src="{{ public_path('assets/img/patrimoine/patr.png') }}" alt="Logo">
+                  </td>
+                </tr>
+              </table>
+            </td>
 
-    <!-- Bloc gris pour bénéficiaire et société -->
-    <div class="bloc-parties">
-        <div class="parties-container">
-            <div class="partie-gauche">
-                <p class="titre-section">BENEFICIAIRE</p>
-                <p class="texte-gras">{{ $document->society ?? 'RABATHERM HECS' }}</p>
-                <p class="texte-normal">21 RUE D'ANJOU</p>
-                <p class="texte-normal">92600 ASNIERES-SUR-SEINE</p>
-                <p class="texte-normal">SIRET {{ $document->numero_immatriculation ?? '44261333700033' }}</p>
-                <p class="texte-normal">contact@rabatherm-hecs.fr 01 84 80 90 08</p>
-                <p class="texte-normal">Représenté par M. Offel De Villaucourt Charles</p>
-                <p class="texte-normal">Gérant</p>
+            <td class="refbox-wrap" style="text-align:right;">
+              <table class="refbox">
+                <tr>
+                  <td class="k">REF FACTURE</td>
+                  <td>{{ $document->reference_facture }}</td>
+                </tr>
+                <tr>
+                  <td class="k">DATE FACTURE</td>
+                  <td>{{ \Carbon\Carbon::parse($document->date_facture)->format('d/m/Y') }}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <table class="cols">
+        <tr>
+          <td class="left">
+            <h4 style="color: #38bdf8;">PATRIMOINE</h4>
+            <div class="line">60 Rue FRANCOIS 1 ER</div>
+            <div class="line">75008 PARIS</div>
+            <div class="line">SIRET : : 53192087400017</div>
+            <br>
+            <div class="line"><span class="strong">Représenté par</span> M. TAMOYAN Hamlet, en qualité de Président
             </div>
-            
-            <div class="separateur">
-                <!-- Espace vide sans bordure -->
-            </div>
-            
-            <div class="partie-droite">
-                <p class="titre-section">PATRIMOINE</p>
-                <p class="texte-gras" style="color: #0A0;">PATRIMOINE</p>
-                <p class="texte-normal">60 Rue FRANCOIS 1 ER</p>
-                <p class="texte-normal">75008 PARIS</p>
-                <p class="texte-normal">SIRET 933 487 795 00017</p>
-                <p class="texte-normal">Représenté par M. TAMOYAN Hamlet, en qualité de Président 0767847049</p>
-                <p class="texte-normal">direction@patrimoine.fr</p>
-                <p class="texte-normal">RC Décennale ERGO contrat n° 25076156863</p>
-                <p class="texte-normal">Qualification Qualisav Spécialité Désembouage N° 31376 - ID N° S01810</p>
-            </div>
+            <div class="line">07 67 87 04 09 - direction@patrimoine.fr</div>
+            <br>
+            <div class="line">RC Décennale ERGO contrat n° 2507651683 Qualification</div>
+            <div class="line">Qualisav Spécialité Désembouage N° 31376 - ID N° S01810</div>
+          </td>
+
+          <td>
+            <h4 style="color: #38bdf8;">BÉNÉFICIAIRE</h4>
+            <div class="line strong" style="color: #38bdf8;">PATRIMOINE</div>
+            <div class="line">{{ $document->activity }}</div>
+            <div class="line">15 RUE GERMINAL,
+              93250 VILLEMOMBLE</div>
+            <br>
+            <div class="line"><span class="strong" style="color: #38bdf8;">SIRET</span> : : 53192087400017</div>
+            <div class="line"><span class="strong" style="color: #38bdf8;">MAIL</span> {{ $document->email_beneficiaire ?? '' }}</div>
+            <div class="line"><span class="strong" style="color: #38bdf8;">TEL</span> {{ $document->tel_beneficiaire ?? '' }}</div>
+            <br>
+            <div class="line"><span class="strong" style="color: #38bdf8;">REPRÉSENTÉ PAR</span> {{ $document->representant ?? '' }}</div>
+            <div class="line"><span class="strong" style="color: #38bdf8;">FONCTION</span> {{ $document->fonction ?? '' }}</div>
+          </td>
+        </tr>
+      </table>
+
+      <div class="object">
+        <span class="label" style="color: #38bdf8;">OBJET :</span>
+        Opération entrant dans le dispositif de prime C.E.E. (Certificat d’Economie d’Energie),
+        conforme aux recommandations de la fiche technique N° BAR-SE-109 de C.E.E. décrites
+        par le ministère de la Transition énergétique.
+      </div>
+
+      <div class="box">
+        <div class="title" style="color: #38bdf8;">DESCRIPTION</div>
+        Désembouage de l’ensemble du système de distribution par boucle d’eau d’une installation de chauffage collectif
+        alimentée par une chaudière utilisant un combustible fossile ou alimenté par un réseau de chaleur.
+        <br><br>
+
+        <div class="para"><span class="strong" style="color: #38bdf8;">SITE DES TRAVAUX :</span> {{ $document->adresse_travaux }}</div>
+        <div class="para"><span class="strong" style="color: #38bdf8;">NUMÉRO IMMATRICULATION DE COPROPRIÉTÉ :</span>
+          {{ $document->numero_immatriculation }} - {{ $document->nom_residence }}</div>
+        <div class="para"><span class="strong" style="color: #38bdf8;">ZONE CLIMATIQUE :</span> {{ $document->zone_climatique }}</div>
+
+        <div class="para"><span class="strong" style="color: #38bdf8;">PARCELLE CADASTRALE :</span></div>
+        <div class="para">1&nbsp;&nbsp;Parcelle {{ $document->parcelle_1 }} Feuille
+          {{ $document->parcelle_2 }}&nbsp;&nbsp;&nbsp;&nbsp;2</div>
+        <div class="para">
+          3&nbsp;&nbsp;{{ $document->parcelle_3 }}&nbsp;&nbsp;&nbsp;&nbsp;4&nbsp;&nbsp;{{ $document->parcelle_4 }}</div>
+
+        <br>
+        <div class="para"><span class="strong" style="color: #38bdf8;">DATE PRÉVISIONNELLE DES TRAVAUX :</span>
+          {{ $document->dates_previsionnelles }}</div>
+        <div class="para"><span class="strong" style="color: #38bdf8;">CONTACT SUR SITE :</span> {{ $document->contact_site ?? 'Gérant' }}</div>
+        <div class="para"><span class="strong" style="color: #38bdf8;">SECTEUR :</span> Résidentiel</div>
+        <div class="para"><span class="strong" style="color: #38bdf8;">NOMBRE DE BÂTIMENTS :</span> {{ $document->nombre_batiments }} Bâtiments
         </div>
-    </div>
+        <div class="para"><span class="strong" style="color: #38bdf8;">DÉTAILS :</span> {{ $document->details_batiments }}</div>
+      </div>
 
-    <!-- Descriptif -->
-    <p class="titre-section">DESCRIPTIF</p>
-    <p class="texte-normal">Désembouage de l'ensemble du système de distribution par boucle d'eau d'une installation de chauffage collectif alimentée par une chaudière utilisant un combustible fossile ou alimenté par un réseau de chaleur</p>
-    
-    <!-- Site des travaux -->
-    <p class="titre-section">SITE DES TRAVAUX</p>
-    <p class="texte-normal">{{ $document->adresse_travaux ?? '6, 8 All. des Tilleuls, 93110 Rosny-sous-Bois' }}</p>
-    
-    <!-- Informations site -->
-    <p class="titre-section">Numéro immatriculation de copropriété</p>
-    <p class="texte-normal">{{ $document->numero_immatriculation ?? 'AA0588830' }} - RES SONATE</p>
-    
-    <p class="titre-section">Zone climatique</p>
-    <p class="texte-normal">{{ $document->zone_climatique ?? 'H1' }}</p>
-    
-    <p class="titre-section">Parcelle cadastrale</p>
-    <p class="texte-normal">{{ $document->parcelle_1 ?? '1' }} {{ $document->parcelle_2 ?? 'Parcelle 2' }} {{ $document->parcelle_3 ?? '0290 Feuille 000 0T 001' }} {{ $document->parcelle_4 ?? '' }}</p>
-    
-    <p class="titre-section">Date prévisionnelle des travaux</p>
-    <p class="texte-normal">{{ $document->dates_previsionnelles ?? 'Du 07/10/2025 au 08/10/2025' }}</p>
-    
-    <p class="titre-section">Contact sur site</p>
-    <p class="texte-normal">Gérant M. Offel De Villaucourt Charles 01 84 80 90 08 - contact@rabatherm-hecs.fr</p>
-    
-    <p class="titre-section">Secteur</p>
-    <p class="texte-normal">{{ $document->secteur ?? 'Résidentiel' }}</p>
-    
-    <p class="titre-section">Nombre de bâtiments</p>
-    <p class="texte-normal">{{ $document->nombre_batiments ?? '3 Batiments' }}</p>
-    
-    <p class="titre-section">Détails</p>
-    <p class="texte-normal">{{ $document->details_batiments ?? 'Bat A ( 47 Logs ), Bat B ( 46 Logs ), Bat C ( 46 Logs )' }}</p>
-
-    <div class="espacement"></div>
-
-    <!-- Objet -->
-    <p class="titre-section">OBJET</p>
-    <p class="texte-normal">Opération entrant dans le dispositif de prime C.E.E. (Certificat d'Economie d'Energie), conforme aux recommandations de la fiche technique N°BAR-SE-109 de C.E.E décrites par le ministère de la Transition énergétique.</p>
-
-    <!-- Premier tableau - Premier détail -->
-    <table>
+      <table class="main">
         <thead>
-            <tr>
-                <th class="col-detail">DETAIL</th>
-                <th class="col-quantite">QUANTITE</th>
-                <th class="col-pu">PU HT</th>
-                <th class="col-total">TOTAL HT</th>
-                <th class="col-tva">TVA</th>
-            </tr>
+          <tr>
+            <th class="w-detail">DETAIL</th>
+            <th class="w-qte">QUANTITE</th>
+            <th class="w-pu">PU HT</th>
+            <th class="w-total">TOTAL HT</th>
+            <th class="w-tva">TVA</th>
+          </tr>
         </thead>
         <tbody>
-            <tr>
-                <td class="col-detail">
-                    <p class="texte-gras">Désembouage de l'ensemble du système de distribution par boucle d'eau d'une installation de chauffage collectif alimentée par une chaudière utilisant un combustible fossile.</p>
-                    <p class="texte-petit">Opération entrant dans le dispositif de prime C.E.E. (Certificat d'Economie d'Energie), conforme aux recommandations de la fiche technique N°BAR-SE-109 de C.E.E décrites par le ministère de la Transition énergétique.</p>
-                </td>
-                <td class="col-quantite align-center">
-                    <p class="texte-normal">1</p>
-                </td>
-                <td class="col-pu align-right">
-                    <p class="texte-normal">{{ $document->prime_cee ?? '12 259,80' }} €</p>
-                </td>
-                <td class="col-total align-center">
-                    <p class="texte-normal">{{ $document->prime_cee ?? '12 259,80' }} €</p>
-                </td>
-                <td class="col-tva align-center">
-                    <p class="texte-normal">20%</p>
-                </td>
-            </tr>
+          <tr>
+            <td>
+              <div class="strong" style="color:var(--blue);">
+                Désembouage de l’ensemble du système de distribution par boucle d’eau d’une installation de chauffage
+                collectif
+                alimentée par une chaudière utilisant un combustible fossile
+              </div>
+              <br>
+              Opération entrant dans le dispositif de prime C.E.E. (Certificat d’Economie d’Energie),
+              conforme aux recommandations de la fiche technique N° BAR-SE-109 de C.E.E. décrites
+              par le ministère de la Transition énergétique.
+            </td>
+            <td class="w-qte">1</td>
+            <td class="w-pu">{{ number_format($document->montant_ht, 2, ',', ' ') }}</td>
+            <td class="w-total">{{ number_format($document->montant_ht, 2, ',', ' ') }}</td>
+            <td class="w-tva">20 %</td>
+          </tr>
         </tbody>
-    </table>
+      </table>
+      <div class="footer">
+        PATRIMOINE ENERGIE au capital de 6 000 € - Code APE 4322B SIRET : 52301525300041 - rcs Pau- N° TVA Intracom :
+        FR58523015253<br>
+        7 B RUE JEANNE D'ARC, 76000 ROUEN. Tél. : 02 78 77 66 14 Mail : patrimoinenergie76@gmail.com
+      </div>
+      <div class="pageno">p. 1/4</div>
 
-    <div class="page-number">Page 1</div>
-</div>
-
-<!-- Page 2 -->
-<div class="page-break">
-    <!-- Logo -->
-    <div class="align-left">
-        <img class="image-logo" src="{{ public_path('assets/img/nova/Facture_files/Image_002.png') }}" alt="Logo">
     </div>
+  </div>
 
-    <!-- Titre Facture -->
-    <div class="align-left">
-        <span class="titre-facture">FACTURE {{ $document->reference_facture ?? '' }}</span>
-    </div>
-    <p class="date-facture">Date : {{ $document->date_facture ?? date('d/m/Y') }}</p>
+  <!-- ===================== PAGE 2 ===================== -->
+  <div class="page">
+    <div class="page-content">
 
-    <!-- Deuxième tableau - Caractéristiques -->
-    <table>
+      <div class="top">
+        <table class="top-table">
+          <tr>
+            <td class="brand">
+              <table class="brand-inner">
+                <tr>
+                  <td class="brand-logo">
+                    <img src="{{ public_path('assets/img/patrimoine/patr.png') }}" alt="Logo">
+                  </td>
+                </tr>
+              </table>
+            </td>
+
+            <td class="refbox-wrap" style="text-align:right;">
+              <table class="refbox">
+                <tr>
+                  <td class="k">REF FACTURE</td>
+                  <td>{{ $document->reference_facture }}</td>
+                </tr>
+                <tr>
+                  <td class="k">DATE FACTURE</td>
+                  <td>{{ \Carbon\Carbon::parse($document->date_facture)->format('d/m/Y') }}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <table class="main grid4">
         <thead>
-            <tr>
-                <th class="col-detail">DETAIL</th>
-                <th class="col-quantite">QUANTITE</th>
-                <th class="col-pu">PU HT</th>
-                <th class="col-total">TOTAL HT</th>
-                <th class="col-tva">TVA</th>
-            </tr>
+          <tr>
+            <th>DETAIL</th>
+            <th>QUANTITE</th>
+            <th>PU HT</th>
+            <th>TOTAL HT</th>
+            <th>TVA</th>
+          </tr>
         </thead>
         <tbody>
-            <tr>
-                <td class="col-detail">
-                    <p class="titre-section">CARACTÉRISTIQUES DE L'INSTALLATION</p>
-                    <p class="texte-petit">INSTALLATION COLLECTIVE DE CHAUFFAGE ALIMENTÉE PAR UNE CHAUDIÈRE HORS CONDENSATION</p>
-                    
-                    <ul class="liste-diamant">
-                        <li class="texte-petit">Puissance nominale de la chaudière : {{ $document->puissance_chaudiere ?? '670' }} kW</li>
-                        <li class="texte-petit">Nombre de logements concernés : {{ $document->nombre_logements ?? '139' }}</li>
-                        <li class="texte-petit">Nombre d'émetteurs désemboués : {{ $document->nombre_emetteurs ?? '487' }}</li>
-                        <li class="texte-petit">Nature du réseau : Acier</li>
-                        <li class="texte-petit">Volume total du circuit d'eau : {{ $document->volume_circuit ?? '5 396' }} L</li>
-                        <li class="texte-petit">Zone climatique : {{ $document->zone_climatique ?? 'H1' }}</li>
-                        <li class="texte-petit">Filtres : {{ $document->nombre_filtres ?? '14' }}</li>
-                        <li class="texte-petit"><strong>KWH CUMAC : {{ $document->wh_cumac ?? '1 751 400' }}</strong></li>
-                        <li class="texte-petit"><strong>PRIME CEE : {{ $document->prime_cee ?? '12 259,80' }} €</strong></li>
-                        <li class="texte-petit">NET DE TAXE</li>
-                    </ul>
-                    
-                    <div class="espacement"></div>
-                    
-                    <p class="titre-section">DÉTAIL DE LA PRESTATION</p>
-                    <p class="texte-petit">LE DÉSEMBOUAGE COMPORTE LES ÉTAPES SUCCESSIVES SUIVANTES</p>
-                    
-                    <p class="texte-gras">A. INJECTION D'UN RÉACTIF DÉSEMBOUANT ET CIRCULATION</p>
-                    <p class="texte-petit">PREPARATION ET DIAGNOSTIC INITIAL</p>
-                    
-                    <ul class="liste-diamant">
-                        <li class="texte-petit">Vérification de l'état général de l'installation de chauffage</li>
-                        <li class="texte-petit">Contrôle de la pression et de l'étanchéité du circuit</li>
-                        <li class="texte-petit">Test de fonctionnement des vannes et organes de régulation</li>
-                        <li class="texte-petit">Relevé des températures et pressions de fonctionnement</li>
-                        <li class="texte-petit">Injection du produit désembouant SENTINEL X800</li>
-                        <li class="texte-petit">Dosage : 1% du volume d'eau de l'installation</li>
-                        <li class="texte-petit">Méthode d'injection : Via un point d'injection dédié ou par le vase d'expansion</li>
-                        <li class="texte-petit">Dilution : Mélange homogène du produit dans l'ensemble du circuit</li>
-                    </ul>
-                    
-                    <p class="texte-petit">CIRCULATION AVEC POMPE DE DESEMBOUAGE</p>
-                    
-                    <ul class="liste-diamant">
-                        <li class="texte-petit">Équipement utilisé : Pompe de désembouage haute performance (débit minimum 30 L/min)</li>
-                        <li class="texte-petit">Circulation générale :</li>
-                        <ul class="liste-diamant" style="padding-left: 15px;">
-                            <li class="texte-petit">Mise en circulation sur l'ensemble du réseau pendant 4 heures minimum</li>
-                            <li class="texte-petit">Température de circulation : 50-60°C pour optimiser l'action du produit</li>
-                        </ul>
-                        <li class="texte-petit">Circulation réseau par réseau :</li>
-                        <ul class="liste-diamant" style="padding-left: 15px;">
-                            <li class="texte-petit">Isolation et traitement de chaque réseau de distribution individuellement</li>
-                            <li class="texte-petit">Circulation dans les deux sens pour décoller tous les dépôts</li>
-                            <li class="texte-petit">Durée par réseau : 2 heures minimum dans chaque sens</li>
-                        </ul>
-                        <li class="texte-petit">Surveillance : Contrôle visuel de la couleur de l'eau (passage du trouble au clair)</li>
-                    </ul>
-                </td>
-                <td class="col-quantite align-center">
-                    <p class="texte-normal"></p>
-                </td>
-                <td class="col-pu align-right">
-                    <p class="texte-normal"></p>
-                </td>
-                <td class="col-total align-center">
-                    <p class="texte-normal"></p>
-                </td>
-                <td class="col-tva align-center">
-                    <p class="texte-normal"></p>
-                </td>
-            </tr>
+          <tr>
+            <td>
+              <div class="sectionTitle" style="color: #38bdf8;">CARACTÉRISTIQUES DE L’INSTALLATION</div>
+              <div class="strong" style="color: #38bdf8;" margin-bottom:4px;">
+                INSTALLATION COLLECTIVE DE CHAUFFAGE ALIMENTÉE PAR UNE CHAUDIÈRE HORS CONDENSATION
+              </div>
+              <ul>
+                <li>Puissance nominale de la chaudière : {{ $document->puissance_chaudiere }} kW</li>
+                <li>Nombre de logements concernés : {{ $document->nombre_logements }}</li>
+                <li>Nombre d’émetteurs désemboués : {{ $document->nombre_emetteurs }}</li>
+                <li>Nature du réseau : Acier</li>
+                <li>Volume total du circuit d’eau : {{ $document->volume_circuit }} L</li>
+                <li>Zone climatique : {{ $document->zone_climatique }}</li>
+                <li>Filtres : {{ $document->nombre_filtres }}</li>
+              </ul>
+
+              <div class="para" style="margin-top:10px;">
+                <span class="strong" style="color: #38bdf8;"">KWH CUMAC :</span> {{ $document->wh_cumac }}
+              </div>
+              <div class="para">
+                <span class="strong" style="color: #38bdf8;">PRIME CEE :</span>
+                {{ number_format($document->prime_cee, 2, ',', ' ') }} €
+              </div>
+              <div class="para">
+                <span class="strong" style="color: #38bdf8;">NET DE TAXE</span>
+              </div>
+
+              <div class="sectionTitle" style="margin-top:14px;">DÉTAIL DE LA PRESTATION</div>
+              <div class="strong" style="color: #38bdf8;">LE DÉSEMBOUAGE COMPORTE LES ÉTAPES SUCCESSIVES SUIVANTES :
+              </div>
+
+              <div class="subTitle" style="color: #38bdf8;">A. INJECTION D’UN RÉACTIF DÉSEMBOUANT ET CIRCULATION</div>
+              <div class="strong" style="color: #38bdf8; margin-top:6px;">PRÉPARATION ET DIAGNOSTIC INITIAL</div>
+              <ul>
+                <li>Vérification de l’état général de l’installation de chauffage</li>
+                <li>Contrôle de la pression et de l’étanchéité du circuit</li>
+                <li>Test de fonctionnement des vannes et organes de régulation</li>
+                <li>Relevé des températures et pressions en fonctionnement</li>
+              </ul>
+
+              <div class="para strong" style="margin-top:8px;">Injection du produit désembouant SENTINEL X800</div>
+              <ul>
+                <li>Dosage : 1% du volume d’eau de l’installation</li>
+                <li>Méthode d’injection : Via un point d’injection dédié ou par le vase d’expansion</li>
+                <li>Dilution : Mélange homogène du produit dans l’ensemble du circuit</li>
+              </ul>
+
+              <div class="strong" style="color: #38bdf8;" margin-top:10px;">CIRCULATION AVEC POMPE DE DÉSEMBOUAGE
+              </div>
+              <ul>
+                <li>Équipement utilisé : Pompe de désembouage haute performance (débit minimum 30 L/min)</li>
+                <li>Circulation générale :
+                  <ul>
+                    <li>Mise en circulation sur l’ensemble du réseau pendant 4 heures minimum</li>
+                    <li>Température de circulation : 50-60°C pour optimiser l’action du produit</li>
+                  </ul>
+                </li>
+                <li>Circulation réseau par réseau :
+                  <ul>
+                    <li>Isolation et traitement de chaque réseau de distribution individuellement</li>
+                    <li>Circulation dans les deux sens pour décoller tous les dépôts</li>
+                    <li>Durée par réseau : 2 heures minimum dans chaque sens</li>
+                  </ul>
+                </li>
+                <li>Surveillance : Contrôle visuel de la couleur de l’eau (passage du trouble au clair)</li>
+              </ul>
+
+              <div class="subTitle" style="margin-top:10px; color: #38bdf8;">B. RINÇAGE DES CIRCUITS À L’EAU CLAIRE</div>
+              <div class="strong" style="color: #38bdf8;">RINÇAGE GÉNÉRAL</div>
+              <ul>
+                <li>Évacuation complète du produit désembouant par les points de purge</li>
+                <li>Remplissage progressif à l’eau claire du réseau public</li>
+                <li>Circulation intensive pendant 2 heures minimum</li>
+                <li>Contrôle qualité : Vérification de la limpidité de l’eau en sortie</li>
+              </ul>
+            </td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
         </tbody>
-    </table>
+      </table>
 
-    <div class="page-number">Page 2</div>
-</div>
+      <div class="footer">
+        PATRIMOINE ENERGIE au capital de 6 000 € - Code APE 4322B SIRET : 52301525300041 - rcs Pau- N° TVA Intracom :
+        FR58523015253<br>
+        7 B RUE JEANNE D'ARC, 76000 ROUEN. Tél. : 02 78 77 66 14 Mail : patrimoinenergie76@gmail.com
+      </div>
+      <div class="pageno">p. 2/4</div>
 
-<!-- Page 3 -->
-<div class="page-break">
-    <!-- Logo -->
-    <div class="align-left">
-        <img class="image-logo" src="{{ public_path('assets/img/nova/Facture_files/Image_002.png') }}" alt="Logo">
     </div>
+  </div>
 
-    <!-- Titre Facture -->
-    <div class="align-left">
-        <span class="titre-facture">FACTURE {{ $document->reference_facture ?? '' }}</span>
-    </div>
-    <p class="date-facture">Date : {{ $document->date_facture ?? date('d/m/Y') }}</p>
+  <!-- ===================== PAGE 3 ===================== -->
+  <div class="page">
+    <div class="page-content">
 
-    <!-- Troisième tableau - Suite détails -->
-    <table>
+      <div class="top">
+        <table class="top-table">
+          <tr>
+            <td class="brand">
+              <table class="brand-inner">
+                <tr>
+                  <td class="brand-logo">
+                    <img src="{{ public_path('assets/img/patrimoine/patr.png') }}" alt="Logo">
+                  </td>
+
+                </tr>
+              </table>
+            </td>
+
+            <td class="refbox-wrap" style="text-align:right;">
+              <table class="refbox">
+                <tr>
+                  <td class="k">REF FACTURE</td>
+                  <td>{{ $document->reference_facture }}</td>
+                </tr>
+                <tr>
+                  <td class="k">DATE FACTURE</td>
+                  <td>{{ \Carbon\Carbon::parse($document->date_facture)->format('d/m/Y') }}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <table class="main grid4">
         <thead>
-            <tr>
-                <th class="col-detail">DETAIL</th>
-                <th class="col-quantite">QUANTITE</th>
-                <th class="col-pu">PU HT</th>
-                <th class="col-total">TOTAL HT</th>
-                <th class="col-tva">TVA</th>
-            </tr>
+          <tr>
+            <th>DETAIL</th>
+            <th>QUANTITE</th>
+            <th>PU HT</th>
+            <th>TOTAL HT</th>
+            <th>TVA</th>
+          </tr>
         </thead>
         <tbody>
-            <tr>
-                <td class="col-detail">
-                    <p class="texte-gras">B. RINÇAGE DES CIRCUITS À L'EAU CLAIRE</p>
-                    <p class="texte-petit">RINÇAGE GENERAL</p>
-                    
-                    <ul class="liste-diamant">
-                        <li class="texte-petit">Évacuation complète du produit désembouant par les points de purge</li>
-                        <li class="texte-petit">Remplissage progressif à l'eau claire du réseau public</li>
-                        <li class="texte-petit">Circulation intensive pendant 2 heures minimum</li>
-                        <li class="texte-petit">Contrôle qualité : Vérification de la limpidité de l'eau en sortie</li>
-                    </ul>
-                    
-                    <p class="texte-petit">RINÇAGE RESEAU PAR RESEAU</p>
-                    
-                    <ul class="liste-diamant">
-                        <li class="texte-petit">Isolation de chaque réseau de distribution</li>
-                        <li class="texte-petit">Rinçage individuel :</li>
-                        <ul class="liste-diamant" style="padding-left: 15px;">
-                            <li class="texte-petit">Ouverture des vannes de purge des émetteurs</li>
-                            <li class="texte-petit">Circulation d'eau claire jusqu'à obtention d'une eau limpide</li>
-                            <li class="texte-petit">Fermeture progressive des purges en commençant par les plus éloignées</li>
-                        </ul>
-                        <li class="texte-petit">Volume de rinçage : Minimum 3 fois le volume de chaque réseau</li>
-                        <li class="texte-petit">Contrôle final : Test d'absence de résidus et de mousse</li>
-                        <li class="texte-petit">REMISE EN PRESSION</li>
-                        <li class="texte-petit">Remplissage complet du circuit à la pression nominale</li>
-                        <li class="texte-petit">Purge de l'air résiduel sur tous les émetteurs</li>
-                        <li class="texte-petit">Vérification de l'absence de fuites</li>
-                    </ul>
-                    
-                    <p class="texte-gras">C. VÉRIFICATION/INSTALLATION FILTRE ET INJECTION INHIBITEUR</p>
-                    <p class="texte-petit">VERIFICATION DU SYSTEME DE FILTRATION EXISTANT</p>
-                    
-                    <ul class="liste-diamant">
-                        <li class="texte-petit">Localisation des filtres à boues existants sur les circuits de retour</li>
-                        <li class="texte-petit">Démontage et nettoyage des filtres en place</li>
-                        <li class="texte-petit">Contrôle d'efficacité : Vérification du maillage et de l'état général</li>
-                        <li class="texte-petit">INSTALLATION DE FILTRES COMPLEMENTAIRES (SI NECESSAIRE)</li>
-                        <li class="texte-petit">Positionnement : Sur chaque circuit de retour au générateur</li>
-                        <li class="texte-petit">Type de filtre : Filtre magnétique séparateur de boues haute performance</li>
-                        <li class="texte-petit">Raccordement : Avec vannes d'isolement pour maintenance future</li>
-                        <li class="texte-petit">Accessibilité : Installation permettant un entretien facile</li>
-                        <li class="texte-petit">INJECTION DU REACTIF INHIBITEUR SENTINEL X100</li>
-                        <li class="texte-petit">Dosage : 1% du volume d'eau de l'installation</li>
-                        <li class="texte-petit">Méthode d'injection : Via point d'injection dédié</li>
-                        <li class="texte-petit">Circulation : Mise en route de la circulation pendant 30 minutes minimum</li>
-                        <li class="texte-petit">Homogénéisation : Vérification de la répartition uniforme du produit</li>
-                        <li class="texte-petit">CONTROLES FINAUX ET MISE EN SERVICE</li>
-                        <li class="texte-petit">Test de fonctionnement complet de l'installation</li>
-                        <li class="texte-petit">Relevé des paramètres : Température, pression, débit</li>
-                        <li class="texte-petit">Réglages : Ajustement des organes de régulation</li>
-                        <li class="texte-petit">Formation : Explication du fonctionnement au personnel technique</li>
-                        <li class="texte-petit">Documentation : Remise du certificat de désembouage et planning de maintenance</li>
-                    </ul>
-                </td>
-                <td class="col-quantite align-center">
-                    <p class="texte-normal"></p>
-                </td>
-                <td class="col-pu align-right">
-                    <p class="texte-normal"></p>
-                </td>
-                <td class="col-total align-center">
-                    <p class="texte-normal"></p>
-                </td>
-                <td class="col-tva align-center">
-                    <p class="texte-normal"></p>
-                </td>
-            </tr>
+          <tr>
+            <td>
+              <div class="subTitle" style="color: #38bdf8;">RINÇAGE RÉSEAU PAR RÉSEAU</div>
+              <ul>
+                <li>Isolation de chaque réseau de distribution</li>
+                <li>Rinçage individuel :
+                  <ul>
+                    <li>Ouverture des vannes de purge des émetteurs</li>
+                    <li>Circulation d’eau claire jusqu’à obtention d’une eau limpide</li>
+                    <li>Fermeture progressive des purges en commençant par les plus éloignées</li>
+                  </ul>
+                </li>
+                <li>Volume de rinçage : Minimum 3 fois le volume de chaque réseau</li>
+                <li>Contrôle final : Test d’absence de résidus et de mousse</li>
+              </ul>
+
+              <div class="subTitle" style="margin-top:10px; color: #38bdf8;">REMISE EN PRESSION</div>
+              <ul>
+                <li>Remplissage complet du circuit à la pression nominale</li>
+                <li>Purge de l’air résiduel sur tous les émetteurs</li>
+                <li>Vérification de l’absence de fuites</li>
+              </ul>
+
+              <div class="sectionTitle" style="margin-top:14px; color: #38bdf8;">C. VÉRIFICATION/INSTALLATION FILTRE ET INJECTION
+                INHIBITEUR</div>
+
+              <div class="strong" style="color: #38bdf8; margin-top:6px;">VÉRIFICATION DU SYSTÈME DE FILTRATION
+                EXISTANT</div>
+              <ul>
+                <li>Localisation des filtres à boues existants sur les circuits de retour</li>
+                <li>Démontage et nettoyage des filtres en place</li>
+                <li>Contrôle d’efficacité : Vérification du maillage et de l’état général</li>
+              </ul>
+
+              <div class="strong" style="color: #38bdf8; margin-top:10px;">INSTALLATION DE FILTRES COMPLÉMENTAIRES
+                (SI NÉCESSAIRE)</div>
+              <ul>
+                <li>Positionnement : Sur chaque circuit de retour au générateur</li>
+                <li>Type de filtre : Filtre magnétique séparateur de boues haute performance</li>
+                <li>Raccordement : Avec vannes d’isolement pour maintenance future</li>
+                <li>Accessibilité : Installation permettant un entretien facile</li>
+              </ul>
+
+              <div class="strong" style="color: #38bdf8; margin-top:10px;">INJECTION DU RÉACTIF INHIBITEUR SENTINEL
+                X100</div>
+              <ul>
+                <li>Dosage : 1% du volume d’eau de l’installation</li>
+                <li>Méthode d’injection : Via point d’injection dédié</li>
+                <li>Circulation : Mise en route de la circulation pendant 30 minutes minimum</li>
+                <li>Homogénéisation : Vérification de la répartition uniforme du produit</li>
+              </ul>
+              <div class="sectionTitle" style="margin-top:14px; color: #38bdf8;">CONTRÔLES FINAUX ET MISE EN SERVICE</div>
+              <ul>
+                <li>Test de fonctionnement complet de l’installation</li>
+                <li>Relevé des paramètres : Température, pression, débit</li>
+                <li>Réglages : Ajustement des organes de régulation</li>
+                <li>Formation : Explication du fonctionnement au personnel technique</li>
+                <li>Documentation : Remise du certificat de désembouage et planning de maintenance</li>
+              </ul>
+
+              <div class="sectionTitle" style="margin-top:14px; color: #38bdf8;">PRODUITS UTILISÉS</div>
+              <div class="strong" style="color: #38bdf8;">SENTINEL X800 DÉSEMBOUANT</div>
+              <div class="para">
+                Sentinel X800 désembouant pour nettoyage d’un réseau de chauffage, élimine boues, particules de
+                corrosion et dépôts de calcaire.
+              </div>
+              <ul>
+                <li>Dosage : 1% du volume d’eau de l’installation</li>
+                <li>Aspect : Liquide clair, incolore à jaune pâle</li>
+                <li>Odeur : Légère</li>
+                <li>Densité (20°C) : 1,06 g/ml</li>
+                <li>pH (concentré) : Environ 6,3</li>
+                <li>Point de congélation : -8°C</li>
+                <li>Agréé par le ministère de la Santé</li>
+              </ul>
+            </td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
         </tbody>
-    </table>
+      </table>
+      <div class="footer">
+        PATRIMOINE ENERGIE au capital de 6 000 € - Code APE 4322B SIRET : 52301525300041 - rcs Pau- N° TVA Intracom :
+        FR58523015253<br>
+        7 B RUE JEANNE D'ARC, 76000 ROUEN. Tél. : 02 78 77 66 14 Mail : patrimoinenergie76@gmail.com
+      </div>
+      <div class="pageno">p. 3/4</div>
 
-    <div class="page-number">Page 3</div>
-</div>
-
-<!-- Page 4 -->
-<div class="page-break">
-    <!-- Logo -->
-    <div class="align-left">
-        <img class="image-logo" src="{{ public_path('assets/img/nova/Facture_files/Image_002.png') }}" alt="Logo">
     </div>
+  </div>
 
-    <!-- Titre Facture -->
-    <div class="align-left">
-        <span class="titre-facture">FACTURE {{ $document->reference_facture ?? '' }}</span>
-    </div>
-    <p class="date-facture">Date : {{ $document->date_facture ?? date('d/m/Y') }}</p>
+  <!-- ===================== PAGE 4 (DOMPDF SAFE) ===================== -->
+  <div class="page">
+    <div class="page-content">
 
-    <!-- Quatrième tableau - Produits et entreprise -->
-    <table>
+      <div class="top">
+        <table class="top-table">
+          <tr>
+            <td class="brand">
+              <table class="brand-inner">
+                <tr>
+                  <td class="brand-logo">
+                    <img src="{{ public_path('assets/img/patrimoine/patr.png') }}" alt="Logo">
+                  </td>
+
+                </tr>
+              </table>
+            </td>
+
+            <td class="refbox-wrap" style="text-align:right;">
+              <table class="refbox">
+                <tr>
+                  <td class="k">REF FACTURE</td>
+                  <td>{{ $document->reference_facture }}</td>
+                </tr>
+                <tr>
+                  <td class="k">DATE FACTURE</td>
+                  <td>{{ \Carbon\Carbon::parse($document->date_facture)->format('d/m/Y') }}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <table class="main" style="margin-top:0;">
         <thead>
-            <tr>
-                <th class="col-detail">DETAIL</th>
-                <th class="col-quantite">QUANTITE</th>
-                <th class="col-pu">PU HT</th>
-                <th class="col-total">TOTAL HT</th>
-                <th class="col-tva">TVA</th>
-            </tr>
+          <tr>
+            <th>DETAIL</th>
+          </tr>
         </thead>
         <tbody>
-            <tr>
-                <td class="col-detail">
-                    <p class="titre-section">PRODUITS UTILISÉS</p>
-                    
-                    <p class="texte-gras">SENTINEL X800 DÉSEMBOUANT</p>
-                    <p class="texte-petit">Sentinel X800 Désembouant pour nettoyage d'un réseau de chauffage, Sentinel X800 élimine tous débris, particules de corrosion et dépôts de calcaire des installations de chauffage central.</p>
-                    
-                    <ul class="liste-diamant">
-                        <li class="texte-petit">Dosage : 1% du volume d'eau de l'installation, soit 1 litre pour 100 litres d'eau</li>
-                        <li class="texte-petit">Aspect : Liquide clair, incolore à jaune pâle</li>
-                        <li class="texte-petit">Odeur : Légère</li>
-                        <li class="texte-petit">Densité (25°C) : 1,06 g/ml</li>
-                        <li class="texte-petit">pH (concentré) : Environ 6,3</li>
-                        <li class="texte-petit">Point de congélation : -8°C</li>
-                        <li class="texte-petit">Agréé par le ministère de la Santé</li>
-                    </ul>
-                    
-                    <p class="texte-gras">SENTINEL X100 INHIBITEUR</p>
-                    <p class="texte-petit">Sentinel X100 Inhibiteur pour protection du réseau de chauffage avec solution aqueuse d'agents inhibiteurs de corrosion et anti-tartre.</p>
-                    
-                    <ul class="liste-diamant">
-                        <li class="texte-petit">Dosage : 1% du volume d'eau de l'installation, soit 1 litre pour 100 litres d'eau</li>
-                        <li class="texte-petit">Aspect : Liquide clair, incolore à jaune pâle</li>
-                        <li class="texte-petit">Densité (20°C) : 1,10 g/ml</li>
-                        <li class="texte-petit">pH (concentré) : Environ 6,4</li>
-                        <li class="texte-petit">Point de congélation : -2,5°C</li>
-                        <li class="texte-petit">Agréé par le ministère de la Santé</li>
-                    </ul>
-                    
-                    <p class="titre-section">MATÉRIEL ET ENTREPRISE</p>
-                    <p class="texte-petit">Matériel(s) fourni(s) et mis en place par ENERGIE NOVA, 60 RUE FRANCOIS IER, 75008 PARIS, SIRET 93348779500017, Code APE 7112B.</p>
-                    <p class="texte-petit">Représentée par M. Tamoyan Hamlet, 0767847049 direction@energie-nova.com</p>
-                    <p class="texte-petit">Qualification Qualisav Spécialité Désembouage N° 31376 - ID N° S01810</p>
-                    <p class="texte-petit">RC Décennale W4737408 contrat n° 25076156863</p>
-                    
-                    <p class="texte-gras">Durée totale de l'intervention</p>
-                    <p class="texte-petit">1 à 2 jours selon la complexité</p>
-                    
-                    <p class="texte-gras">Garantie</p>
-                    <p class="texte-petit">2 ans sur l'intervention de désembouage</p>
-                    
-                    <p class="texte-gras">Suivi</p>
-                    <p class="texte-petit">Contrôle recommandé à 6 mois puis annuellement</p>
-                </td>
-                <td class="col-quantite align-center">
-                    <p class="texte-normal"></p>
-                </td>
-                <td class="col-pu align-right">
-                    <p class="texte-normal"></p>
-                </td>
-                <td class="col-total align-center">
-                    <p class="texte-normal"></p>
-                </td>
-                <td class="col-tva align-center">
-                    <p class="texte-normal"></p>
-                </td>
-            </tr>
+          <tr>
+            <td>
+              <div class="strong" style="color: #38bdf8;">SENTINEL X100 INHIBITEUR</div>
+              <div class="para">
+                Sentinel X100 inhibiteur pour protection du réseau de chauffage avec agents inhibiteurs de corrosion et
+                anti-tartre.
+              </div>
+
+              <ul>
+                <li>Dosage : 1% du volume d’eau de l’installation</li>
+                <li>Aspect : Liquide clair, incolore à jaune pâle</li>
+                <li>Densité (20°C) : 1,10 g/ml</li>
+                <li>pH (concentré) : Environ 6,4</li>
+                <li>Point de congélation : -2,5°C</li>
+                <li>Agréé par le ministère de la Santé</li>
+              </ul>
+              <div class="sectionTitle" style="margin-top:6mm; color: #38bdf8;">MATÉRIEL ET ENTREPRISE</div>
+              <div class="para">
+                Matériel / soumis et mis en place par <span class="strong"> PATRIMOINE ENERGIE</span>,
+                60 RUE FRANCOIS 1ER, 75008 PARIS, SIRET : 52301525300041, Code APE 7112B.<br>
+                Représentée par M. Tamoyan Hamlet, 07 67 87 04 09, direction@patrimoine-energie.com
+              </div>
+
+              <div class="para" style="margin-top:2mm;">
+                Qualification Qualisav Spécialité Désembouage N° 31376 - ID N° S01810
+              </div>
+
+              <div class="para">
+                RC Décennale V4737408 contrat n° 2507651683
+              </div>
+
+              <div class="para" style="margin-top:3mm;">
+                <span class="strong">Durée totale de l’intervention :</span> 1 à 2 jours selon la complexité<br>
+                <span class="strong">Garantie :</span> 1 an sur l’intervention de désembouage<br>
+                <span class="strong">Suivi :</span> Contrôle recommandé à 6 mois puis annuellement
+              </div>
+
+              <table class="bottomRow avoid-break">
+                <tr>
+                  <td style="width:55%; padding-right:8mm;">
+                    <div class="paybox">
+                      <div class="title" style="color: #38bdf8;">CONDITIONS DE PAIEMENT</div>
+                      <div class="para">
+                        Prime versée sous réserve de validation, documents CEE nécessaires, et respect des exigences de
+                        l’opération.
+                      </div>
+
+                      <div class="subTitle" style="margin-top:3mm; color: #38bdf8;">Gestion des déchets</div>
+                      <div class="para">
+                        Tri, évacuation, transport et traitement des déchets de chantier.
+                      </div>
+                    </div>
+                  </td>
+
+                  <td style="width:45%;">
+                    <div class="totals">
+                      <table class="totals-table">
+                        <tr>
+                          <td class="lbl" style="color: #38bdf8;">MONTANT TOTAL</td>
+                          <td class="val">{{ number_format($document->montant_ht, 2, ',', ' ') }} €</td>
+                        </tr>
+                        <tr>
+                          <td class="lbl" style="color: #38bdf8;">HT TVA</td>
+                          <td class="val">{{ number_format($document->montant_tva, 2, ',', ' ') }} €</td>
+                        </tr>
+                        <tr>
+                          <td class="lbl big" style="color: #38bdf8;">MONTANT TOTAL TTC</td>
+                          <td class="val big">{{ number_format($document->montant_ttc, 2, ',', ' ') }} €</td>
+                        </tr>
+                        <tr>
+                          <td class="lbl" style="color: #38bdf8;">PRIME CEE</td>
+                          <td class="val">{{ number_format($document->prime_cee, 2, ',', ' ') }} €</td>
+                        </tr>
+                        <tr>
+                          <td class="lbl rest" style="color: #38bdf8;">RESTE À CHARGE</td>
+                          <td class="val rest">{{ number_format($document->reste_a_charge, 2, ',', ' ') }} €</td>
+                        </tr>
+                      </table>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+
+              <div class="attest">
+                <div class="para">En acceptant la présente facture, j’atteste sur l’honneur :</div>
+                <ul>
+                  <li>Que le bâtiment est existant depuis plus de deux ans.</li>
+                  <li>Ne pas avoir bénéficié de primes CEE pour la fiche N° BAR-SE-109 désembouage</li>
+                </ul>
+              </div>
+
+            </td>
+          </tr>
         </tbody>
-    </table>
+      </table>
 
-    <!-- Conditions de paiement -->
-    <p class="titre-section">CONDITIONS DE PAIEMENT</p>
-    <div class="conditions-paiement">
-        <p class="texte-petit">Les travaux ou prestations objet du présent document donneront lieu à une contribution financière de EBS ENERGIE (SIREN 533 333 118), versée par EBS ENERGIE dans le cadre de son rôle incitatif sous forme de prime, directement ou via son (ses) mandataire(s), sous réserve de l'engagement de fournir exclusivement à EBS Energie les documents nécessaires à la valorisation des opérations au titre du dispositif des Certificats d'Économies d'Energie et sous réserve de la validation de l'éligibilité du dossier par EBS ENERGIE puis par l'autorité administrative compétente.</p>
-        <p class="texte-petit">Le montant de cette contribution financière, hors champ d'application de la TVA, est susceptible de varier en fonction des travaux effectivement réalisés et du volume des CEE attribués à l'opération et est estimé à {{ $document->prime_cee ?? '12 259,80' }} euros.</p>
+      <div class="footer">
+        PATRIMOINE ENERGIE au capital de 6 000 € - Code APE 4322B SIRET : 52301525300041 - rcs Pau- N° TVA Intracom :
+        FR58523015253<br>
+        7 B RUE JEANNE D'ARC, 76000 ROUEN. Tél. : 02 78 77 66 14 Mail : patrimoinenergie76@gmail.com
+      </div>
+      <div class="pageno">p. 4/4</div>
+
     </div>
-
-    <!-- Gestion des déchets -->
-    <p class="titre-section">Gestion des déchets</p>
-    <p class="texte-normal">Gestion, évacuation et traitements des déchets de chantier comprenant la main d'œuvre liée à la dépose et au tri, le transport des déchets de chantiers vers un ou plusieurs points de collecte et coûts de traitement.</p>
-
-    <div class="page-number">Page 4</div>
-</div>
-
-<!-- Page 5 - Page des totaux et signature -->
-<div class="page-break">
-    <!-- Logo -->
-    <div class="align-left">
-        <img class="image-logo" src="{{ public_path('assets/img/nova/Facture_files/Image_002.png') }}" alt="Logo">
-    </div>
-
-    <!-- Titre Facture -->
-    <div class="align-left">
-        <span class="titre-facture">FACTURE {{ $document->reference_facture ?? '' }}</span>
-    </div>
-    <p class="date-facture">Date : {{ $document->date_facture ?? date('d/m/Y') }}</p>
-
-    <!-- Bloc des totaux bien cadré horizontalement -->
-    <table class="bloc-totaux">
-        <tr>
-            <td><strong>TOTAL HT</strong></td>
-            <td class="align-right">{{ $document->montant_ht ?? '12 259,80' }} €</td>
-            <td><strong>TVA 20%</strong></td>
-            <td class="align-right">{{ $document->montant_tva ?? '2 451,96' }} €</td>
-        </tr>
-        <tr>
-            <td><strong>TOTAL TTC</strong></td>
-            <td class="align-right">{{ $document->montant_ttc ?? '14 711,76' }} €</td>
-            <td><strong>PRIME CEE</strong></td>
-            <td class="align-right">- {{ $document->prime_cee ?? '12 259,80' }} €</td>
-        </tr>
-        <tr>
-            <td colspan="3"><strong>RESTE À CHARGE</strong></td>
-            <td class="align-right"><strong>{{ $document->reste_a_charge ?? '2 451,96' }} €</strong></td>
-        </tr>
-    </table>
-
-    <div class="espacement"></div>
-
-    <!-- Mode de paiement -->
-    <p class="texte-normal"><strong>Mode de paiement :</strong> Chèques, virement ou espèce</p>
-
-    <!-- Signature et cachet -->
-    <p class="titre-section">Signature, date, cachet commercial & mention « Bon pour accord » :</p>
-    <div class="signature-box"></div>
-    <p class="texte-petit">Nom, prénom et fonction du signataire</p>
-
-    <div class="page-number">Page 5</div>
-</div>
+  </div>
 
 </body>
+
 </html>

@@ -1,217 +1,796 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-<meta charset="UTF-8">
-<title>Devis</title>
+  <meta charset="UTF-8" />
+  <title>Devis - PATRIMOINE</title>
 
-<style>
-body { font-family: DejaVu Sans, sans-serif; font-size: 11px; margin: 40px; color:#000; }
+  <style>
+    /* ===========================
+       DOMPDF SAFE (A4) — 3 PAGES
+       =========================== */
+    @page {
+      size: A4;
+      margin: 18mm 15mm 16mm 15mm;
+    }
 
-h2 { margin: 8px 0 4px 0; font-size: 13px; }
-p { margin: 2px 0; }
+    :root {
+      --blue: #0b3b5b;
+      --blue2: #0a3550;
+      --green: #62b14f;
+      --line: #5a86a6;
+      --frame: 180mm;
+      --text: #0b0b0b;
+    }
 
-.table { width:100%; border-collapse: collapse; }
-.table td, .table th { border:1px solid #003366; padding:6px; vertical-align: top; }
-.header-blue { background:#1A4D7E; color:#fff; font-weight:bold; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-.gray-block { background:#f2f2f2; padding:12px; margin:10px 0; }
+    html,
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 9pt;
+      color: var(--text);
+      background: #fff;
+    }
 
-.parties-table { width:100%; }
-.parties-table td { width:45%; vertical-align:top; }
-.parties-sep { width:10%; }
+    .page {
+      page-break-after: always;
+    }
 
-.page-break { page-break-after: always; }
+    .page:last-child {
+      page-break-after: auto;
+    }
 
-.totals-grid { width:60%; margin-left:auto; border-collapse:collapse; }
-.totals-grid td { padding:6px 4px; }
-.totals-label { text-align:right; }
-.totals-value { text-align:right; font-weight:bold; }
+    /* cadre imprimable garanti */
+    .page-content {
+      width: var(--frame);
+      margin: 10mm auto;
+    }
 
-.footer {
-  position: fixed;
-  bottom: 10px;
-  right: 20px;
-  font-size:10px;
-}
-.footer:after {
-  content: "Page " counter(page) " / " counter(pages);
-}
-.footer {
-  position: fixed;
-  bottom: 10px;
-  left: 40px;
-  right: 40px;
-  font-size:10px;
-  text-align:center;
-  color:#000;
-}
-</style>
+    /* anti débordements */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    td,
+    th,
+    p,
+    li,
+    div {
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    /* ===========================
+       HEADER (logo + bandeau ref/date)
+       =========================== */
+    .head {
+      margin-bottom: 6mm;
+    }
+
+    .brand-row {
+      width: 100%;
+      margin-bottom: 3mm;
+    }
+
+    .brand-row td {
+      vertical-align: middle;
+    }
+
+
+    .logoBox {
+      width: 100mm;
+      height: 22mm;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+    }
+
+    .logoBox img {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      display: block;
+    }
+
+    .brandName {
+      font-weight: 800;
+      font-size: 18pt;
+      color: var(--green);
+      letter-spacing: .5px;
+    }
+
+    .refbar {
+      border: 1px solid var(--blue);
+    }
+
+    .refbar td {
+      padding: 6px 8px;
+      border-right: 1px solid var(--blue);
+      font-weight: 700;
+      color: #fff;
+      background: var(--blue);
+      background-color: #38bdf8;
+      text-transform: uppercase;
+      font-size: 9pt;
+    }
+
+    .refbar td.value {
+      background: #fff;
+      color: #0b0b0b;
+      text-transform: none;
+      font-weight: 700;
+      border-right: 0;
+    }
+
+    .refbar td.value.right {
+      text-align: center;
+    }
+
+    /* ===========================
+       BLOCS PAGE 1
+       =========================== */
+    .twoCols {
+      margin-top: 4mm;
+      margin-bottom: 5mm;
+    }
+
+    .twoCols td {
+      vertical-align: top;
+      font-size: 7.7pt;
+      line-height: 1.35;
+      padding-right: 8mm;
+    }
+
+    .twoCols td:last-child {
+      padding-right: 0;
+    }
+
+    .labelSmall {
+      color: var(--blue);
+      font-weight: 800;
+      text-transform: uppercase;
+      font-size: 7.4pt;
+      margin-bottom: 2mm;
+      display: block;
+    }
+
+    .strong {
+      font-weight: 800;
+    }
+
+    .muted {
+      color: #3a3a3a;
+    }
+
+    .metaGrid {
+      width: 100%;
+      margin: 2mm 0 6mm 0;
+      font-size: 7.6pt;
+      line-height: 1.4;
+    }
+
+    .metaGrid td {
+      border: none;
+      padding: 1mm 0;
+      vertical-align: top;
+    }
+
+    .metaGrid .k {
+      width: 26mm;
+      color: var(--blue);
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .box {
+      border: 1px solid #a9c0cf;
+      padding: 6px 8px;
+      margin-top: 3mm;
+      font-size: 7.7pt;
+      line-height: 1.35;
+    }
+
+    .boxTitle {
+      color: var(--blue);
+      font-weight: 800;
+      text-transform: uppercase;
+      font-size: 7.8pt;
+      margin-bottom: 2mm;
+    }
+
+    /* ===========================
+       TABLE “DETAIL / QUANTITE / …”
+       =========================== */
+    .mainTable {
+      margin-top: 6mm;
+      border: 1px solid #38bdf8;
+    }
+
+    .mainTable th {
+      background: var(--blue);
+      background-color: #38bdf8;
+      color: #fff;
+      padding: 6px 6px;
+      text-transform: uppercase;
+      font-weight: 800;
+      font-size: 8pt;
+      border-right: 1px solid var(--blue);
+    }
+
+    .mainTable th:last-child {
+      border-right: 0;
+    }
+
+    .mainTable td {
+      border-top: 1px solid #a9c0cf;
+      border-right: 1px solid #a9c0cf;
+      padding: 6px 7px;
+      vertical-align: top;
+      font-size: 7.6pt;
+      line-height: 1.25;
+      height: 30mm;
+      /* laisse le grand vide comme sur capture */
+    }
+
+    .mainTable td:last-child {
+      border-right: 0;
+    }
+
+    .colDetail {
+      width: 56%;
+    }
+
+    .colQte {
+      width: 10%;
+      text-align: center;
+    }
+
+    .colPU {
+      width: 12%;
+      text-align: center;
+    }
+
+    .colTHT {
+      width: 12%;
+      text-align: center;
+    }
+
+    .colTVA {
+      width: 10%;
+      text-align: center;
+    }
+
+    .detailTitle {
+      color: #38bdf8;
+      font-weight: 800;
+      text-transform: uppercase;
+      font-size: 7.8pt;
+      margin-bottom: 2mm;
+    }
+
+    ul {
+      margin-left: 14px;
+      margin-top: 2mm;
+    }
+
+    li {
+      margin: 0.6mm 0;
+    }
+
+    /* ===========================
+       PAGE 2 table (mêmes colonnes)
+       =========================== */
+    .mainTable.p2 td {
+      height: 150mm;
+    }
+
+    /* grande zone texte */
+
+    .lines {
+      margin-top: 6mm;
+    }
+
+    .lines .item {
+      margin-top: 6mm;
+    }
+
+    .lines .n {
+      font-weight: 800;
+      margin-right: 2mm;
+    }
+
+    .note {
+      margin-top: 6mm;
+      font-size: 7.2pt;
+      line-height: 1.35;
+    }
+
+    .subBlockTitle {
+      margin-top: 10mm;
+      font-weight: 800;
+      text-transform: uppercase;
+      font-size: 7.6pt;
+    }
+
+    /* ===========================
+       PAGE 3: termes + totaux
+       =========================== */
+    .p3grid {
+      margin-top: 8mm;
+    }
+
+    .p3grid td {
+      vertical-align: top;
+    }
+
+    .termsTitle {
+      font-size: 7.8pt;
+      color: #1d1d1d;
+      margin-bottom: 2mm;
+    }
+
+    .termsBox {
+      border: 1px solid #b8c9d6;
+      padding: 7px 8px;
+      width: 88mm;
+      font-size: 7.2pt;
+      line-height: 1.35;
+    }
+
+    .totalsBox {
+      width: 62mm;
+      margin-left: auto;
+      font-size: 7.8pt;
+    }
+
+    .totalsBox table {
+      margin-top: 12mm;
+    }
+
+    .totalsBox td {
+      border: none;
+      padding: 1.3mm 0;
+      font-weight: 800;
+    }
+
+    .totalsBox .k {
+      color: #38bdf8;
+      text-transform: uppercase;
+    }
+
+    .totalsBox .v {
+      text-align: right;
+      width: 28mm;
+    }
+
+    .totalsBox .bigK {
+      color: #38bdf8;
+      text-transform: uppercase;
+      padding-top: 2.5mm;
+    }
+
+    .totalsBox .bigV {
+      text-align: right;
+      padding-top: 2.5mm;
+    }
+
+    .totalsBox .restK {
+      color: #38bdf8;
+      text-transform: uppercase;
+      padding-top: 3mm;
+    }
+
+    .totalsBox .restV {
+      text-align: right;
+      padding-top: 3mm;
+    }
+
+    .signLine {
+      margin-top: 30mm;
+      font-size: 8pt;
+    }
+
+    /* ===========================
+       FOOTER (bas de page)
+       =========================== */
+    .footer {
+      position: fixed;
+      bottom: 5mm;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 7pt;
+      color: #2b2b2b;
+    }
+
+    .pageno {
+      position: fixed;
+      bottom: 10mm;
+      right: 10mm;
+      text-align: right;
+      font-size: 7pt;
+      color: #2b2b2b;
+    }
+  </style>
 </head>
 
 <body>
 
-<div class="footer">
-PATRIMOINE- SASU au capital de 5 000 € - 60 Rue FRANCOIS 1 ER 75008 PARIS | SIRET : 933 487 795 00017 - APE 7112B
-</div>
+  <!-- ===================== PAGE 1 ===================== -->
+  <div class="page">
+    <div class="page-content">
 
+      <div class="head">
+        <table class="brand-row">
+          <tr>
+            <td class="logoBox">
+              <img src="{{ public_path('assets/img/patrimoine/patr.png') }}" alt="Logo">
+            </td>
 
-<!-- ================== PAGE 1 ================== -->
+          </tr>
+        </table>
 
-<table class="table">
-<tr>
-<td class="header-blue">REF DEVIS</td>
-<td class="header-blue">{{ $document->reference_devis }}</td>
-</tr>
-<tr>
-<td class="header-blue">DATE DEVIS</td>
-<td class="header-blue">{{ \Carbon\Carbon::parse($document->date_devis)->format('d/m/Y') }}</td>
-</tr>
-</table>
+        <!-- Bandeau ref/date (look capture) -->
+        <table class="refbar">
+          <tr>
+            <td style="width:26mm;">REF DEVIS</td>
+            <td class="value right" style="width:100mm;">{{ $document->reference_devis }}</td>
+          </tr>
+          <tr>
+            <td>DATE DEVIS</td>
+            <td class="value right">{{ \Carbon\Carbon::parse($document->date_devis)->format('d/m/Y') }}</td>
+          </tr>
+        </table>
+      </div>
 
-<div class="gray-block">
-  <table class="parties-table">
-    <tr>
-      <!-- BENEFICIAIRE -->
-      <td>
-        <h2>BENEFICIAIRE</h2>
-        <p><strong>RABATHERM HECS</strong></p>
-        <p>21 RUE D'ANJOU</p>
-        <p>92600 ASNIERES-SUR-SEINE</p>
-        <p>44261333700033</p>
-        <p>contact@rabatherm-hecs.fr 01 84 80 90 08</p>
-        <p>M. Offel De Villaucourt Charles</p>
-        <p>Gérant</p>
-      </td>
+      <!-- bloc adresses (comme capture) -->
+      <table class="twoCols">
+        <tr>
+          <td style="width:50%;">
+            <span class="labelSmall" style="color: #38bdf8;">PATRIMOINE</span>
+            60 Rue FRANCOIS 1 ER<br>
+            75008 PARIS<br>
+            <span class="muted">SIRET</span> 933 487 795 00017<br><br>
 
-      <td class="parties-sep"></td>
+            Représenté par <span class="strong">M. TAMOYAN Hamlet</span>, en qualité de Président<br>
+            07 67 87 04 09 &nbsp; direction@patrimoine.com<br><br>
 
-      <!-- FOURNISSEUR -->
-      <td style="text-align:right;">
-        <p><strong>PATRIMOINE</strong></p>
-        <p>60 Rue FRANCOIS 1 ER</p>
-        <p>75008 PARIS</p>
-        <p>SIRET 933 487 795 00017</p>
-        <p>M. TAMOYAN Hamlet — Président</p>
-        <p>0767847049</p>
-        <p>direction@patrimoine.fr</p>
-        <p>RC Décennale ERGO contrat n° 25076156863</p>
-      </td>
-    </tr>
-  </table>
-</div>
-<h2>OBJET :</h2>
-<p>Opération entrant dans le dispositif de prime C.E.E. (Certificat d'Economie d'Energie), conforme aux recommandations de la fiche technique N°BAR-SE-104 de C.E.E décrites par le ministère de la Transition énergétique.</p>
+            RC Décennale ERGO contrat n° {{ $document->rc_contrat ?? '25076156863' }}
+          </td>
 
-<h2>DESIGNATION</h2>
-<p>Réglage des organes d'équilibrage d'une installation de chauffage à eau chaude...</p>
+          <td style="width:50%;">
+            <span class="labelSmall" style="color: #38bdf8;">BÉNÉFICIAIRE</span>
+            <span class="strong">{{ $document->society }}</span><br>
+            {{ $document->adresse_beneficiaire ?? '' }}<br>
+            {{ $document->ville_beneficiaire ?? '' }}<br><br>
 
-<h2>SITE DES TRAVAUX :</h2>
-<p><strong>{{ $document->adresse_travaux }}</strong></p>
+            <table class="metaGrid">
+              <tr>
+                <td class="k">SIRET</td>
+                <td>{{ $document->reference }}</td>
+              </tr>
+              <tr>
+                <td class="k">MAIL</td>
+                <td>{{ $document->email_beneficiaire ?? '' }}</td>
+              </tr>
+              <tr>
+                <td class="k">TEL</td>
+                <td>{{ $document->tel_beneficiaire ?? '' }}</td>
+              </tr>
+              <tr>
+                <td class="k">REPRÉSENTÉ PAR</td>
+                <td>{{ $document->representant ?? '' }}</td>
+              </tr>
+              <tr>
+                <td class="k">FONCTION</td>
+                <td>{{ $document->fonction ?? '' }}</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
 
-<p><strong>NUMÉRO IMMATRICULATION DE COPROPRIÉTÉ :</strong> {{ $document->numero_immatriculation }} - {{ $document->nom_residence }}</p>
-<p><strong>PARCELLE CADASTRALE :</strong> Parcelle {{ $document->parcelle_1 }} Feuille {{ $document->parcelle_2 }} {{ $document->parcelle_3 }} {{ $document->parcelle_4 }}</p>
-<p><strong>DATE DES TRAVAUX :</strong> {{ $document->dates_previsionnelles }}</p>
-<p><strong>SECTEUR :</strong> Résidentiel</p>
-<p><strong>NOMBRE DE BATIMENTS :</strong> {{ $document->nombre_batiments }} Batiments</p>
-<p><strong>DETAILS :</strong> {{ $document->details_batiments }}</p>
+      <!-- OBJET -->
+      <div style="font-size:7.6pt; line-height:1.35; margin-top:1mm;">
+        <span class="strong" style="color: #38bdf8;" text-transform:uppercase;">OBJET :</span>
+        Opération entrant dans le dispositif de prime C.E.E. (Certificat d’Economie d’Energie),
+        conforme aux recommandations de la fiche technique N°BAR-SE-104 de C.E.E. décrites par le ministère de la
+        Transition énergétique.
+      </div>
 
-<!-- TABLE DETAIL 1 -->
-<table class="table">
-<tr>
-<th>DETAIL</th><th>QUANTITE</th><th>PU HT</th><th>TOTAL HT</th><th>TVA</th>
-</tr>
-<tr>
-<td>
-CARACTÉRISTIQUES DE L'INSTALLATION<br>
-Puissance nominale de la chaudière : {{ $document->puissance_chaudiere }} kW<br>
-Nombre de logements concernés : {{ $document->nombre_logements }}<br>
-Nombre d'émetteurs désemboués : {{ $document->nombre_emetteurs }}<br>
-Zone climatique : {{ $document->zone_climatique }}<br>
-Volume total du circuit d'eau: {{ $document->volume_circuit }} L<br>
-Filtres : {{ $document->nombre_filtres }}<br>
-KWH CUMAC : {{ $document->wh_cumac }}<br>
-PRIME CEE : {{ number_format($document->prime_cee, 2, ',', ' ') }} €
-</td>
-<td></td><td></td><td></td><td></td>
-</tr>
-</table>
+      <!-- DESIGNATION BOX -->
+      <div class="box">
+        <div class="boxTitle" style="color: #38bdf8;">DESIGNATION</div>
 
-<div class="page-break"></div>
+        Réglage des organes d’équilibrage d’une installation de chauffage à eau chaude, opération entrant dans le
+        dispositif de prime C.E.E.
+        (Certificat d’Economie d’Energie), conforme aux recommandations de la fiche BAR-SE-104.
+        <br><br>
 
-<!-- ================== PAGE 2 ================== -->
-<table class="table">
-<tr>
-<td class="header-blue">REF DEVIS</td>
-<td class="header-blue">{{ $document->reference_devis }}</td>
-</tr>
-<tr>
-<td class="header-blue">DATE DEVIS</td>
-<td class="header-blue">{{ \Carbon\Carbon::parse($document->date_devis)->format('d/m/Y') }}</td>
-</tr>
-</table>
+        <div><span class="strong" style="color: #38bdf8;" text-transform:uppercase;">SITE DES TRAVAUX :</span>
+          {{ $document->adresse_travaux }}
+        </div>
 
-<!-- TABLE DETAIL LONG -->
-<table class="table">
-<tr>
-<th>DETAIL</th><th>QUANTITE</th><th>PU HT</th><th>TOTAL HT</th><th>TVA</th>
-</tr>
-<tr>
-<td>
-Matériel(s) fourni(s) et mis en place par notre société {{ $document->society }}, Représentée par : M. Offel De Villaucourt Charles<br>
-SIRET : {{ $document->reference }}<br><br>
-1. - Réglage des organes d'équilibrage d'une installation de chauffage à eau chaude, destiné à assurer une température uniforme dans tous les locaux<br><br>
-2. - Mise en place matériel d'équilibrage :<br>
-▪ Relevé sur site de l'installation<br>
-▪ Réalisation d'un plan du sous-sol des PDC<br>
-▪ Réalisation d'un synoptique des colonnes<br>
-▪ Réalisation d'une note de calcul des puissances de débits et réglages théoriques par logement<br>
-▪ Réglage du point de fonctionnement de la pompe chauffage<br>
-▪ Réalisation d'une mesure de débit sur les PDC et antennes<br>
-▪ Un tableau d'enregistrement des températures moyennes sur un échantillon des logements, après équilibrage<br>
-▪ L'écart de température entre l'appartement le plus chauffé et le moins chauffé doit être strictement inférieur à 2°C<br><br>
-Note : Les quantités sont données à titre indicatif. Il appartient au maître d'ouvrage du présent lot de les valider. Les prix des appareillages comprennent leur fourniture, fixation et raccordement. Le marché est passé à prix global et forfaitaire.<br><br>
-COMPRIS DANS LES TRAVAUX :<br>
-▪ La dépose et l'enlèvement de votre ancien appareil<br>
-▪ La protection et le nettoyage du chantier<br>
-▪ Le remplissage et la purge de votre installation
-</td>
-<td>1<br><br>1</td>
-<td>4 100,48<br><br>1 366,82</td>
-<td>4 100,48<br><br>1 366,82</td>
-<td>5,5 %<br><br>5,5 %</td>
-</tr>
-</table>
+        <div><span class="strong" style="color: #38bdf8;" text-transform:uppercase;">NUMÉRO IMMATRICULATION DE
+            COPROPRIÉTÉ :</span>
+          {{ $document->numero_immatriculation ?? '' }} &nbsp;-&nbsp; {{ $document->nom_residence ?? '' }}
+        </div>
 
-<div class="page-break"></div>
+        <div><span class="strong" style="color: #38bdf8;" text-transform:uppercase;">PARCELLE CADASTRALE :</span></div>
+        <div style="margin-top:1mm;">
+          1&nbsp;&nbsp;Parcelle {{ $document->parcelle_1 ?? '' }} Feuille {{ $document->parcelle_2 ?? '' }}
+        </div>
 
-<!-- ================== PAGE FINALE ================== -->
-<table class="table">
-<tr>
-<td class="header-blue">REF DEVIS</td>
-<td class="header-blue">{{ $document->reference_devis }}</td>
-</tr>
-<tr>
-<td class="header-blue">DATE DEVIS</td>
-<td class="header-blue">{{ \Carbon\Carbon::parse($document->date_devis)->format('d/m/Y') }}</td>
-</tr>
-</table>
+        <div style="margin-top:3mm;">
+          <span class="strong" style="color: #38bdf8;" text-transform:uppercase;">DATE DES TRAVAUX :</span>
+          {{ $document->date_travaux ?? '' }}<br>
+          <span class="strong" style="color: #38bdf8;" text-transform:uppercase;">DATE DE DÉSEMBOUAGE :</span>
+          {{ $document->dates_previsionnelles ?? '' }}<br>
+          <span class="strong" style="color: #38bdf8;" text-transform:uppercase;">CONTACT SUR SITE :</span>
+          {{ $document->contact_site ?? '' }}<br>
+          <span class="strong" style="color: #38bdf8;" text-transform:uppercase;">SECTEUR :</span> Résidentiel<br>
+          <span class="strong" style="color: #38bdf8;" text-transform:uppercase;">NOMBRE DE BÂTIMENTS :</span>
+          {{ $document->nombre_batiments ?? '' }}<br>
+          <span class="strong" style="color: #38bdf8;" text-transform:uppercase;">DÉTAILS :</span>
+          {{ $document->details_batiments ?? '' }}
+        </div>
+      </div>
 
-<h2>Termes et conditions CEE</h2>
-<p>Les travaux ou prestations objet du présent document donneront lieu à une contribution financière de EBS ENERGIE (SIREN 533 333 118), versée par EBS ENERGIE dans le cadre de son rôle incitatif sous forme de prime, directement au(x) mandataire(s), sous réserve de l'engagement de fournir exclusivement à EBS ENERGIE les documents nécessaires à la valorisation des opérations au titre du dispositif des Certificats d'Économies d'Énergie et sous réserve de la validation de l'éligibilité du dossier par EBS ENERGIE puis par l'autorité administrative compétente.</p>
-<p>Le montant de cette contribution financière, hors champ d'application de la TVA, est susceptible de varier en fonction des travaux effectivement réalisés et du volume des CEE attribués à l'opération et est estimé à <strong>{{ number_format($document->prime_cee, 2, ',', ' ') }} €</strong>.</p>
+      <!-- TABLE -->
+      <table class="mainTable">
+        <thead>
+          <tr>
+            <th class="colDetail">DETAIL</th>
+            <th class="colQte">QUANTITE</th>
+            <th class="colPU">PU HT</th>
+            <th class="colTHT">TOTAL HT</th>
+            <th class="colTVA">TVA</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="detailTitle">CARACTÉRISTIQUES DE L’INSTALLATION</div>
+              Type de chauffage : Chauffage collectif à combustible<br>
+              Zone climatique : H1<br>
+              Nombre de logements : {{ $document->nombre_logements ?? '' }}<br>
+              Installation existante depuis plus de 2 ans : OUI
+              <br><br>
+              <ul>
+                <li><span class="strong" style="color: #38bdf8;"">KWH CUMAC :</span> {{ $document->wh_cumac ?? '' }}</li>
+                <li><span class=" strong" style="color: #38bdf8;"">PRIME CEE :</span> {{ number_format($document->prime_cee ?? 0, 2, ',', ' ') }} €</li>
+              </ul>
+            </td>
+            <td></td><td></td><td></td><td></td>
+          </tr>
+        </tbody>
+      </table>
 
-<br>
+      <div class=" footer">
+                    PATRIMOINE ENERGIE au capital de 6 000 € - Code APE 4322B SIRET : 52301525300041 - rcs Pau- N° TVA
+                    Intracom : FR58523015253<br>
+                    7 B RUE JEANNE D'ARC, 76000 ROUEN. Tél. : 02 78 77 66 14 Mail : patrimoinenergie76@gmail.com
+    </div>
+    <div class="pageno">p. 1/3</div>
 
-<table class="totals-grid">
-<tr><td class="totals-label">TOTAL HT</td><td class="totals-value">{{ number_format($document->montant_ht, 2, ',', ' ') }} €</td></tr>
-<tr><td class="totals-label">TVA à 5,5 %</td><td class="totals-value">{{ number_format($document->montant_tva, 2, ',', ' ') }} €</td></tr>
-<tr><td class="totals-label">MONTANT TOTAL TTC</td><td class="totals-value">{{ number_format($document->montant_ttc, 2, ',', ' ') }} €</td></tr>
-<tr><td class="totals-label">PRIME CEE</td><td class="totals-value">- {{ number_format($document->prime_cee, 2, ',', ' ') }} €</td></tr>
-<tr><td class="totals-label">RESTE A CHARGE</td><td class="totals-value">{{ number_format($document->reste_a_charge, 2, ',', ' ') }} €</td></tr>
-</table>
+  </div>
+  </div>
 
-<br><br>
-<p>Date et signature du bénéficiaire :</p>
+  <!-- ===================== PAGE 2 ===================== -->
+  <div class="page">
+    <div class="page-content">
+
+      <div class="head">
+        <table class="brand-row">
+          <tr>
+            <td class="logoBox">
+              <img src="{{ public_path('assets/img/patrimoine/patr.png') }}" alt="Logo">
+            </td>
+
+          </tr>
+        </table>
+
+        <table class="refbar">
+          <tr>
+            <td style="width:26mm;">REF DEVIS</td>
+            <td class="value right" style="width:100mm;">{{ $document->reference_devis }}</td>
+          </tr>
+          <tr>
+            <td>DATE DEVIS</td>
+            <td class="value right">{{ \Carbon\Carbon::parse($document->date_devis)->format('d/m/Y') }}</td>
+          </tr>
+        </table>
+      </div>
+
+      <table class="mainTable p2">
+        <thead>
+          <tr>
+            <th class="colDetail">DETAIL</th>
+            <th class="colQte">QUANTITE</th>
+            <th class="colPU">PU HT</th>
+            <th class="colTHT">Total HT</th>
+            <th class="colTVA">TVA</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              Matériel(s) fourni(s) et mis en place par notre société
+              {{ $document->society ?? 'RABATHERM HECS' }},<br><br>
+              Représentée par : {{ $document->representant ?? '' }}<br>
+              SIRET : {{ $document->siret_beneficiaire ?? '' }}<br><br>
+
+              <div class="lines">
+                <div class="item">
+                  <span class="n">1 -</span>
+                  Réglage des organes d’équilibrage d’une installation de chauffage à eau chaude,
+                  destiné à assurer une température uniforme dans tous les locaux
+                </div>
+
+                <div class="item">
+                  <span class="n">2 -</span>
+                  Mise en place matériel d’équilibrage :
+                </div>
+
+                <ul>
+                  <li>Relevé sur site de l’installation</li>
+                  <li>Réalisation d’un plan du sous-sol des PDC</li>
+                  <li>Réalisation d’un synoptique des colonnes</li>
+                  <li>Réalisation d’une note de calcul des puissances, débits et réglages théoriques par logement</li>
+                  <li>Réglage du point de fonctionnement de la pompe chauffage</li>
+                  <li>Réalisation d’une mesure de débit sur les PDC et antennes</li>
+                  <li>Un tableau d’enregistrement des températures moyennes sur un échantillon des logements, après
+                    équilibrage</li>
+                  <li>L’écart de température entre l’appartement le plus chauffé et le moins chauffé doit être
+                    strictement inférieur à 2°C</li>
+                </ul>
+
+                <div class="note">
+                  Note : Les quantités sont données à titre indicatif. Il appartient au maître d’ouvrage du présent lot
+                  de les valider.
+                  Les prix des appareillages comprennent la fourniture, fixation et raccordement.
+                  Le marché est passé à prix global et forfaitaire.
+                </div>
+
+                <div class="subBlockTitle">COMPRIS DANS LES TRAVAUX :</div>
+                <ul>
+                  <li>La dépose et l’enlèvement de votre ancien appareil</li>
+                  <li>La protection et le nettoyage du chantier</li>
+                  <li>Le remplissage et la purge de votre installation</li>
+                </ul>
+              </div>
+            </td>
+
+            <td class="colQte" style="text-align:center;">
+              <div style="margin-top:38mm;">1</div>
+              <div style="margin-top:8mm;">1</div>
+            </td>
+
+            <td class="colPU" style="text-align:center;">
+              <div style="margin-top:38mm;">{{ number_format($document->pu_1 ?? 0, 2, ',', ' ') }}</div>
+              <div style="margin-top:8mm;">{{ number_format($document->pu_2 ?? 0, 2, ',', ' ') }}</div>
+            </td>
+
+            <td class="colTHT" style="text-align:center;">
+              <div style="margin-top:38mm;">{{ number_format($document->total_1 ?? 0, 2, ',', ' ') }}</div>
+              <div style="margin-top:8mm;">{{ number_format($document->total_2 ?? 0, 2, ',', ' ') }}</div>
+            </td>
+
+            <td class="colTVA" style="text-align:center;">
+              <div style="margin-top:38mm;">{{ $document->tva_rate ?? '5,5' }} %</div>
+              <div style="margin-top:8mm;">{{ $document->tva_rate ?? '5,5' }} %</div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="footer">
+        PATRIMOINE ENERGIE au capital de 6 000 € - Code APE 4322B SIRET : 52301525300041 - rcs Pau- N° TVA Intracom :
+        FR58523015253<br>
+        7 B RUE JEANNE D'ARC, 76000 ROUEN. Tél. : 02 78 77 66 14 Mail : patrimoinenergie76@gmail.com
+      </div>
+      <div class="pageno">p. 2/3</div>
+
+    </div>
+  </div>
+
+  <!-- ===================== PAGE 3 ===================== -->
+  <div class="page">
+    <div class="page-content">
+
+      <div class="head">
+        <table class="brand-row">
+          <tr>
+            <td class="logoBox">
+              <img src="{{ public_path('assets/img/patrimoine/patr.png') }}" alt="Logo">
+            </td>
+          </tr>
+        </table>
+
+        <table class="refbar">
+          <tr>
+            <td style="width:26mm;">REF DEVIS</td>
+            <td class="value right" style="width:100mm;">{{ $document->reference_devis }}</td>
+          </tr>
+          <tr>
+            <td>DATE DEVIS</td>
+            <td class="value right">{{ \Carbon\Carbon::parse($document->date_devis)->format('d/m/Y') }}</td>
+          </tr>
+        </table>
+      </div>
+
+      <table class="p3grid">
+        <tr>
+          <td style="width:60%;">
+            <div class="termsTitle">Termes et conditions CEE</div>
+            <div class="termsBox">
+              Les travaux ou prestations objet du présent document donneront lieu à une contribution financière de
+              EBS ENERGIE (SIREN 533 331 118), versée dans le cadre de son rôle d’incitation sous forme de prime,
+              directement au mandataire, sous réserve de l’engagement de fournir exclusivement à EBS ENERGIE
+              les documents nécessaires à la valorisation des opérations au titre du dispositif des CEE.
+              <br><br>
+              Le montant de cette contribution financière, hors champ d’application de la TVA, est susceptible de varier
+              en fonction des travaux effectivement réalisés et du volume des CEE attribués à l’opération et est estimé
+              à <span class="strong" style="color: #38bdf8;">{{ number_format($document->prime_cee ?? 0, 2, ',', ' ') }}
+                €</span>.
+            </div>
+          </td>
+
+          <td style="width:40%;">
+            <div class="totalsBox">
+              <table>
+                <tr>
+                  <td class="k">TOTAL HT</td>
+                  <td class="v">{{ number_format($document->montant_ht ?? 0, 2, ',', ' ') }} €</td>
+                </tr>
+                <tr>
+                  <td class="k">TVA à {{ $document->tva_rate ?? '5,5' }} %</td>
+                  <td class="v">{{ number_format($document->montant_tva ?? 0, 2, ',', ' ') }} €</td>
+                </tr>
+                <tr>
+                  <td class="bigK">MONTANT TOTAL TTC</td>
+                  <td class="bigV">{{ number_format($document->montant_ttc ?? 0, 2, ',', ' ') }} €</td>
+                </tr>
+                <tr>
+                  <td class="k">PRIME CEE</td>
+                  <td class="v">- {{ number_format($document->prime_cee ?? 0, 2, ',', ' ') }} €</td>
+                </tr>
+                <tr>
+                  <td class="restK">RESTE À CHARGE</td>
+                  <td class="restV">{{ number_format($document->reste_a_charge ?? 0, 2, ',', ' ') }} €</td>
+                </tr>
+              </table>
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      <div class="signLine">Date et signature du bénéficiaire :</div>
+
+      <div class="footer">
+        PATRIMOINE ENERGIE au capital de 6 000 € - Code APE 4322B SIRET : 52301525300041 - rcs Pau- N° TVA Intracom :
+        FR58523015253<br>
+        7 B RUE JEANNE D'ARC, 76000 ROUEN. Tél. : 02 78 77 66 14 Mail : patrimoinenergie76@gmail.com
+      </div>
+      <div class="pageno">p. 3/3</div>
+
+    </div>
+  </div>
 
 </body>
+
 </html>
