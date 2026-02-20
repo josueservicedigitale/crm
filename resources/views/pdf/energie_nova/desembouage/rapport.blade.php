@@ -113,7 +113,7 @@
     display:inline-block;
     width:11px;
     height:11px;
-    border:1px solid #666;
+    border:1px solid #b1afaf;
     margin-right:5px;
     vertical-align:middle;
     background:#fff;
