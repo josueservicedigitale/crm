@@ -16,7 +16,6 @@
             line-height: 1.3;
         }
 
-        /* Pied de page fixe sur toutes les pages */
         .footer {
             position: fixed;
             bottom: 10mm;
@@ -30,7 +29,6 @@
             width: 100%;
         }
 
-        /* Numérotation des pages en bas à droite */
         .page-number {
             position: fixed;
             bottom: 8mm;
@@ -43,7 +41,6 @@
             content: "Page " counter(page) " / " counter(pages);
         }
 
-        /* Réinitialisation */
         * {
             margin: 0;
             padding: 0;

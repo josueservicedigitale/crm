@@ -10,6 +10,11 @@ use App\Http\Controllers\Back\ParametreController;
 use App\Http\Controllers\Back\UserController;
 use App\Http\Controllers\Back\ConversationController;
 use App\Http\Controllers\Back\NotificationController;
+use App\Http\Controllers\Back\DossierController;
+use App\Http\Controllers\Back\DashboardController;
+use App\Http\Controllers\Back\SearchController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 // =========================================================================
 // 1. ROUTES PUBLIQUES ET AUTH
@@ -18,11 +23,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// Route::get('/dashboard', function () {
-//     return view('back.dashboard');
-// })->middleware(['auth', 'verified'])->name('home.dashboard');
-
-Route::get('/dashboard', [App\Http\Controllers\Back\DashboardController::class, 'index'])
+Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('home.dashboard');
 
@@ -35,15 +36,184 @@ Route::middleware('auth')->group(function () {
 });
 
 // =========================================================================
-// 2. ROUTES BACK AVEC PRÉFIXE - DANS L'ORDRE CORRECT
+// 2. ROUTES BACK AVEC PRÉFIXE - ORDRE OPTIMISÉ
 // =========================================================================
 Route::prefix('back')->name('back.')->middleware('auth')->group(function () {
 
     // =====================================================================
-    // 2.1 ROUTES LES PLUS SPÉCIFIQUES (AVEC ID FIXE)
+    // 2.1 ROUTES DE RECHERCHE (FIXES)
     // =====================================================================
+    Route::get('/search', [SearchController::class, 'global'])->name('search.global');
+    Route::get('/search/ajax', [SearchController::class, 'ajax'])->name('search.ajax');
 
-    // Routes de création avec parent EXPLICITE
+    // =====================================================================
+    // 2.2 ROUTES DOCUMENTS GLOBALES (SANS PARAMÈTRES)
+    // =====================================================================
+    Route::get('/documents/creation-rapide', [DocumentController::class, 'creationRapide'])->name('documents.creation-rapide');
+    Route::get('/documents/tous', [DocumentController::class, 'tousDocuments'])->name('documents.tous');
+    Route::get('/all-dashboards', [DocumentController::class, 'allDashboards'])->name('all-dashboards');
+
+    // =====================================================================
+    // 2.3 ROUTES DE MESSAGERIE (PREFIXE SIMPLE)
+    // =====================================================================
+    Route::prefix('conversations')->name('messagerie.')->group(function () {
+        // Routes FIXES (sans paramètres)
+        Route::get('/', [ConversationController::class, 'index'])->name('index');
+        Route::get('/messages/dropdown', [ConversationController::class, 'dropdown'])->name('dropdown');
+        
+        // Routes avec paramètre {user} (plus spécifique que {conversation})
+        Route::get('/users/{user}/conversation', [ConversationController::class, 'startWithUser'])->name('start');
+        
+        // Routes avec paramètre {conversation}
+        Route::get('/{conversation}', [ConversationController::class, 'show'])->name('show');
+        Route::post('/{conversation}/send', [ConversationController::class, 'sendMessage'])->name('send');
+        Route::post('/{conversation}/upload', [ConversationController::class, 'uploadFile'])->name('upload');
+        Route::post('/{conversation}/typing', [ConversationController::class, 'typing'])->name('typing');
+        Route::post('/{conversation}/read', [ConversationController::class, 'markAsRead'])->name('read');
+    });
+
+    // =====================================================================
+    // 2.4 ROUTES DOSSIERS (ORDRE CRITIQUE)
+    // =====================================================================
+    Route::prefix('dossiers')->name('dossiers.')->group(function () {
+        // ✅ ROUTES FIXES (sans paramètres) - EN PREMIER
+        Route::get('/create', [DossierController::class, 'create'])->name('create');
+        Route::get('/', [DossierController::class, 'index'])->name('index');
+        Route::post('/', [DossierController::class, 'store'])->name('store');
+        
+        // ✅ ROUTES AVEC PARAMÈTRES (slug d'abord, puis id)
+        Route::get('/{slug}', [DossierController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [DossierController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [DossierController::class, 'update'])->name('update');
+        Route::delete('/{id}', [DossierController::class, 'destroy'])->name('destroy');
+        
+        // Routes upload/téléchargement (avec id)
+        Route::post('/{id}/upload', [DossierController::class, 'upload'])->name('upload');
+        Route::get('/{id}/download', [DossierController::class, 'downloadDossier'])->name('download');
+        Route::post('/{id}/toggle-visibilite', [DossierController::class, 'toggleVisibilite'])->name('toggle-visibilite');
+        Route::post('/{id}/partager', [DossierController::class, 'partager'])->name('partager');
+    });
+
+    // =====================================================================
+    // 2.5 ROUTES FICHIERS
+    // =====================================================================
+    Route::prefix('fichiers')->name('fichiers.')->group(function () {
+        Route::get('/{id}/download', [DossierController::class, 'downloadFichier'])->name('download');
+    });
+
+    // =====================================================================
+    // 2.6 ROUTES CRUD POUR SOCIÉTÉS
+    // =====================================================================
+    Route::prefix('societes')->name('societes.')->group(function () {
+        // Routes FIXES
+        Route::get('/create', [SocieteController::class, 'create'])->name('create');
+        Route::get('/', [SocieteController::class, 'index'])->name('index');
+        Route::post('/', [SocieteController::class, 'store'])->name('store');
+        
+        // Routes avec paramètre {societe}
+        Route::get('/{societe}', [SocieteController::class, 'show'])->name('show');
+        Route::get('/{societe}/edit', [SocieteController::class, 'edit'])->name('edit');
+        Route::put('/{societe}', [SocieteController::class, 'update'])->name('update');
+        Route::delete('/{societe}', [SocieteController::class, 'destroy'])->name('destroy');
+        Route::post('/{societe}/toggle', [SocieteController::class, 'toggle'])->name('toggle');
+        Route::get('/{societe}/documents', [SocieteController::class, 'documents'])->name('documents');
+        Route::get('/{societe}/export', [SocieteController::class, 'export'])->name('export');
+        Route::get('/{societe}/stats', [SocieteController::class, 'stats'])->name('stats');
+    });
+
+    // =====================================================================
+    // 2.7 ROUTES CRUD POUR ACTIVITÉS
+    // =====================================================================
+    Route::prefix('activites')->name('activites.')->group(function () {
+        // Routes FIXES
+        Route::get('/create', [ActiviteController::class, 'create'])->name('create');
+        Route::get('/stats', [ActiviteController::class, 'stats'])->name('stats');
+        Route::get('/', [ActiviteController::class, 'index'])->name('index');
+        Route::post('/', [ActiviteController::class, 'store'])->name('store');
+        
+        // Routes avec paramètre {activite}
+        Route::get('/{activite}', [ActiviteController::class, 'show'])->name('show');
+        Route::get('/{activite}/edit', [ActiviteController::class, 'edit'])->name('edit');
+        Route::put('/{activite}', [ActiviteController::class, 'update'])->name('update');
+        Route::delete('/{activite}', [ActiviteController::class, 'destroy'])->name('destroy');
+        Route::post('/{activite}/toggle', [ActiviteController::class, 'toggle'])->name('toggle');
+        Route::get('/{activite}/documents', [ActiviteController::class, 'documents'])->name('documents');
+    });
+
+    // =====================================================================
+    // 2.8 ROUTES CRUD POUR UTILISATEURS
+    // =====================================================================
+    Route::prefix('users')->name('users.')->group(function () {
+        // Routes FIXES
+        Route::get('/create', [UserController::class, 'create'])->name('create');
+        Route::get('/', [UserController::class, 'index'])->name('index');
+        Route::post('/', [UserController::class, 'store'])->name('store');
+        
+        // Routes avec paramètre {id}
+        Route::get('/{id}/edit', [UserController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [UserController::class, 'update'])->name('update');
+        Route::delete('/{id}', [UserController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/toggle-status', [UserController::class, 'toggleStatus'])->name('toggle-status');
+        Route::post('/{id}/restore', [UserController::class, 'restore'])->name('restore');
+        Route::delete('/{id}/force-delete', [UserController::class, 'forceDelete'])->name('force-delete');
+    });
+
+    // =====================================================================
+    // 2.9 ROUTES PARAMÈTRES
+    // =====================================================================
+    Route::prefix('parametres')->name('parametres.')->group(function () {
+        // Routes FIXES
+        Route::get('/creer', [ParametreController::class, 'create'])->name('create');
+        Route::post('/mise-a-jour-masse', [ParametreController::class, 'updateEnMasse'])->name('update-masse');
+        Route::post('/restaurer-defauts', [ParametreController::class, 'restaurerDefauts'])->name('restaurer-defauts');
+        Route::get('/', [ParametreController::class, 'index'])->name('index');
+        Route::post('/', [ParametreController::class, 'store'])->name('store');
+        
+        // Routes avec paramètre {parametre} (avec contrainte numérique)
+        Route::get('/{parametre}', [ParametreController::class, 'show'])->name('show')->where('parametre', '[0-9]+');
+        Route::get('/{parametre}/modifier', [ParametreController::class, 'edit'])->name('edit')->where('parametre', '[0-9]+');
+        Route::put('/{parametre}', [ParametreController::class, 'update'])->name('update')->where('parametre', '[0-9]+');
+        Route::delete('/{parametre}', [ParametreController::class, 'destroy'])->name('destroy')->where('parametre', '[0-9]+');
+    });
+
+    // =====================================================================
+    // 2.10 ROUTES NOTIFICATIONS
+    // =====================================================================
+    Route::prefix('notifications')->name('notifications.')->group(function () {
+        // Routes FIXES
+        Route::post('/read-all', [NotificationController::class, 'markAllAsRead'])->name('read-all');
+        Route::get('/', [NotificationController::class, 'index'])->name('index');
+        
+        // Routes avec paramètre {id}
+        Route::post('/{id}/read', [NotificationController::class, 'markAsRead'])->name('read');
+    });
+
+    // =====================================================================
+    // 2.11 ROUTES CORBEILLE
+    // =====================================================================
+    Route::prefix('corbeille')->name('corbeille.')->group(function () {
+        // Routes FIXES
+        Route::get('/vider-formulaire', [CorbeilleController::class, 'formulaireVider'])->name('vider-formulaire');
+        Route::post('/vider', [CorbeilleController::class, 'viderCorbeille'])->name('vider');
+        Route::get('/restaurer-tous-formulaire', [CorbeilleController::class, 'formulaireRestaurerTous'])->name('restaurer-tous-formulaire');
+        Route::post('/restaurer-tous', [CorbeilleController::class, 'restaurerTous'])->name('restaurer-tous');
+        Route::get('/telecharger-rapport', [CorbeilleController::class, 'telechargerRapport'])->name('telecharger-rapport');
+        Route::post('/actions-groupées', [CorbeilleController::class, 'actionsGroupées'])->name('actions-groupées');
+        Route::get('/', [CorbeilleController::class, 'index'])->name('index');
+        
+        // Routes avec paramètre {type}
+        Route::get('/type/{type}', [CorbeilleController::class, 'parType'])->name('par-type');
+        
+        // Routes avec paramètre {id}
+        Route::get('/{id}/afficher', [CorbeilleController::class, 'afficher'])->name('afficher');
+        Route::post('/{id}/restaurer', [CorbeilleController::class, 'restaurer'])->name('restaurer');
+        Route::delete('/{id}/supprimer-definitivement', [CorbeilleController::class, 'supprimerDefinitivement'])->name('supprimer-definitivement');
+    });
+
+    // =====================================================================
+    // 2.12 ROUTES SPÉCIFIQUES DOCUMENTS (AVEC PARAMÈTRES FIXES)
+    // =====================================================================
+    // Routes de création avec parent explicite
     Route::get('/{activity}/{society}/facture/create/{devisId}', [DocumentController::class, 'createFacture'])
         ->name('document.facture.create');
     Route::get('/{activity}/{society}/attestation_realisation/create/{devis}', [DocumentController::class, 'createAttestationFromDevis'])
@@ -68,136 +238,13 @@ Route::prefix('back')->name('back.')->middleware('auth')->group(function () {
         ->name('document.select-facture-for-rapport');
 
     // =====================================================================
-    // 2.2 ROUTES DE MESSAGERIE (À METTRE AVANT LES ROUTES À 2 PARAMÈTRES)
-    // =====================================================================
-    Route::get('/conversations', [ConversationController::class, 'index'])->name('messagerie.index');
-    Route::get('/conversations/{conversation}', [ConversationController::class, 'show'])->name('messagerie.show');
-    Route::post('/conversations/{conversation}/send', [ConversationController::class, 'sendMessage'])->name('messagerie.send');
-    Route::post('/conversations/{conversation}/typing', [ConversationController::class, 'typing'])->name('messagerie.typing');
-    Route::post('/conversations/{conversation}/read', [ConversationController::class, 'markAsRead'])->name('messagerie.read');
-    Route::get('/users/{user}/conversation', [ConversationController::class, 'startWithUser'])->name('messagerie.start');
-    Route::get('/messages/dropdown', [ConversationController::class, 'dropdown'])->name('messagerie.dropdown');
-
-   // =====================================================================
-// 2.2 ROUTES DE MESSAGERIE (À METTRE AVANT LES ROUTES À 2 PARAMÈTRES)
-// =====================================================================
-Route::prefix('conversations')->name('messagerie.')->group(function () {
-    Route::get('/', [ConversationController::class, 'index'])->name('index');
-    Route::get('/{conversation}', [ConversationController::class, 'show'])->name('show');
-    Route::post('/{conversation}/send', [ConversationController::class, 'sendMessage'])->name('send');
-    Route::post('/{conversation}/upload', [ConversationController::class, 'uploadFile'])->name('upload'); // ✅ NOUVELLE ROUTE
-    Route::post('/{conversation}/typing', [ConversationController::class, 'typing'])->name('typing');
-    Route::post('/{conversation}/read', [ConversationController::class, 'markAsRead'])->name('read');
-    Route::get('/users/{user}/conversation', [ConversationController::class, 'startWithUser'])->name('start');
-    Route::get('/messages/dropdown', [ConversationController::class, 'dropdown'])->name('dropdown');
-});
-    // =====================================================================
-    // 2.4 ROUTES CRUD POUR SOCIÉTÉS
-    // =====================================================================
-    Route::prefix('societes')->name('societes.')->group(function () {
-        Route::get('/', [SocieteController::class, 'index'])->name('index');
-        Route::get('/create', [SocieteController::class, 'create'])->name('create');
-        Route::post('/', [SocieteController::class, 'store'])->name('store');
-        Route::get('/{societe}', [SocieteController::class, 'show'])->name('show');
-        Route::get('/{societe}/edit', [SocieteController::class, 'edit'])->name('edit');
-        Route::put('/{societe}', [SocieteController::class, 'update'])->name('update');
-        Route::delete('/{societe}', [SocieteController::class, 'destroy'])->name('destroy');
-        Route::post('/{societe}/toggle', [SocieteController::class, 'toggle'])->name('toggle');
-        Route::get('/{societe}/documents', [SocieteController::class, 'documents'])->name('documents');
-        Route::get('/{societe}/export', [SocieteController::class, 'export'])->name('export');
-        Route::get('/{societe}/stats', [SocieteController::class, 'stats'])->name('stats');
-    });
-
-    // =====================================================================
-// ROUTES POUR ACTIVITÉS
-// =====================================================================
-Route::prefix('activites')->name('activites.')->group(function () {
-    // Routes principales
-    Route::get('/', [ActiviteController::class, 'index'])->name('index');
-    Route::get('/create', [ActiviteController::class, 'create'])->name('create');
-    Route::post('/', [ActiviteController::class, 'store'])->name('store');
-    Route::get('/stats', [ActiviteController::class, 'stats'])->name('stats');
-    
-    // Routes avec paramètre {activite} (attention à l'ordre !)
-    Route::get('/{activite}', [ActiviteController::class, 'show'])->name('show');
-    Route::get('/{activite}/edit', [ActiviteController::class, 'edit'])->name('edit');
-    Route::put('/{activite}', [ActiviteController::class, 'update'])->name('update');
-    Route::delete('/{activite}', [ActiviteController::class, 'destroy'])->name('destroy');
-    Route::post('/{activite}/toggle', [ActiviteController::class, 'toggle'])->name('toggle');
-    Route::get('/{activite}/documents', [ActiviteController::class, 'documents'])->name('documents');
-});
-
-    // =====================================================================
-    // 2.5 ROUTES CRUD POUR UTILISATEURS
-    // =====================================================================
-    Route::prefix('users')->name('users.')->group(function () {
-        Route::get('/', [UserController::class, 'index'])->name('index');
-        Route::get('/create', [UserController::class, 'create'])->name('create');
-        Route::post('/', [UserController::class, 'store'])->name('store');
-        Route::get('/{id}/edit', [UserController::class, 'edit'])->name('edit');
-        Route::put('/{id}', [UserController::class, 'update'])->name('update');
-        Route::delete('/{id}', [UserController::class, 'destroy'])->name('destroy');
-        Route::post('/{id}/toggle-status', [UserController::class, 'toggleStatus'])->name('toggle-status');
-        Route::post('/{id}/restore', [UserController::class, 'restore'])->name('restore');
-        Route::delete('/{id}/force-delete', [UserController::class, 'forceDelete'])->name('force-delete');
-    });
-
-    // =====================================================================
-// 2.6 ROUTES PARAMÈTRES (CORRIGÉ - PLUS D'IMBRICATION)
-// =====================================================================
-    Route::prefix('parametres')->name('parametres.')->group(function () {
-        Route::get('/', [ParametreController::class, 'index'])->name('index');
-        Route::get('/creer', [ParametreController::class, 'create'])->name('create');
-        Route::post('/', [ParametreController::class, 'store'])->name('store');
-        // CONTRAINTE : uniquement des chiffres
-        Route::get('/{parametre}', [ParametreController::class, 'show'])->name('show')->where('parametre', '[0-9]+');
-        Route::get('/{parametre}/modifier', [ParametreController::class, 'edit'])->name('edit')->where('parametre', '[0-9]+');
-        Route::put('/{parametre}', [ParametreController::class, 'update'])->name('update')->where('parametre', '[0-9]+');
-        Route::delete('/{parametre}', [ParametreController::class, 'destroy'])->name('destroy')->where('parametre', '[0-9]+');
-        Route::post('/mise-a-jour-masse', [ParametreController::class, 'updateEnMasse'])->name('update-masse');
-        Route::post('/restaurer-defauts', [ParametreController::class, 'restaurerDefauts'])->name('restaurer-defauts');
-    });
-    // =====================================================================
-    // 2.7 ROUTES NOTIFICATIONS
-    // =====================================================================
-    Route::prefix('notifications')->name('notifications.')->group(function () {
-        Route::get('/', [NotificationController::class, 'index'])->name('index');
-        Route::post('/{id}/read', [NotificationController::class, 'markAsRead'])->name('read');
-        Route::post('/read-all', [NotificationController::class, 'markAllAsRead'])->name('read-all');
-    });
-
-    // =====================================================================
-    // 2.8 ROUTES CORBEILLE
-    // =====================================================================
-    Route::prefix('corbeille')->name('corbeille.')->group(function () {
-        Route::get('/', [CorbeilleController::class, 'index'])->name('index');
-        Route::get('/{id}/afficher', [CorbeilleController::class, 'afficher'])->name('afficher');
-        Route::post('/{id}/restaurer', [CorbeilleController::class, 'restaurer'])->name('restaurer');
-        Route::delete('/{id}/supprimer-definitivement', [CorbeilleController::class, 'supprimerDefinitivement'])->name('supprimer-definitivement');
-        Route::get('/vider-formulaire', [CorbeilleController::class, 'formulaireVider'])->name('vider-formulaire');
-        Route::post('/vider', [CorbeilleController::class, 'viderCorbeille'])->name('vider');
-        Route::get('/restaurer-tous-formulaire', [CorbeilleController::class, 'formulaireRestaurerTous'])->name('restaurer-tous-formulaire');
-        Route::post('/restaurer-tous', [CorbeilleController::class, 'restaurerTous'])->name('restaurer-tous');
-        Route::get('/type/{type}', [CorbeilleController::class, 'parType'])->name('par-type');
-        Route::get('/telecharger-rapport', [CorbeilleController::class, 'telechargerRapport'])->name('telecharger-rapport');
-        Route::post('/actions-groupées', [CorbeilleController::class, 'actionsGroupées'])->name('actions-groupées');
-    });
-
-    // =====================================================================
-    // 2.9 ROUTES DOCUMENTS GLOBALES (SANS PARAMÈTRES)
-    // =====================================================================
-    Route::get('/documents/creation-rapide', [DocumentController::class, 'creationRapide'])->name('documents.creation-rapide');
-    Route::get('/documents/tous', [DocumentController::class, 'tousDocuments'])->name('documents.tous');
-    Route::get('/all-dashboards', [DocumentController::class, 'allDashboards'])->name('all-dashboards');
-
-    // =====================================================================
-    // 2.10 ROUTE DE CRÉATION GÉNÉRIQUE (APRÈS TOUTES LES ROUTES SPÉCIFIQUES)
+    // 2.13 ROUTES DE CRÉATION GÉNÉRIQUE
     // =====================================================================
     Route::get('/{activity}/{society}/{type}/create', [DocumentController::class, 'create'])->name('document.create');
     Route::post('/{activity}/{society}/{type}/store', [DocumentController::class, 'store'])->name('document.store');
 
     // =====================================================================
-    // 2.11 ROUTES AVEC 4 PARAMÈTRES (DOCUMENT ID)
+    // 2.14 ROUTES AVEC 4 PARAMÈTRES (DOCUMENT ID)
     // =====================================================================
     Route::get('/{activity}/{society}/{type}/{document}/preview', [DocumentController::class, 'previewPDF'])->name('document.preview');
     Route::get('/{activity}/{society}/{type}/{document}/show', [DocumentController::class, 'show'])->name('document.show');
@@ -209,7 +256,7 @@ Route::prefix('activites')->name('activites.')->group(function () {
     Route::post('/{activity}/{society}/{type}/{document}/generate-pdf', [DocumentController::class, 'generatePDF'])->name('document.generate_pdf');
 
     // =====================================================================
-    // 2.12 ROUTES AVEC 2 PARAMÈTRES (DASHBOARD)
+    // 2.15 ROUTES AVEC 2 PARAMÈTRES (DASHBOARD)
     // =====================================================================
     Route::get('/{activity}/{society}', [DocumentController::class, 'dashboard'])->name('dashboard');
     Route::get('/{activity}/{society}/{type}/list', [DocumentController::class, 'listDocuments'])->name('document.list');
@@ -225,12 +272,6 @@ Route::post('/logout-other-sessions', function (Request $request) {
 })->middleware('auth')->name('logout.other');
 
 // =========================================================================
-// 5recherche globale
+// 4. AUTH ROUTES
 // =========================================================================
-
-
-Route::prefix('back')->name('back.')->middleware('auth')->group(function () {
-    Route::get('/search', [App\Http\Controllers\Back\SearchController::class, 'global'])->name('search.global');
-    Route::get('/ajax', [App\Http\Controllers\Back\SearchController::class, 'ajax'])->name('ajax');
-});
 require __DIR__ . '/auth.php';

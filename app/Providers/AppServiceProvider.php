@@ -23,9 +23,12 @@ class AppServiceProvider extends ServiceProvider
      */// Dans votre contrôleur ou AppServiceProvider
 public function boot()
 {
-     if (app()->environment('local')) {
-        URL::forceScheme('https');
-    }
+    //  if (app()->environment('local')) {
+    //     URL::forceScheme('https');
+    // }
+    if (env('APP_ENV') === 'local') {
+            URL::forceScheme('http');
+        }
     Paginator::useBootstrapFive();
     View::composer('back.layouts.sidebar', function ($view) {
         // Pour les activités - tableau clé => label

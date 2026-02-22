@@ -19,16 +19,16 @@
                 <div class="ms-3">
                     <h6 class="mb-0">
                         @auth
-                            {{ Auth::user()->name ?? 'Utilisateur' }}
+                        {{ Auth::user()->name ?? 'Utilisateur' }}
                         @else
-                            Non connecté
+                        Non connecté
                         @endauth
                     </h6>
                     <span class="text-muted">
                         @auth
-                            {{ Auth::user()->estAdministrateur() ? 'Administrateur' : 'Utilisateur' }}
+                        {{ Auth::user()->estAdministrateur() ? 'Administrateur' : 'Utilisateur' }}
                         @else
-                            Invité
+                        Invité
                         @endauth
                     </span>
                 </div>
@@ -36,37 +36,37 @@
         </div>
 
         @php
-            use App\Models\Activite;
-            use App\Models\Societe;
-            use App\Models\User;
-            use App\Models\Document;
+        use App\Models\Activite;
+        use App\Models\Societe;
+        use App\Models\User;
+        use App\Models\Document;
 
-            // Récupère uniquement les activités actives
-            $activites = Activite::active()->orderBy('nom')->pluck('nom', 'code')->toArray();
+        // Récupère uniquement les activités actives
+        $activites = Activite::active()->orderBy('nom')->pluck('nom', 'code')->toArray();
 
-            // Récupère uniquement les SOCIÉTÉS ACTIVES
-            $societesActives = Societe::active()
-                ->orderBy('nom')
-                ->get()
-                ->mapWithKeys(function ($societe) {
-                    return [$societe->code => $societe->nom_formate];
-                })
-                ->toArray();
+        // Récupère uniquement les SOCIÉTÉS ACTIVES
+        $societesActives = Societe::active()
+        ->orderBy('nom')
+        ->get()
+        ->mapWithKeys(function ($societe) {
+        return [$societe->code => $societe->nom_formate];
+        })
+        ->toArray();
 
-            // Utilisez les sociétés actives de la base de données
-            $societes = $societesActives;
+        // Utilisez les sociétés actives de la base de données
+        $societes = $societesActives;
 
-            $documentTypes = [
-                'devis' => ['icon' => 'fa-file-invoice', 'label' => 'Devis'],
-                'facture' => ['icon' => 'fa-file-invoice-dollar', 'label' => 'Factures'],
-                'attestation_realisation' => ['icon' => 'fa-certificate', 'label' => 'Attestations réalisation'],
-                'attestation_signataire' => ['icon' => 'fa-certificate', 'label' => 'Attestations signataire'],
-                'rapport' => ['icon' => 'fa-chart-line', 'label' => 'Rapports'],
-                'cahier_des_charges' => ['icon' => 'fa-book', 'label' => 'Cahiers des charges']
-            ];
+        $documentTypes = [
+        'devis' => ['icon' => 'fa-file-invoice', 'label' => 'Devis'],
+        'facture' => ['icon' => 'fa-file-invoice-dollar', 'label' => 'Factures'],
+        'attestation_realisation' => ['icon' => 'fa-certificate', 'label' => 'Attestations réalisation'],
+        'attestation_signataire' => ['icon' => 'fa-certificate', 'label' => 'Attestations signataire'],
+        'rapport' => ['icon' => 'fa-chart-line', 'label' => 'Rapports'],
+        'cahier_des_charges' => ['icon' => 'fa-book', 'label' => 'Cahiers des charges']
+        ];
 
-            $currentActivity = request()->route('activity') ?? array_key_first($activites);
-            $currentSociety = request()->route('society') ?? array_key_first($societes);
+        $currentActivity = request()->route('activity') ?? array_key_first($activites);
+        $currentSociety = request()->route('society') ?? array_key_first($societes);
         @endphp
 
         <div class="navbar-nav w-100">
@@ -83,10 +83,10 @@
                 </a>
                 <div class="dropdown-menu bg-transparent border-0">
                     @foreach($activites as $key => $label)
-                        <a href="{{ route('back.activites.show', $key) }}"
-                            class="dropdown-item {{ $currentActivity === $key ? 'active' : '' }}">
-                            <i class="fa fa-gear me-2"></i>{{ $label }}
-                        </a>
+                    <a href="{{ route('back.activites.show', $key) }}"
+                        class="dropdown-item {{ $currentActivity === $key ? 'active' : '' }}">
+                        <i class="fa fa-gear me-2"></i>{{ $label }}
+                    </a>
                     @endforeach
                     <div class="dropdown-divider"></div>
                     <a href="{{ route('back.activites.create') }}" class="dropdown-item">
@@ -103,22 +103,22 @@
                 <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
                     <i class="fa fa-building me-2"></i>SOCIÉTÉS
                     @if(empty($societes))
-                        <span class="badge bg-danger ms-2">Aucune</span>
+                    <span class="badge bg-danger ms-2">Aucune</span>
                     @endif
                 </a>
                 <div class="dropdown-menu bg-transparent border-0">
                     @if(!empty($societes))
-                        @foreach($societes as $key => $label)
-                            <a href="{{ route('back.societes.show', $key) }}"
-                                class="dropdown-item {{ $currentSociety === $key ? 'active' : '' }}">
-                                <i class="fa fa-building me-2"></i>{{ $label }}
-                            </a>
-                        @endforeach
+                    @foreach($societes as $key => $label)
+                    <a href="{{ route('back.societes.show', $key) }}"
+                        class="dropdown-item {{ $currentSociety === $key ? 'active' : '' }}">
+                        <i class="fa fa-building me-2"></i>{{ $label }}
+                    </a>
+                    @endforeach
                     @else
-                        <div class="dropdown-item text-muted">
-                            <i class="fa fa-exclamation-triangle me-2"></i>
-                            Aucune société active
-                        </div>
+                    <div class="dropdown-item text-muted">
+                        <i class="fa fa-exclamation-triangle me-2"></i>
+                        Aucune société active
+                    </div>
                     @endif
 
                     <div class="dropdown-divider"></div>
@@ -164,33 +164,33 @@
                     data-bs-toggle="dropdown">
                     <span><i class="fa fa-project-diagram me-2"></i>ESPACES TRAVAIL</span>
                     @if(empty($societes))
-                        <small class="text-warning">(sociétés manquantes)</small>
+                    <small class="text-warning">(sociétés manquantes)</small>
                     @endif
                 </a>
                 <div class="dropdown-menu bg-transparent border-0 w-100">
                     @if(!empty($activites) && !empty($societes))
-                        @foreach($activites as $actKey => $actLabel)
-                            <h6 class="dropdown-header">
-                                <i class="fa fa-tasks me-2"></i>{{ $actLabel }}
-                            </h6>
-                            @foreach($societes as $socKey => $socLabel)
-                                <a href="{{ route('back.dashboard', ['activity' => $actKey, 'society' => $socKey]) }}"
-                                    class="dropdown-item ps-4 {{ $currentActivity === $actKey && $currentSociety === $socKey ? 'active' : '' }}">
-                                    <i class="fa fa-building me-2"></i>{{ $socLabel }}
-                                </a>
-                            @endforeach
-                            <div class="dropdown-divider"></div>
-                        @endforeach
+                    @foreach($activites as $actKey => $actLabel)
+                    <h6 class="dropdown-header">
+                        <i class="fa fa-tasks me-2"></i>{{ $actLabel }}
+                    </h6>
+                    @foreach($societes as $socKey => $socLabel)
+                    <a href="{{ route('back.dashboard', ['activity' => $actKey, 'society' => $socKey]) }}"
+                        class="dropdown-item ps-4 {{ $currentActivity === $actKey && $currentSociety === $socKey ? 'active' : '' }}">
+                        <i class="fa fa-building me-2"></i>{{ $socLabel }}
+                    </a>
+                    @endforeach
+                    <div class="dropdown-divider"></div>
+                    @endforeach
                     @else
-                        <div class="dropdown-item text-muted">
-                            @if(empty($activites))
-                                <i class="fa fa-exclamation-circle me-2"></i>
-                                Aucune activité active
-                            @elseif(empty($societes))
-                                <i class="fa fa-exclamation-circle me-2"></i>
-                                Aucune société active
-                            @endif
-                        </div>
+                    <div class="dropdown-item text-muted">
+                        @if(empty($activites))
+                        <i class="fa fa-exclamation-circle me-2"></i>
+                        Aucune activité active
+                        @elseif(empty($societes))
+                        <i class="fa fa-exclamation-circle me-2"></i>
+                        Aucune société active
+                        @endif
+                    </div>
                     @endif
                     <a href="{{ route('back.all-dashboards') }}" class="dropdown-item">
                         <i class="fa fa-eye me-2"></i>Voir tous les espaces
@@ -214,26 +214,62 @@
                     </a>
                     <div class="dropdown-divider"></div>
                     @foreach($documentTypes as $typeKey => $type)
-                        <a href="{{ route('back.document.list', ['activity' => $currentActivity, 'society' => $currentSociety, 'type' => $typeKey]) }}"
-                            class="dropdown-item">
-                            <i class="fa {{ $type['icon'] }} me-2"></i>{{ $type['label'] }}
-                        </a>
+                    <a href="{{ route('back.document.list', ['activity' => $currentActivity, 'society' => $currentSociety, 'type' => $typeKey]) }}"
+                        class="dropdown-item">
+                        <i class="fa {{ $type['icon'] }} me-2"></i>{{ $type['label'] }}
+                    </a>
                     @endforeach
+                </div>
+            </div>
+
+
+            <!-- DOSSIERS - NOUVEAU -->
+            <div class="nav-item">
+                <a href="{{ route('back.dossiers.index') }}"
+                    class="nav-link {{ request()->routeIs('back.dossiers.*') ? 'active' : '' }}">
+                    <i class="fas fa-folder me-2"></i>
+                    <span>Mes dossiers</span>
+                    @php
+                    $nbDossiers = \App\Models\Dossier::pourUtilisateur(auth()->id())->count();
+                    @endphp
+                    @if($nbDossiers > 0)
+                    <span class="badge bg-info ms-auto">{{ $nbDossiers }}</span>
+                    @endif
+                </a>
+            </div>
+
+            <!-- Sous-menu dossiers (optionnel) -->
+            <div class="nav-item dropdown">
+                <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+                    <i class="fas fa-folder-tree me-2"></i>
+                    <span>Gestion dossiers</span>
+                </a>
+                <div class="dropdown-menu bg-transparent border-0">
+                    <a href="{{ route('back.dossiers.index') }}?visibilite=public" class="dropdown-item">
+                        <i class="fas fa-globe me-2 text-success"></i>Dossiers publics
+                    </a>
+                    <a href="{{ route('back.dossiers.index') }}?visibilite=prive" class="dropdown-item">
+                        <i class="fas fa-lock me-2 text-warning"></i>Dossiers privés
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="{{ route('back.dossiers.create') }}" class="dropdown-item">
+                        <i class="fas fa-plus me-2 text-primary"></i>Nouveau dossier
+                    </a>
                 </div>
             </div>
 
             <!-- CORBEILLE -->
             @php
-                $corbeilleCount = Document::onlyTrashed()->count() +
-                                 Activite::onlyTrashed()->count() +
-                                 Societe::onlyTrashed()->count();
+            $corbeilleCount = Document::onlyTrashed()->count() +
+            Activite::onlyTrashed()->count() +
+            Societe::onlyTrashed()->count();
             @endphp
             <a href="{{ route('back.corbeille.index') }}" class="nav-item nav-link {{ request()->routeIs('back.corbeille.*') ? 'active' : '' }}">
                 <i class="fa fa-trash me-2"></i>Corbeille
                 @if($corbeilleCount > 0)
-                    <span class="badge bg-danger float-end badge-pulse">
-                        {{ $corbeilleCount }}
-                    </span>
+                <span class="badge bg-danger float-end badge-pulse">
+                    {{ $corbeilleCount }}
+                </span>
                 @endif
             </a>
 
