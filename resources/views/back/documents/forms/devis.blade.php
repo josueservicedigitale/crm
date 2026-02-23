@@ -46,8 +46,8 @@
                    value="{{ old('nombre_batiments', $document->nombre_batiments ?? '') }}">
         </div>
 
-        <div class="col-md-12 mb-3">
-            <label class="form-label">Description du projet / bâtiments</label>
+        <div class="col-md-12 mb-2">
+            <label class="form-label">Description du bâtiments</label>
             <textarea name="details_batiments" rows="3" class="form-control">{{ old('details_batiments', $document->details_batiments ?? '') }}</textarea>
         </div>
 

@@ -37,110 +37,6 @@ class DocumentController extends Controller
     }
 
 
-    // public function dashboard($activity, $society)
-    // {
-    //     // Normaliser la société
-    //     $normalizedSociety = $this->normalizeSociety($society);
-
-    //     // Utiliser les noms normalisés pour les vues
-    //     $views = [
-    //         'energie_nova' => [  // Utiliser le nom normalisé
-    //             'desembouage' => 'back.dossiers.nova.novadesembouageboard',
-    //             'reequilibrage' => 'back.dossiers.nova.novaboard',
-    //         ],
-    //         'myhouse' => [  // Utiliser le nom normalisé
-    //             'desembouage' => 'back.dossiers.house.housedesembouageboard',
-    //             'reequilibrage' => 'back.dossiers.house.houseboard',
-    //         ],
-    //         'patrimoine' => [  // Utiliser le nom normalisé
-    //             'desembouage' => 'back.dossiers.patrimoine.patrimoinedesembouageboard',
-    //             'reequilibrage' => 'back.dossiers.patrimoine.patrimoineboard',
-    //         ],
-    //     ];
-
-    //     // Vérifier avec le nom normalisé
-    //     abort_if(!isset($views[$normalizedSociety][$activity]), 404);
-
-    //     // Toutes les requêtes doivent utiliser le nom normalisé
-    //     $stats = [
-    //         'total' => Document::where('society', $normalizedSociety)  // ← ICI
-    //             ->where('activity', $activity)
-    //             ->count(),
-    //         'devis' => Document::where('society', $normalizedSociety)
-    //             ->where('activity', $activity)
-    //             ->where('type', 'devis')
-    //             ->count(),
-    //         'factures' => Document::where('society', $normalizedSociety)
-    //             ->where('activity', $activity)
-    //             ->where('type', 'facture')
-    //             ->count(),
-    //         'rapports' => Document::where('society', $normalizedSociety)
-    //             ->where('activity', $activity)
-    //             ->where('type', 'rapport')
-    //             ->count(),
-    //         'cahiers' => Document::where('society', $normalizedSociety)
-    //             ->where('activity', $activity)
-    //             ->where('type', 'cahier_des_charges')
-    //             ->count(),
-    //         'attestations' => Document::where('society', $normalizedSociety)
-    //             ->where('activity', $activity)
-    //             ->whereIn('type', ['attestation_realisation', 'attestation_signataire'])
-    //             ->count(),
-    //         'ce_mois' => Document::where('society', $normalizedSociety)
-    //             ->where('activity', $activity)
-    //             ->whereMonth('created_at', now()->month)
-    //             ->count(),
-    //         'cette_semaine' => Document::where('society', $normalizedSociety)
-    //             ->where('activity', $activity)
-    //             ->where('created_at', '>=', now()->subWeek())
-    //             ->count(),
-    //     ];
-
-    //     // Documents récents
-    //     $recentDocuments = Document::where('society', $normalizedSociety)
-    //         ->where('activity', $activity)
-    //         ->latest()
-    //         ->take(5)
-    //         ->get();
-
-    //     // Meilleurs clients - Utiliser nom_residence ou adresse_travaux comme identifiant
-    //     // Puisqu'il n'y a pas de colonne client_nom, on utilise nom_residence
-    //     $topClients = Document::where('society', $normalizedSociety)
-    //         ->where('activity', $activity)
-    //         ->whereNotNull('nom_residence') // Utiliser nom_residence au lieu de client_nom
-    //         ->where('nom_residence', '!=', '') // Exclure les chaînes vides
-    //         ->selectRaw('nom_residence as client_nom, COUNT(*) as total, SUM(montant_ttc) as total_montant')
-    //         ->groupBy('nom_residence')
-    //         ->orderByDesc('total')
-    //         ->limit(5)
-    //         ->get();
-
-    //     // Si nom_residence est vide, utiliser adresse_travaux
-    //     if ($topClients->isEmpty()) {
-    //         $topClients = Document::where('society', $normalizedSociety)
-    //             ->where('activity', $activity)
-    //             ->whereNotNull('adresse_travaux')
-    //             ->where('adresse_travaux', '!=', '')
-    //             ->selectRaw('SUBSTRING(adresse_travaux, 1, 50) as client_nom, COUNT(*) as total, SUM(montant_ttc) as total_montant')
-    //             ->groupBy('adresse_travaux')
-    //             ->orderByDesc('total')
-    //             ->limit(5)
-    //             ->get();
-    //     }
-
-    //     return view($views[$normalizedSociety][$activity], compact(
-    //         'activity',
-    //         'society',
-    //         'recentDocuments',
-    //         'stats',
-    //         'topClients'
-    //     ));
-    // }
-
-    
-    
-    
-    
  public function dashboard($activity, $society)
 {
     // 1️⃣ Normaliser la société (garder le code normalisé pour les requêtes)
@@ -1412,9 +1308,8 @@ public function store(Request $request, $activity, $society, $type)
     });
 }
 
-/**
- * Génère une référence unique pour un document
- */
+
+
 private function generateReference($society, $type)
 {
     $prefixes = [
@@ -1449,6 +1344,7 @@ private function generateReference($society, $type)
                 }
             }
 
+            
             // --- Filtrer seulement les champs fillables ---
             $fillableFields = $document->getFillable();
             $filteredData = [];
@@ -2375,5 +2271,30 @@ private function findAlternativePdfViews(Document $document, string $templateFol
             return back()->with('error', 'Erreur régénération PDF : ' . $e->getMessage());
         }
     }
+
+
+    public function uploadImages(Request $request, $id)
+{
+    $document = Document::findOrFail($id);
+    
+    $imageFields = [
+        'cachet_image', 'signature_image', 'sentinel_logo',
+        'icone_1', 'icone_2', 'icone_3',
+        'image_pompe_jetflush', 'image_jetflush_filter',
+        'image_x400', 'image_x800', 'image_x100', 'image_x700',
+        'image_vortex300', 'image_vortex500'
+    ];
+    
+    foreach ($imageFields as $field) {
+        if ($request->hasFile($field)) {
+            $path = $request->file($field)->store('documents/images/' . $document->id, 'public');
+            $document->$field = $path;
+        }
+    }
+    
+    $document->save();
+    
+    return response()->json(['success' => true]);
+}
 }
  

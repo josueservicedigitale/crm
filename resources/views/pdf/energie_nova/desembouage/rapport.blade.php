@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Attestation de désembouage</title>
+<title>Attestation de désembouage - {{ $document->reference ?? '' }}</title>
 
 <style>
   /* DOMPDF SAFE */
@@ -95,7 +95,7 @@
     border:2px dashed #e30613;
     border-radius:12px;
     padding:8px;
-    height:178px; /* ajusté pour tenir */
+    height:178px;
   }
   .panel-title{
     background:#e30613;
@@ -150,8 +150,9 @@
     border:2px dashed #e30613;
     border-radius:12px;
     padding:6px;
-    height:180px; /* réduit pour garder 1 page */
+    height:200px;
     font-size:10.3px;
+    position: relative;
   }
   .product-title{
     background:#e30613;
@@ -164,26 +165,70 @@
     font-size:11px;
   }
 
-  .product-item{ width:100%; margin-bottom:6px; white-space:nowrap; }
-  .product-left{ display:inline-block; vertical-align:middle; width:70%; }
-  .product-img{ display:inline-block; vertical-align:middle; width:40%; text-align:right; }
-  .product-img img{ height:40px; }
+  .product-item{ 
+    width:100%; 
+    margin-bottom:8px; 
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .product-left{ 
+    display: flex;
+    align-items: center;
+    width: 55%;
+  }
+  .product-img{ 
+    width: 40%;
+    text-align:right; 
+  }
+  .product-img img{ 
+    height: 35px; 
+    max-width: 100%;
+    object-fit: contain;
+  }
+
+  .product-other {
+    margin-top: 8px;
+    padding-top: 4px;
+    border-top: 1px dashed #e30613;
+    font-style: italic;
+    color: #333;
+  }
 
   /* RIGHT SIDE (stamp + 3 icons + sentinel) */
   .right-side{
-    height:160px;
+    height:200px;
     text-align:center;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
   }
-  .stamp img{ height:72px; }
-  .sig img{ height:auto; margin-top:4px; } /* signature image */
-  .icons-red img{ height:30px; margin:4px 4px 0 4px; }
-  .sentinel-logo img{ height:140px;}
+  .stamp img{ 
+    height: 60px; 
+    max-width: 100%;
+    object-fit: contain;
+  }
+  .icons-red{ 
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin: 8px 0;
+  }
+  .icons-red img{ 
+    height: 30px; 
+    width: auto;
+  }
+  .sentinel-logo img{ 
+    height: 50px;
+    max-width: 100%;
+    object-fit: contain;
+  }
 
 .dots-bar{
   width:100%;
   border-collapse:collapse;
   table-layout:fixed;
-  margin-top:6mm; /* espace avant le footer dots */
+  margin-top:6mm;
 }
 .dots-bar td{
   height:6px;
@@ -201,28 +246,42 @@
   background:#111;
   border-radius:50%;
 }
+
+.product-other-text {
+  font-size: 9px;
+  padding: 2px 4px;
+  background: #f9f9f9;
+  border-radius: 4px;
+  margin-top: 4px;
+  text-align: center;
+  word-break: break-word;
+}
 </style>
 </head>
 
 <body>
 
+{{-- =========================================== --}}
+{{-- EN-TÊTE AVEC DONNÉES DYNAMIQUES --}}
+{{-- =========================================== --}}
 <table class="top-info">
   <tr>
     <td style="width:60%;">
       <strong>ADRESSE DE TRAVAUX:</strong><br>
-      27 Rue Pierre Benoit<br>
-      12 Rue Toulouse Lautrec<br>
-      33500 Libourne
+      {{ $document->adresse_travaux ?? 'Non renseignée' }}<br>
+      @if($document->code_postal ?? false)
+        {{ $document->code_postal }} {{ $document->ville ?? '' }}
+      @endif
     </td>
     <td class="right-info" style="width:40%;">
       <strong>N° SIRET :</strong> 93348779500017<br><br>
-      <strong>DATE</strong> : 16/10/2025<br>
-      <strong>FACTURE N°</strong> : ENR-2025-29-F873
+      <strong>DATE</strong> : {{ $document->date_facture ? \Carbon\Carbon::parse($document->date_facture)->format('d/m/Y') : now()->format('d/m/Y') }}<br>
+      <strong>FACTURE N°</strong> : ENR-2025-29-F{{ $document->reference_facture ?? $document->id }}
     </td>
   </tr>
 </table>
 
-<!-- Logo CEE à gauche comme capture -->
+{{-- Logo CEE (statique) --}}
 <div style="text-align:left; margin-bottom:5px;">
   <img class="cee-logo" src="{{ public_path('assets/img/nova/Rapport_files/Image_001.jpg') }}" alt="CEE">
 </div>
@@ -230,7 +289,7 @@
 <div class="title">ATTESTATION DE DÉSEMBOUAGE</div>
 <div class="red-line"></div>
 
-<!-- ✅ Texte + logos de reconnaissance (en haut à droite) -->
+{{-- Texte + logos de reconnaissance (STATIQUES) --}}
 <table class="desc-row">
   <tr>
     <td class="desc-left">
@@ -242,44 +301,54 @@
     </td>
     <td class="desc-right">
       <div class="desc-icons">
-        
-        <img src="{{ public_path('assets/img/nova/Rapport_files/ic1.jpg') }}" alt="ic1.jpg">
-        <img src="{{ public_path('assets/img/nova/Rapport_files/ic1.jpg') }}" alt="ic1.jpg">
-        <img src="{{ public_path('assets/img/nova/Rapport_files/ic1.jpg') }}" alt="ic1.jpg">
-        <img src="{{ public_path('assets/img/nova/Rapport_files/ic1.jpg') }}" alt="ic1.jpg">
+        <img src="{{ public_path('assets/img/nova/Rapport_files/ic1.jpg') }}" alt="ic1">
+        <img src="{{ public_path('assets/img/nova/Rapport_files/ic1.jpg') }}" alt="ic1">
+        <img src="{{ public_path('assets/img/nova/Rapport_files/ic1.jpg') }}" alt="ic1">
+        <img src="{{ public_path('assets/img/nova/Rapport_files/ic1.jpg') }}" alt="ic1">
       </div>
     </td>
   </tr>
 </table>
 
-
+{{-- =========================================== --}}
+{{-- CRITÈRES D'INSTALLATION (DYNAMIQUES) --}}
+{{-- =========================================== --}}
 <div class="no-break">
   <table class="main-table">
     <tr>
       <td style="width:25%;">
         <div class="side-box">
           <strong>Bâtiment existant depuis plus de 2 ans à l'engagement de l'opération</strong><br><br>
-          <span class="choice"><span class="cb on"></span>Oui</span>
-          <span class="choice"><span class="cb"></span>Non</span><br><br>
+          @php $batiment = $document->batiment_existant ?? 'oui'; @endphp
+          <span class="choice"><span class="cb {{ $batiment == 'oui' ? 'on' : '' }}"></span>Oui</span>
+          <span class="choice"><span class="cb {{ $batiment == 'non' ? 'on' : '' }}"></span>Non</span><br><br>
 
           <strong>Type de logement</strong><br><br>
-          <span class="choice"><span class="cb on"></span>Maison</span>
-          <span class="choice"><span class="cb"></span>Appartement</span><br><br>
+          @php $logement = $document->type_logement ?? 'maison'; @endphp
+          <span class="choice"><span class="cb {{ $logement == 'maison' ? 'on' : '' }}"></span>Maison</span>
+          <span class="choice"><span class="cb {{ $logement == 'appartement' ? 'on' : '' }}"></span>Appartement</span><br><br>
 
           <strong>L'opération concerne une installation collective de chauffage</strong><br><br>
-          <span class="choice"><span class="cb on"></span>Oui</span>
-          <span class="choice"><span class="cb"></span>Non</span>
+          @php $collective = $document->installation_collective ?? 'oui'; @endphp
+          <span class="choice"><span class="cb {{ $collective == 'oui' ? 'on' : '' }}"></span>Oui</span>
+          <span class="choice"><span class="cb {{ $collective == 'non' ? 'on' : '' }}"></span>Non</span>
         </div>
       </td>
 
       <td style="width:25%;">
         <div class="panel">
           <div class="panel-title">Type de générateur</div>
-          <div class="line"><span class="cb"></span>Chaudière hors condensation</div>
-          <div class="line"><span class="cb on"></span>Chaudière à condensation</div>
-          <div class="line"><span class="cb"></span>Réseau de chaleur</div>
+          @php $generateur = $document->type_generateur ?? 'chaudiere_condensation'; @endphp
+          <div class="line"><span class="cb {{ $generateur == 'chaudiere_hors_condensation' ? 'on' : '' }}"></span>Chaudière hors condensation</div>
+          <div class="line"><span class="cb {{ $generateur == 'chaudiere_condensation' ? 'on' : '' }}"></span>Chaudière à condensation</div>
+          <div class="line"><span class="cb {{ $generateur == 'reseau_chaleur' ? 'on' : '' }}"></span>Réseau de chaleur</div>
+          
+          @if($generateur == 'autre' && $document->autre_type_generateur)
+          <div class="product-other-text">{{ $document->autre_type_generateur }}</div>
+          @endif
+          
           <div style="margin-top:10px;">
-            Puissance nominale du générateur : <strong>720 kW</strong>
+            Puissance nominale du générateur : <strong>{{ $document->puissance_chaudiere ?? '0' }} kW</strong>
           </div>
         </div>
       </td>
@@ -287,12 +356,12 @@
       <td style="width:25%;">
         <div class="panel">
           <div class="panel-title">Nombre d’émetteurs désemboués</div>
-          Radiateurs : <strong>504</strong><br><br>
-          Plancher chauffant : <strong>m²</strong><br><br>
+          Radiateurs : <strong>{{ $document->nombre_emetteurs ?? '0' }}</strong><br><br>
+          Plancher chauffant : <strong>{{ $document->surface_plancher_chauffant ?? '0' }} m²</strong><br><br>
 
           <div style="margin-top:10px;border:2px dashed #e30613;padding:6px;border-radius:8px;text-align:center;">
             Volume d’eau total du circuit<br>
-            <strong>5 583</strong> litres
+            <strong>{{ $document->volume_circuit ?? '0' }}</strong> litres
           </div>
         </div>
       </td>
@@ -300,131 +369,246 @@
       <td style="width:25%;">
         <div class="panel">
           <div class="panel-title">Nature du réseau</div>
-          <div class="line"><span class="cb"></span>Cuivre</div>
-          <div class="line"><span class="cb on"></span>Acier</div>
-          <div class="line"><span class="cb"></span>Multicouche</div>
-          <div class="line"><span class="cb"></span>Matériaux de synthèse</div>
-          <div class="line"><span class="cb"></span>Autre</div>
+          @php $nature = $document->nature_reseau ?? 'acier'; @endphp
+          <div class="line"><span class="cb {{ $nature == 'cuivre' ? 'on' : '' }}"></span>Cuivre</div>
+          <div class="line"><span class="cb {{ $nature == 'acier' ? 'on' : '' }}"></span>Acier</div>
+          <div class="line"><span class="cb {{ $nature == 'multicouche' ? 'on' : '' }}"></span>Multicouche</div>
+          <div class="line"><span class="cb {{ $nature == 'synthese' ? 'on' : '' }}"></span>Matériaux de synthèse</div>
+          
+          @if($nature == 'autre' && $document->autre_nature_reseau)
+          <div class="product-other-text">{{ $document->autre_nature_reseau }}</div>
+          @endif
         </div>
       </td>
     </tr>
   </table>
 </div>
 
+{{-- =========================================== --}}
+{{-- ÉTAPES RÉALISÉES (DYNAMIQUES) --}}
+{{-- =========================================== --}}
 <div class="section-title">Etapes respectées de l'opération de désembouage</div>
 <div class="steps">
-  <div class="step"><span class="cb on"></span>Rinçage à l’eau du système de distribution par boucle d’eau (général puis réseau par réseau)</div>
-  <div class="step"><span class="cb on"></span>Injection d’un réactif désembouant et circulation (général puis réseau par réseau), dans les deux sens de circulation</div>
-  <div class="step"><span class="cb on"></span>Rinçage des circuits à l’eau claire (général puis réseau par réseau)</div>
-  <div class="step"><span class="cb on"></span>Vérification du filtre/pot à boues et/ou installation d’un filtre + injection d’un réactif inhibiteur au dosage préconisé</div>
+  @php
+    $etapes = [
+      'Rinçage à l’eau du système de distribution par boucle d’eau (général puis réseau par réseau)',
+      'Injection d’un réactif désembouant et circulation (général puis réseau par réseau), dans les deux sens de circulation',
+      'Rinçage des circuits à l’eau claire (général puis réseau par réseau)',
+      'Vérification du filtre/pot à boues et/ou installation d’un filtre + injection d’un réactif inhibiteur au dosage préconisé'
+    ];
+    $etapesRealisees = $document->etapes_realisees ?? [1,2,3,4];
+  @endphp
+  
+  @foreach($etapes as $index => $etape)
+    <div class="step">
+      <span class="cb {{ in_array($loop->index + 1, (array)$etapesRealisees) ? 'on' : '' }}"></span>
+      {{ $etape }}
+    </div>
+  @endforeach
 </div>
 
 <div class="section-title">Produits utilisés pour l'opération de désembouage</div>
 
-<!-- ✅ Produits + colonne cachet/signature/icônes/sentinel -->
+{{-- =========================================== --}}
+{{-- PRODUITS DYNAMIQUES --}}
+{{-- =========================================== --}}
 <div class="no-break">
   <table class="products-table">
     <tr>
+      {{-- POMPE À DÉSEMBOUER (DYNAMIQUE) --}}
       <td style="width:16%;">
         <div class="product-box">
           <div class="product-title">Pompe à désembouer</div>
-
+          
+          @php
+            $pompe = $document->pompe_type ?? 'Pompe Jet Flush';
+            $pompeTexte = $document->pompe_autre_texte ?? '';
+          @endphp
+          
           <div class="product-item">
-            <span class="product-left"><span class="cb on"></span>Pompe Jet Flush</span>
-            <span class="product-img"><img src="{{ public_path('assets/img/nova/Rapport_files/001.png') }}" alt=""></span>
+            <span class="product-left">
+              <span class="cb {{ $pompe == 'Pompe Jet Flush' ? 'on' : '' }}"></span>
+              Pompe Jet Flush
+            </span>
+            <span class="product-img">
+              <img src="{{ public_path('assets/img/nova/Rapport_files/001.png') }}" alt="Pompe Jet Flush">
+            </span>
           </div>
 
           <div class="product-item">
-            <span class="product-left"><span class="cb"></span>JetFlush Filter</span>
-            <span class="product-img"><img src="{{ public_path('assets/img/nova/Rapport_files/002.png') }}" alt=""></span>
+            <span class="product-left">
+              <span class="cb {{ $pompe == 'JetFlush Filter' ? 'on' : '' }}"></span>
+              JetFlush Filter
+            </span>
+            <span class="product-img">
+              <img src="{{ public_path('assets/img/nova/Rapport_files/002.png') }}" alt="JetFlush Filter">
+            </span>
+          </div>
+
+          <!-- {{-- MARQUES SUPPLÉMENTAIRES --}}
+          <div class="product-item">
+            <span class="product-left">
+              <span class="cb {{ $pompe == 'Kiloutou' ? 'on' : '' }}"></span>
+              Kiloutou
+            </span>
+            <span class="product-img">
+              <img src="{{ public_path('assets/img/nova/Rapport_files/001.png') }}" alt="Kiloutou">
+            </span>
           </div>
 
           <div class="product-item">
-            <span class="product-left"><span class="cb"></span>Autre</span>
-            <span class="product-img"></span>
+            <span class="product-left">
+              <span class="cb {{ $pompe == 'Vixax' ? 'on' : '' }}"></span>
+              Vixax
+            </span>
+            <span class="product-img">
+              <img src="{{ public_path('assets/img/nova/Rapport_files/002.png') }}" alt="Vixax">
+            </span>
+          </div> -->
+
+          @if($pompe == 'autre' && $pompeTexte)
+          <div class="product-other">
+            <span class="cb on"></span> Autre : {{ $pompeTexte }}
           </div>
+          @endif
         </div>
       </td>
 
+      {{-- RÉACTIF DÉSEMBOUANT (DYNAMIQUE) --}}
       <td style="width:16%;">
         <div class="product-box">
           <div class="product-title">Réactif désembouant</div>
-
+          
+          @php
+            $reactif = $document->reactif_desembouant ?? 'Sentinel X800';
+            $autreReactif = $document->autre_produit_desembouant ?? '';
+          @endphp
+          
           <div class="product-item">
-            <span class="product-left"><span class="cb"></span>Sentinel X400</span>
-            <span class="product-img"><img src="{{ public_path('assets/img/nova/Rapport_files/003.png') }}" alt=""></span>
+            <span class="product-left">
+              <span class="cb {{ $reactif == 'Sentinel X400' ? 'on' : '' }}"></span>
+              Sentinel X400
+            </span>
+            <span class="product-img">
+              <img src="{{ public_path('assets/img/nova/Rapport_files/003.png') }}" alt="Sentinel X400">
+            </span>
           </div>
 
           <div class="product-item">
-            <span class="product-left"><span class="cb on"></span>Sentinel X800</span>
-            <span class="product-img"><img src="{{ public_path('assets/img/nova/Rapport_files/004.png') }}" alt=""></span>
+            <span class="product-left">
+              <span class="cb {{ $reactif == 'Sentinel X800' ? 'on' : '' }}"></span>
+              Sentinel X800
+            </span>
+            <span class="product-img">
+              <img src="{{ public_path('assets/img/nova/Rapport_files/004.png') }}" alt="Sentinel X800">
+            </span>
           </div>
 
-          <div class="product-item">
-            <span class="product-left"><span class="cb"></span>Autre</span>
-            <span class="product-img"></span>
+          @if($reactif == 'autre' && $autreReactif)
+          <div class="product-other">
+            <span class="cb on"></span> Autre : {{ $autreReactif }}
           </div>
+          @endif
         </div>
       </td>
 
+      {{-- RÉACTIF INHIBITEUR (DYNAMIQUE) --}}
       <td style="width:16%;">
         <div class="product-box">
           <div class="product-title">Réactif inhibiteur</div>
-
+          
+          @php
+            $inhibiteur = $document->reactif_inhibiteur ?? 'Sentinel X100';
+            $autreInhibiteur = $document->autre_produit_inhibiteur ?? '';
+          @endphp
+          
           <div class="product-item">
-            <span class="product-left"><span class="cb on"></span>Sentinel X100</span>
-            <span class="product-img"><img src="{{ public_path('assets/img/nova/Rapport_files/005.png') }}" alt=""></span>
+            <span class="product-left">
+              <span class="cb {{ $inhibiteur == 'Sentinel X100' ? 'on' : '' }}"></span>
+              Sentinel X100
+            </span>
+            <span class="product-img">
+              <img src="{{ public_path('assets/img/nova/Rapport_files/005.png') }}" alt="Sentinel X100">
+            </span>
           </div>
 
           <div class="product-item">
-            <span class="product-left"><span class="cb"></span>Sentinel X700</span>
-            <span class="product-img"><img src="{{ public_path('assets/img/nova/Rapport_files/006.png') }}" alt=""></span>
+            <span class="product-left">
+              <span class="cb {{ $inhibiteur == 'Sentinel X700' ? 'on' : '' }}"></span>
+              Sentinel X700
+            </span>
+            <span class="product-img">
+              <img src="{{ public_path('assets/img/nova/Rapport_files/006.png') }}" alt="Sentinel X700">
+            </span>
           </div>
 
-          <div class="product-item">
-            <span class="product-left"><span class="cb"></span>Autre</span>
-            <span class="product-img"></span>
+          @if($inhibiteur == 'autre' && $autreInhibiteur)
+          <div class="product-other">
+            <span class="cb on"></span> Autre : {{ $autreInhibiteur }}
           </div>
+          @endif
         </div>
       </td>
 
+      {{-- FILTRE (DYNAMIQUE) --}}
       <td style="width:16%;">
         <div class="product-box">
           <div class="product-title">Installation filtre</div>
-
+          
+          @php
+            $filtre = $document->filtre_type ?? 'Sentinel Vortex500';
+            $autreFiltre = $document->filtre_autre_texte ?? '';
+          @endphp
+          
           <div class="product-item">
-            <span class="product-left"><span class="cb"></span>Sentinel Vortex300</span>
-            <span class="product-img"><img src="{{ public_path('assets/img/nova/Rapport_files/007.png') }}" alt=""></span>
+            <span class="product-left">
+              <span class="cb {{ $filtre == 'Sentinel Vortex300' ? 'on' : '' }}"></span>
+              Sentinel Vortex300
+            </span>
+            <span class="product-img">
+              <img src="{{ public_path('assets/img/nova/Rapport_files/007.png') }}" alt="Vortex300">
+            </span>
           </div>
 
           <div class="product-item">
-            <span class="product-left"><span class="cb on"></span>Sentinel Vortex500</span>
-            <span class="product-img"><img src="{{ public_path('assets/img/nova/Rapport_files/008.png') }}" alt=""></span>
+            <span class="product-left">
+              <span class="cb {{ $filtre == 'Sentinel Vortex500' ? 'on' : '' }}"></span>
+              Sentinel Vortex500
+            </span>
+            <span class="product-img">
+              <img src="{{ public_path('assets/img/nova/Rapport_files/008.png') }}" alt="Vortex500">
+            </span>
           </div>
+
+          @if($filtre == 'autre' && $autreFiltre)
+          <div class="product-other">
+            <span class="cb on"></span> Autre : {{ $autreFiltre }}
+          </div>
+          @endif
         </div>
       </td>
 
-      <!-- ✅ COLONNE DROITE comme capture -->
+      {{-- COLONNE DROITE (STATIQUE SAUF CACHET) --}}
       <td style="width:20%;">
         <div class="right-side">
-          <!-- Cachet -->
+          {{-- Cachet (DYNAMIQUE - PEUT CHANGER) --}}
           <div class="stamp">
-            <img src="{{ public_path('assets/img/nova/Rapport_files/cachet.png') }}" alt="Cachet">
+            @if($document->cachet_image ?? false)
+              @php $cachetPath = Storage::path($document->cachet_image); @endphp
+              <img src="{{ file_exists($cachetPath) ? $cachetPath : public_path('assets/img/nova/Rapport_files/cachet.png') }}" alt="Cachet">
+            @else
+              <img src="{{ public_path('assets/img/nova/Rapport_files/cachet.png') }}" alt="Cachet">
+            @endif
           </div>
 
-          <!-- Signature (image)
-          <div class="sig">
-            <img src="{{ public_path('assets/img/nova/Rapport_files/signature.png') }}" alt="Signature Energie Nova">
-          </div> -->
-
-          <!-- 3 icônes rouges -->
+          {{-- 3 icônes rouges (STATIQUES) --}}
           <div class="icons-red">
             <img src="{{ public_path('assets/img/nova/Rapport_files/ic01.png') }}" alt="ic01">
             <img src="{{ public_path('assets/img/nova/Rapport_files/ic02.png') }}" alt="ic02">
             <img src="{{ public_path('assets/img/nova/Rapport_files/ic03.png') }}" alt="ic03">
           </div>
 
-          <!-- Sentinel -->
+          {{-- Logo Sentinel (STATIQUE) --}}
           <div class="sentinel-logo">
             <img src="{{ public_path('assets/img/nova/Rapport_files/sent.png') }}" alt="SENTINEL">
           </div>
@@ -434,28 +618,17 @@
   </table>
 </div>
 
-<!-- ✅ 3 lignes de points en bas comme footer -->
-<!-- FOOTER DOTS -->
+{{-- =========================================== --}}
+{{-- FOOTER DOTS (STATIQUE) --}}
+{{-- =========================================== --}}
 <table class="dots-bar">
+  @for($l = 0; $l < 3; $l++)
   <tr>
-    <!-- répète autant de <td> que tu veux -->
-    <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
-    <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
-    <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
-    <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+    @for($i = 0; $i < 40; $i++)
+      <td></td>
+    @endfor
   </tr>
-  <tr>
-    <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
-    <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
-    <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
-    <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
-  </tr>
-  <tr>
-    <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
-    <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
-    <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
-    <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
-  </tr>
+  @endfor
 </table>
 </body>
 </html>

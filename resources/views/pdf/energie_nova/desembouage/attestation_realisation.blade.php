@@ -118,7 +118,7 @@
     .signature .sig-role{ margin-top: 1mm; font-size: 8.5pt; }
 
     .stamp{ margin-top: 10mm; text-align: center; }
-    .stamp img{ height: 24mm; }
+    .stamp img{ height: 40mm; }
 
     /* ===================== FOOTER (fixed) ===================== */
     /* IMPORTANT: On le met DANS chaque page (scopé),
@@ -228,7 +228,7 @@
           <tr><td class="k">Nature du réseau</td><td class="v">{{ $document->nature_reseau ?? 'Acier' }}</td></tr>
           <tr><td class="k">Volume d’eau total du circuit</td><td class="v">{{ $document->volume_circuit ?? '7664' }} L</td></tr>
           <tr><td class="k">Zone climatique</td><td class="v">{{ $document->zone_climatique ?? 'H1' }}</td></tr>
-          <tr><td class="k">Période d’exécution</td><td class="v">{{ $document->periode_execution ?? 'Du 29/09/2025 au 30/09/2025' }}</td></tr>
+          <tr><td class="k">Période d’exécution</td><td class="v">{{ $document->dates_previsionnelles ?? 'Du 29/09/2025 au 30/09/2025' }}</td></tr>
           <tr><td class="k">Réactif désembouant utilisé</td><td class="v">{{ $document->produit_desembouant ?? 'SENTINEL X800' }}</td></tr>
           <tr><td class="k">Réactif inhibiteur utilisé</td><td class="v">{{ $document->produit_inhibiteur ?? 'SENTINEL X100' }}</td></tr>
           <tr><td class="k">Nombre de bâtiments</td><td class="v">{{ $document->nombre_batiments ?? '2' }}</td></tr>
@@ -319,7 +319,7 @@
           </ul>
 
           <div class="signature">
-            <div class="place">Fait à Paris, le {{ $document->date_certification ?? '01/10/2025' }}</div>
+            <div class="place">Fait à Paris, le {{ $document->date_signature ?? '01/10/2025' }}</div>
             <div class="sig-name">M. TAMOYAN Hamlet</div>
             <div class="sig-role">Président de <span class="brand-green">ENERGIE NOVA</span></div>
 

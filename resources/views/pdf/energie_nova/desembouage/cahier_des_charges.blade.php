@@ -5,8 +5,7 @@
   <title>Formulaire CEE - EBS ENERGIE</title>
 
   <style>
-
-     @page { margin: 12mm 12mm 12mm 12mm;}   /* vraies marges imprimante */
+     @page { margin: 12mm 12mm 12mm 12mm;}
     /* ===================== DOMPDF SAFE ===================== */
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -28,63 +27,60 @@
       border: 1px solid #2b2b2b;
       padding: 10mm 10mm 8mm 10mm;
       height: 260mm;
-      /* IMPORTANT : pas de height fixe (sinon dompdf peut créer une page vide) */
     }
 
     /* header */
+    .hdr{
+      width:100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
 
-.hdr{
-  width:100%;
-  border-collapse: collapse;
-  table-layout: fixed;
-}
+    .hdr td{
+      vertical-align: middle;
+    }
 
-.hdr td{
-  vertical-align: middle; /* IMPORTANT */
-}
+    .left{
+      width: 60mm;
+      text-align: left;
+    }
 
-.left{
-  width: 60mm;
-  text-align: left;
-}
+    .mid{
+      width: auto;
+      text-align: center;
+    }
 
-.mid{
-  width: auto;
-  text-align: center;
-}
+    .right{
+      width: 60mm;
+      text-align: right;
+    }
 
-.right{
-  width: 60mm;
-  text-align: right;
-}
+    .logo-cee{
+      height:18mm;
+    }
 
-.logo-cee{
-  height:18mm;
-}
+    .logo-ebs{
+      height:14mm;
+      display:block;
+      margin:0 auto;
+    }
 
-.logo-ebs{
-  height:14mm;
-  display:block;
-  margin:0 auto;   /* VRAI centrage */
-}
+    .logo-nova{
+      height:18mm;
+    }
 
-.logo-nova{
-  height:18mm;
-}
-
-.nova-text{
-  color:#62b14f;
-  font-weight:800;
-  font-size:10pt;
-  margin-top:1mm;
-}
+    .nova-text{
+      color:#62b14f;
+      font-weight:800;
+      font-size:10pt;
+      margin-top:1mm;
+    }
     .ebs-sub{
       font-size: 8pt;
       color:#3a3a3a;
       margin-top: 1mm;
     }
 
-  
     /* texte */
     p{ line-height: 1.35; margin: 2mm 0; }
     .small{ font-size: 8.3pt; }
@@ -108,6 +104,10 @@
       border: 1px solid #333;
       vertical-align: -0.6mm;
       margin-right: 2.5mm;
+      background: #fff;
+    }
+    .box.filled{
+      background: #333;
     }
 
     /* tableau nature de travaux */
@@ -162,24 +162,25 @@
     .stamp{
       height: auto;
       margin-top: 2mm;
+      max-height: 25mm;
     }
-.footer-code {
-    position: fixed;
-    bottom: 10mm;   /* distance du bas */
-    left: 0;
-    right: 0;
-    text-align: center;
-    font-size: 7.3pt;
-    color: #333;
-}
-.footer-num {
-    position: fixed;
-    bottom: 10mm;
-    left: 0;
-    right: 5mm; /* pour éviter chevauchement avec le code */
-    text-align: right;
-    font-size: 9pt;
-}
+    .footer-code {
+        position: fixed;
+        bottom: 10mm;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-size: 7.3pt;
+        color: #333;
+    }
+    .footer-num {
+        position: fixed;
+        bottom: 10mm;
+        left: 0;
+        right: 5mm;
+        text-align: right;
+        font-size: 9pt;
+    }
     /* PAGE 2 : bande bleue d'infos */
     .warn{
       color:#d10f0f;
@@ -211,6 +212,22 @@
       font-weight: 800;
       color: rgba(0,0,0,.45);
     }
+
+    .underline {
+      text-decoration: underline;
+    }
+
+    .value-field {
+      font-weight: bold;
+      color: #0a49b5;
+      border-bottom: 1px dashed #0a49b5;
+      padding: 0 2px;
+    }
+
+    .value-empty {
+      color: #999;
+      font-style: italic;
+    }
   </style>
 </head>
 
@@ -221,29 +238,29 @@
     <div class="frame">
 
       <table class="hdr">
-  <tr>
-    <td class="left">
-      <!-- Logo CEE -->
-      <img class="logo-cee"
-           src="{{ public_path('assets/img/nova/cdc_files/Image_003.jpg') }}"
-           alt="CEE" />
-    </td>
+        <tr>
+          <td class="left">
+            <!-- Logo CEE -->
+            <img class="logo-cee"
+                 src="{{ public_path('assets/img/nova/cdc_files/Image_003.jpg') }}"
+                 alt="CEE" />
+          </td>
 
-    <td class="mid">
-      <!-- Logo EBS ENERGIE (au lieu du texte) -->
-      <img class="logo-ebs"
-           src="{{ public_path('assets/img/nova/cdc_files/Image_001.jpg') }}"
-           alt="EBS ENERGIE" />
-    </td>
+          <td class="mid">
+            <!-- Logo EBS ENERGIE -->
+            <img class="logo-ebs"
+                 src="{{ public_path('assets/img/nova/cdc_files/Image_001.jpg') }}"
+                 alt="EBS ENERGIE" />
+          </td>
 
-    <td class="right">
-      <!-- Logo ENERGIENOVA -->
-      <img class="logo-nova"
-           src="{{ public_path('assets/img/nova/cdc_files/Image_002.png') }}"
-           alt="ENERGIENOVA" />
-    </td>
-  </tr>
-</table>
+          <td class="right">
+            <!-- Logo ENERGIENOVA -->
+            <img class="logo-nova"
+                 src="{{ public_path('assets/img/nova/cdc_files/Image_002.png') }}"
+                 alt="ENERGIENOVA" />
+          </td>
+        </tr>
+      </table>
 
       <p class="small">
         Le dispositif national des certificats d’économies d’énergie (CEE) mis en place par le Ministère en charge de l’énergie impose à l’ensemble
@@ -256,11 +273,62 @@
       </p>
 
       <div class="row small">
-        <span class="checkline"><span class="box"></span>une prime d’un montant de&nbsp;&nbsp;<b>12&nbsp;196,80&nbsp;€</b> ;</span>
-        <span class="checkline"><span class="box"></span>un bon d’achat pour des produits de consommation courante d’un montant de&nbsp;&nbsp;_____&nbsp;€ ;</span>
-        <span class="checkline"><span class="box"></span>un prêt bonifié d’un montant de&nbsp;&nbsp;_____&nbsp;euros proposé par&nbsp;&nbsp;_____&nbsp;au taux effectif global (TEG) de&nbsp;&nbsp;_____&nbsp;% ;</span>
-        <span class="checkline"><span class="box"></span>un audit ou conseil personnalisé comme écrit (valeur =&nbsp;&nbsp;_____&nbsp;€) ;</span>
-        <span class="checkline"><span class="box"></span>un produit ou service offert&nbsp;:&nbsp;&nbsp;[nature à préciser] ____________ d’une valeur de&nbsp;&nbsp;_____&nbsp;€</span>
+        {{-- Checkbox dynamique pour prime --}}
+        <span class="checkline">
+          <span class="box {{ ($document->prime_cee ?? 0) > 0 ? 'filled' : '' }}"></span>
+          une prime d’un montant de&nbsp;&nbsp;
+          <span class="value-field">
+            {{ isset($document->prime_cee) && $document->prime_cee > 0 ? number_format($document->prime_cee, 2, ',', ' ') . ' €' : '_____' }}
+          </span>
+        </span>
+
+        {{-- Checkbox dynamique pour bon d'achat --}}
+        <span class="checkline">
+          <span class="box {{ isset($document->bon_achat) && $document->bon_achat > 0 ? 'filled' : '' }}"></span>
+          un bon d’achat pour des produits de consommation courante d’un montant de&nbsp;&nbsp;
+          <span class="value-field">
+            {{ isset($document->bon_achat) && $document->bon_achat > 0 ? number_format($document->bon_achat, 2, ',', ' ') . ' €' : '_____' }}
+          </span>
+        </span>
+
+        {{-- Checkbox dynamique pour prêt bonifié --}}
+        <span class="checkline">
+          <span class="box {{ isset($document->pret_bonifie) && $document->pret_bonifie > 0 ? 'filled' : '' }}"></span>
+          un prêt bonifié d’un montant de&nbsp;&nbsp;
+          <span class="value-field">
+            {{ isset($document->pret_bonifie) && $document->pret_bonifie > 0 ? number_format($document->pret_bonifie, 2, ',', ' ') . ' €' : '_____' }}
+          </span>
+          proposé par&nbsp;&nbsp;
+          <span class="value-field">
+            {{ $document->pret_organisme ?? '_____' }}
+          </span>
+          au taux effectif global (TEG) de&nbsp;&nbsp;
+          <span class="value-field">
+            {{ isset($document->pret_teg) ? $document->pret_teg . ' %' : '_____' }}
+          </span>
+        </span>
+
+        {{-- Checkbox dynamique pour audit --}}
+        <span class="checkline">
+          <span class="box {{ isset($document->audit) && $document->audit ? 'filled' : '' }}"></span>
+          un audit ou conseil personnalisé comme écrit (valeur =&nbsp;&nbsp;
+          <span class="value-field">
+            {{ isset($document->audit_valeur) && $document->audit_valeur > 0 ? number_format($document->audit_valeur, 2, ',', ' ') . ' €' : '_____' }}
+          </span>
+        </span>
+
+        {{-- Checkbox dynamique pour produit/service offert --}}
+        <span class="checkline">
+          <span class="box {{ isset($document->produit_offert) && $document->produit_offert ? 'filled' : '' }}"></span>
+          un produit ou service offert&nbsp;:&nbsp;&nbsp;
+          <span class="value-field">
+            {{ $document->produit_offert_nature ?? '____________' }}
+          </span>
+          d’une valeur de&nbsp;&nbsp;
+          <span class="value-field">
+            {{ isset($document->produit_offert_valeur) && $document->produit_offert_valeur > 0 ? number_format($document->produit_offert_valeur, 2, ',', ' ') . ' €' : '_____' }}
+          </span>
+        </span>
       </div>
 
       <p class="small">
@@ -276,10 +344,10 @@
         <tr>
           <td class="c1">
             <span style="color:#0a49b5; font-weight:800;">
-              Désembouage d’un réseau hydraulique de chauffage collectif en France métropolitaine
+              {{ $document->nature_travaux ?? 'Désembouage d’un réseau hydraulique de chauffage collectif en France métropolitaine' }}
             </span>
           </td>
-          <td class="c2">BAR-SE-109</td>
+          <td class="c2">{{ $document->fiche_cee ?? 'BAR-SE-109' }}</td>
           <td class="c3">
             Voir le site du Ministère de l’Écologie et de la Transition Écologique et Solidaire :
             <br>
@@ -295,15 +363,17 @@
       </p>
 
       <div class="small">
-        <div>•&nbsp;&nbsp;Nom : <b>RABATHERM HECS</b></div>
-        <div>•&nbsp;&nbsp;Prénom : _______________________</div>
-        <div>•&nbsp;&nbsp;Adresse : <b>21 RUE D’ANJOU 92600 ASNIERES-SUR-SEINE</b></div>
-        <div>•&nbsp;&nbsp;Téléphone : <b>01 84 80 90 08</b></div>
-        <div>•&nbsp;&nbsp;Adresse e-mail : <b>contact@rabatherm-hecs.fr</b></div>
+        <div>•&nbsp;&nbsp;Nom : <b>{{ $document->beneficiaire_nom ?? 'RABATHERM HECS' }}</b></div>
+        <div>•&nbsp;&nbsp;Prénom : <b>{{ $document->beneficiaire_prenom ?? '_______________________' }}</b></div>
+        <div>•&nbsp;&nbsp;Adresse : <b>{{ $document->adresse_travaux ?? '21 RUE D’ANJOU 92600 ASNIERES-SUR-SEINE' }}</b></div>
+        <div>•&nbsp;&nbsp;Téléphone : <b>{{ $document->beneficiaire_telephone ?? '01 84 80 90 08' }}</b></div>
+        <div>•&nbsp;&nbsp;Adresse e-mail : <b>{{ $document->beneficiaire_email ?? 'contact@rabatherm-hecs.fr' }}</b></div>
       </div>
 
       <p class="small" style="margin-top:4mm;">
-        *Montant de prime valable 3 mois à compter de la date d’édition du devis <span style="color:#d10f0f; font-weight:800;">13/10/2025</span>
+        *Montant de prime valable 3 mois à compter de la date d’édition du devis <span style="color:#d10f0f; font-weight:800;">
+          {{ $document->date_devis ? \Carbon\Carbon::parse($document->date_devis)->format('d/m/Y') : 'Non renseignée' }}
+        </span>
       </p>
 
       <p class="tiny muted">
@@ -321,7 +391,7 @@
       </p>
 
       <p class="small" style="margin-top:4mm;">
-        Date de cette proposition : <b>13/10/2025</b>
+        Date de cette proposition : <b>{{ $document->date_signature ? \Carbon\Carbon::parse($document->date_signature)->format('d/m/Y') : 'Non renseignée' }}</b>
       </p>
 
       <p class="tiny note-blue">
@@ -334,14 +404,18 @@
           <tr>
             <td class="sig-left tiny">
               Signature:<br>
-              NOM Prénom : <span style="color:#0a49b5;">HAMLET TAMOYAN</span><br>
-              Fonction : <span style="color:#0a49b5;">Président</span>
+              NOM Prénom : <span style="color:#0a49b5;">{{ $document->signataire_nom ?? 'HAMLET TAMOYAN' }}</span><br>
+              Fonction : <span style="color:#0a49b5;">{{ $document->signataire_fonction ?? 'Président' }}</span>
             </td>
 
             <td class="sig-mid tiny">
               Tampon et signature de la société
               <div>
-                <img class="stamp" src="{{ public_path('assets/img/nova/cdc_files/Image_008.png') }}" alt="Cachet ENERGIENOVA">
+                @if($document->cachet_image ?? false)
+                  <img class="stamp" src="{{ Storage::path($document->cachet_image) }}" alt="Cachet">
+                @else
+                  <img class="stamp" src="{{ public_path('assets/img/nova/cdc_files/Image_008.png') }}" alt="Cachet ENERGIENOVA">
+                @endif
               </div>
             </td>
 
@@ -354,8 +428,8 @@
         FORM_CONF_CDC_BAR_109_EBS Energie_INDIRECT HCDP_2024 09 01
       </div>
       <div class="footer-num">
-    Page 1 / 2
-</div>
+        Page 1 / 2
+      </div>
 
     </div>
   </div>
@@ -364,30 +438,31 @@
   <div class="page">
     <div class="frame">
 
-            <table class="hdr">
-  <tr>
-    <td class="left">
-      <!-- Logo CEE -->
-      <img class="logo-cee"
-           src="{{ public_path('assets/img/nova/cdc_files/Image_003.jpg') }}"
-           alt="CEE" />
-    </td>
+      <table class="hdr">
+        <tr>
+          <td class="left">
+            <!-- Logo CEE -->
+            <img class="logo-cee"
+                 src="{{ public_path('assets/img/nova/cdc_files/Image_003.jpg') }}"
+                 alt="CEE" />
+          </td>
 
-    <td class="mid">
-      <!-- Logo EBS ENERGIE (au lieu du texte) -->
-      <img class="logo-ebs"
-           src="{{ public_path('assets/img/nova/cdc_files/Image_001.jpg') }}"
-           alt="EBS ENERGIE" />
-    </td>
+          <td class="mid">
+            <!-- Logo EBS ENERGIE -->
+            <img class="logo-ebs"
+                 src="{{ public_path('assets/img/nova/cdc_files/Image_001.jpg') }}"
+                 alt="EBS ENERGIE" />
+          </td>
 
-    <td class="right">
-      <!-- Logo ENERGIENOVA -->
-      <img class="logo-nova"
-           src="{{ public_path('assets/img/nova/cdc_files/Image_002.png') }}"
-           alt="ENERGIENOVA" />
-    </td>
-  </tr>
-</table>
+          <td class="right">
+            <!-- Logo ENERGIENOVA -->
+            <img class="logo-nova"
+                 src="{{ public_path('assets/img/nova/cdc_files/Image_002.png') }}"
+                 alt="ENERGIENOVA" />
+          </td>
+        </tr>
+      </table>
+      
       <div class="warn small">///</div>
       <p class="small">
         Faites réaliser plusieurs devis afin de prendre une décision éclairée. Attention, seules les propositions remises avant
@@ -427,13 +502,11 @@
       <div class="footer-code">
         FORM_CONF_CDC_BAR_109_EBS Energie_INDIRECT HCDP_2024 09 01
       </div>
-            <div class="footer-num">
-    Page 2 / 2
-</div>
+      <div class="footer-num">
+        Page 2 / 2
+      </div>
     </div>
   </div>
 
 </body>
 </html>
-
-

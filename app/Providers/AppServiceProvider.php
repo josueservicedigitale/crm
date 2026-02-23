@@ -23,12 +23,18 @@ class AppServiceProvider extends ServiceProvider
      */// Dans votre contrôleur ou AppServiceProvider
 public function boot()
 {
-    //  if (app()->environment('local')) {
-    //     URL::forceScheme('https');
-    // }
-    if (env('APP_ENV') === 'local') {
-            URL::forceScheme('http');
-        }
+    Paginator::useBootstrap();
+
+    // Forcer https sur ngrok / prod
+    if (env('APP_URL') && str_starts_with(env('APP_URL'), 'https')) {
+        URL::forceScheme('https');
+    }
+
+    // Pour la dev locale sur localhost
+    if (env('APP_ENV') === 'local' && str_starts_with(env('APP_URL'), 'http://localhost')) {
+        URL::forceScheme('http');
+    }
+
     Paginator::useBootstrapFive();
     View::composer('back.layouts.sidebar', function ($view) {
         // Pour les activités - tableau clé => label

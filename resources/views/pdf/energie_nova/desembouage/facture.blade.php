@@ -187,7 +187,7 @@
       width: 40%;
       background: var(--blue);
       color: #fff;
-      font-weight: 800;
+      font-weight: 750;
       text-transform: uppercase;
     }
 
@@ -322,7 +322,7 @@
     /* Footer */
     .footer {
       position: fixed;
-      bottom: 0;
+      bottom: 3mm;
       left: 0;
       right: 0;
       text-align: center;
@@ -331,8 +331,10 @@
     }
 
     .pageno {
-      margin-top: 2mm;
-      text-align: right;
+    position: fixed;
+    right: 15mm;
+    text-align: right;
+     bottom: 3mm;
       font-size: 8pt;
       color: #1b1b1b;
     }
@@ -424,7 +426,7 @@
               <table class="refbox">
                 <tr>
                   <td class="k">REF Facture</td>
-                  <td>{{ $document->reference_facture }}</td>
+                  <td>ENR-2025-29-F{{ $document->reference_facture }}</td>
                 </tr>
                 <tr>
                   <td class="k">DATE FACTURE</td>
@@ -454,16 +456,16 @@
 
           <td>
             <h4>BÉNÉFICIAIRE</h4>
-            <div class="line strong">{{ $document->society }}</div>
-            <div class="line">{{ $document->activity }}</div>
-            <div class="line">{{ $document->adresse_beneficiaire ?? '' }}</div>
+            <div class="line strong">RABATHERM HECS</div>
+            <div class="line">21 RUE D'ANJOU</div>
+            <div class="line">92600 ASNIERES-SUR-SEINE</div>
             <br>
-            <div class="line"><span class="strong">SIRET</span> {{ $document->reference }}</div>
-            <div class="line"><span class="strong">MAIL</span> {{ $document->email_beneficiaire ?? '' }}</div>
-            <div class="line"><span class="strong">TEL</span> {{ $document->tel_beneficiaire ?? '' }}</div>
+            <div class="line"><span class="strong">SIRET</span>44261333700033</div>
+            <div class="line"><span class="strong">MAIL</span>contact@rabatherm-hecs.fr</div>
+            <div class="line"><span class="strong">TEL</span>01 84 80 90 08</div>
             <br>
-            <div class="line"><span class="strong">REPRÉSENTÉ PAR</span> {{ $document->representant ?? '' }}</div>
-            <div class="line"><span class="strong">FONCTION</span> {{ $document->fonction ?? '' }}</div>
+            <div class="line"><span class="strong">REPRÉSENTÉ PAR</span>M. Offel De Villaucourt Charles</div>
+            <div class="line"><span class="strong">FONCTION</span> Gérant</div>
           </td>
         </tr>
       </table>
@@ -488,14 +490,15 @@
 
         <div class="para"><span class="strong">PARCELLE CADASTRALE :</span></div>
         <div class="para">1&nbsp;&nbsp;Parcelle {{ $document->parcelle_1 }} Feuille
-          {{ $document->parcelle_2 }}&nbsp;&nbsp;&nbsp;&nbsp;2</div>
+          2&nbsp;&nbsp;&nbsp;&nbsp;{{ $document->parcelle_2 }}</div>
         <div class="para">
           3&nbsp;&nbsp;{{ $document->parcelle_3 }}&nbsp;&nbsp;&nbsp;&nbsp;4&nbsp;&nbsp;{{ $document->parcelle_4 }}</div>
 
         <br>
         <div class="para"><span class="strong">DATE PRÉVISIONNELLE DES TRAVAUX :</span>
           {{ $document->dates_previsionnelles }}</div>
-        <div class="para"><span class="strong">CONTACT SUR SITE :</span> {{ $document->contact_site ?? 'Gérant' }}</div>
+        <div class="para"><span class="strong">CONTACT SUR SITE :</span> Gérant M. Offel De Villaucourt Charles 01 84 80
+          90 08 - contact@rabatherm-hecs.fr</div>
         <div class="para"><span class="strong">SECTEUR :</span> Résidentiel</div>
         <div class="para"><span class="strong">NOMBRE DE BÂTIMENTS :</span> {{ $document->nombre_batiments }} Bâtiments
         </div>
@@ -563,7 +566,7 @@
               <table class="refbox">
                 <tr>
                   <td class="k">REF FACTURE</td>
-                  <td>{{ $document->reference_facture }}</td>
+                  <td>ENR-2025-29-F{{ $document->reference_facture }}</td>
                 </tr>
                 <tr>
                   <td class="k">DATE FACTURE</td>
@@ -701,7 +704,7 @@
               <table class="refbox">
                 <tr>
                   <td class="k">REF FACTURE</td>
-                  <td>{{ $document->reference_facture }}</td>
+                  <td>ENR-2025-29-F{{ $document->reference_facture }}</td>
                 </tr>
                 <tr>
                   <td class="k">DATE FACTURE</td>
@@ -840,7 +843,7 @@
               <table class="refbox">
                 <tr>
                   <td class="k">REF FACTURE</td>
-                  <td>{{ $document->reference_facture }}</td>
+                  <td>ENR-2025-29-F{{ $document->reference_facture }}</td>
                 </tr>
                 <tr>
                   <td class="k">DATE FACTURE</td>
@@ -903,8 +906,13 @@
                     <div class="paybox">
                       <div class="title">CONDITIONS DE PAIEMENT</div>
                       <div class="para">
-                        Prime versée sous réserve de validation, documents CEE nécessaires, et respect des exigences de
-                        l’opération.
+                        « Les travaux prévus feront l’objet d’une contribution financière de EBS ENERGIE (SIREN 533 333
+                        118), versée sous forme de prime, directement ou via ses mandataires, sous réserve de la
+                        fourniture exclusive des documents nécessaires à la valorisation des opérations CEE et de la
+                        validation de l’éligibilité du dossier par EBS ENERGIE et l’autorité compétente. Le montant
+                        estimé, hors TVA, peut varier selon les travaux réalisés et le volume de CEE attribué, et est
+                        évalué à {{ number_format($document->prime_cee, 2, ',', ' ') }} euros. »
+
                       </div>
 
                       <div class="subTitle" style="margin-top:3mm;">Gestion des déchets</div>
