@@ -79,7 +79,24 @@ class Document extends Model
         'signature_image',
         'sentinel_logo',
         'icone_1',
-        'icone_2'
+        'icone_2',
+        'bon_achat',
+        'audit',
+        'produit_offert',
+        'pret_bonifie',
+        'pret_organisme',
+        'pret_teg',
+        'audit_valeur',
+        'produit_offert_nature',
+        'produit_offert_valeur',
+        'beneficiaire_nom',
+        'beneficiaire_prenom',
+        'beneficiaire_telephone',
+        'beneficiaire_email',
+        'signataire_nom',
+        'signataire_fonction',
+
+
     ];
 
     // Si vous avez un $guarded, assurez-vous qu'il est vide ou ne contient pas les nouveaux champs
@@ -106,6 +123,8 @@ class Document extends Model
         'pret_teg' => 'decimal:2',
         'audit_valeur' => 'decimal:2',
         'produit_offert_valeur' => 'decimal:2',
+        'audit' => 'boolean',
+        'produit_offert' => 'boolean',
     ];
 
 

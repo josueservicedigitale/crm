@@ -1,103 +1,129 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8" />
   <title>Formulaire CEE - EBS ENERGIE</title>
 
   <style>
-     @page { margin: 12mm 12mm 12mm 12mm;}
-    /* ===================== DOMPDF SAFE ===================== */
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    @page {
+      margin: 12mm 12mm 12mm 12mm;
+    }
 
-    html, body{
+    /* ===================== DOMPDF SAFE ===================== */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
       font-family: Arial, Helvetica, sans-serif;
       font-size: 9.5pt;
-      color:#111;
+      color: #111;
     }
 
     /* 2 PAGES EXACTEMENT */
-    .page{
+    .page {
       page-break-after: always;
     }
-    .page:last-child{ page-break-after: auto; }
+
+    .page:last-child {
+      page-break-after: auto;
+    }
 
     /* grand cadre (comme sur les captures) */
-    .frame{
-        margin: 5mm;
+    .frame {
+      margin: 5mm;
       border: 1px solid #2b2b2b;
       padding: 10mm 10mm 8mm 10mm;
       height: 260mm;
     }
 
     /* header */
-    .hdr{
-      width:100%;
+    .hdr {
+      width: 100%;
       border-collapse: collapse;
       table-layout: fixed;
     }
 
-    .hdr td{
+    .hdr td {
       vertical-align: middle;
     }
 
-    .left{
+    .left {
       width: 60mm;
       text-align: left;
     }
 
-    .mid{
+    .mid {
       width: auto;
       text-align: center;
     }
 
-    .right{
+    .right {
       width: 60mm;
       text-align: right;
     }
 
-    .logo-cee{
-      height:18mm;
+    .logo-cee {
+      height: 18mm;
     }
 
-    .logo-ebs{
-      height:14mm;
-      display:block;
-      margin:0 auto;
+    .logo-ebs {
+      height: 14mm;
+      display: block;
+      margin: 0 auto;
     }
 
-    .logo-nova{
-      height:18mm;
+    .logo-nova {
+      height: 18mm;
     }
 
-    .nova-text{
-      color:#62b14f;
-      font-weight:800;
-      font-size:10pt;
-      margin-top:1mm;
+    .nova-text {
+      color: #62b14f;
+      font-weight: 800;
+      font-size: 10pt;
+      margin-top: 1mm;
     }
-    .ebs-sub{
+
+    .ebs-sub {
       font-size: 8pt;
-      color:#3a3a3a;
+      color: #3a3a3a;
       margin-top: 1mm;
     }
 
     /* texte */
-    p{ line-height: 1.35; margin: 2mm 0; }
-    .small{ font-size: 8.3pt; }
-    .tiny{ font-size: 7.7pt; }
-    .muted{ color:#4b4b4b; }
-
-    /* lignes de formulaire */
-    .row{
+    p {
+      line-height: 1.35;
       margin: 2mm 0;
     }
 
-    .checkline{
+    .small {
+      font-size: 8.3pt;
+    }
+
+    .tiny {
+      font-size: 7.7pt;
+    }
+
+    .muted {
+      color: #4b4b4b;
+    }
+
+    /* lignes de formulaire */
+    .row {
+      margin: 2mm 0;
+    }
+
+    .checkline {
       display: block;
       margin: 1.4mm 0;
       line-height: 1.35;
     }
-    .box{
+
+    .box {
       display: inline-block;
       width: 3.8mm;
       height: 3.8mm;
@@ -106,111 +132,146 @@
       margin-right: 2.5mm;
       background: #fff;
     }
-    .box.filled{
+
+    .box.filled {
       background: #333;
     }
 
     /* tableau nature de travaux */
-    .tbl{
+    .tbl {
       width: 100%;
       border-collapse: collapse;
       table-layout: fixed;
       margin: 4mm 0 3mm 0;
       font-size: 8.4pt;
     }
-    .tbl th, .tbl td{
+
+    .tbl th,
+    .tbl td {
       border: 1px solid #333;
       padding: 2.5mm 2.5mm;
       vertical-align: top;
       word-break: break-word;
       overflow-wrap: anywhere;
     }
-    .tbl th{
+
+    .tbl th {
       background: #f3f3f3;
       font-weight: 800;
       text-align: center;
     }
-    .tbl .c1{ width: 35%; }
-    .tbl .c2{ width: 15%; text-align:center; font-weight:700; color:#0a49b5; }
-    .tbl .c3{ width: 50%; color:#0a49b5; }
 
-    .note-blue{
-      color:#0a49b5;
+    .tbl .c1 {
+      width: 35%;
+    }
+
+    .tbl .c2 {
+      width: 15%;
+      text-align: center;
+      font-weight: 700;
+      color: #0a49b5;
+    }
+
+    .tbl .c3 {
+      width: 50%;
+      color: #0a49b5;
+    }
+
+    .note-blue {
+      color: #0a49b5;
       margin-top: 1mm;
       margin-bottom: 2mm;
     }
 
     /* bas de page signature */
-    .bottom-area{
+    .bottom-area {
       margin-top: 6mm;
     }
-    .sig-grid{
-      width:100%;
+
+    .sig-grid {
+      width: 100%;
       border-collapse: collapse;
       table-layout: fixed;
       margin-top: 2mm;
     }
-    .sig-grid td{
-      border:none;
+
+    .sig-grid td {
+      border: none;
       vertical-align: top;
       padding: 0;
     }
-    .sig-left{ width: 45%; }
-    .sig-mid{ width: 30%; text-align:center; }
-    .sig-right{ width: 25%; }
 
-    .stamp{
+    .sig-left {
+      width: 45%;
+    }
+
+    .sig-mid {
+      width: 30%;
+      text-align: center;
+    }
+
+    .sig-right {
+      width: 25%;
+    }
+
+    .stamp {
       height: auto;
       margin-top: 2mm;
       max-height: 25mm;
     }
+
     .footer-code {
-        position: fixed;
-        bottom: 10mm;
-        left: 0;
-        right: 0;
-        text-align: center;
-        font-size: 7.3pt;
-        color: #333;
+      position: fixed;
+      bottom: 10mm;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 7.3pt;
+      color: #333;
     }
+
     .footer-num {
-        position: fixed;
-        bottom: 10mm;
-        left: 0;
-        right: 5mm;
-        text-align: right;
-        font-size: 9pt;
+      position: fixed;
+      bottom: 10mm;
+      left: 0;
+      right: 5mm;
+      text-align: right;
+      font-size: 9pt;
     }
+
     /* PAGE 2 : bande bleue d'infos */
-    .warn{
-      color:#d10f0f;
+    .warn {
+      color: #d10f0f;
       font-weight: 800;
       margin-top: 40mm;
     }
-    .bluebox{
+
+    .bluebox {
       border: 1px solid #1a1a1a;
       background: #8cc7f3;
       padding: 5mm 5mm;
       margin-top: 14mm;
       font-size: 8.2pt;
       line-height: 1.35;
-      color:#062a43;
+      color: #062a43;
     }
-    .bluebox a{
-      color:#062a43;
+
+    .bluebox a {
+      color: #062a43;
       text-decoration: underline;
     }
-    .icon-mini{
-      float:right;
+
+    .icon-mini {
+      float: right;
       width: 10mm;
       height: 10mm;
-      border: 1px solid rgba(0,0,0,.25);
+      border: 1px solid rgba(0, 0, 0, .25);
       margin-left: 4mm;
-      background: rgba(255,255,255,.35);
-      text-align:center;
+      background: rgba(255, 255, 255, .35);
+      text-align: center;
       line-height: 10mm;
       font-weight: 800;
-      color: rgba(0,0,0,.45);
+      color: rgba(0, 0, 0, .45);
     }
 
     .underline {
@@ -241,35 +302,34 @@
         <tr>
           <td class="left">
             <!-- Logo CEE -->
-            <img class="logo-cee"
-                 src="{{ public_path('assets/img/nova/cdc_files/Image_003.jpg') }}"
-                 alt="CEE" />
+            <img class="logo-cee" src="{{ public_path('assets/img/nova/cdc_files/Image_003.jpg') }}" alt="CEE" />
           </td>
 
           <td class="mid">
             <!-- Logo EBS ENERGIE -->
-            <img class="logo-ebs"
-                 src="{{ public_path('assets/img/nova/cdc_files/Image_001.jpg') }}"
-                 alt="EBS ENERGIE" />
+            <img class="logo-ebs" src="{{ public_path('assets/img/nova/cdc_files/Image_001.jpg') }}"
+              alt="EBS ENERGIE" />
           </td>
 
           <td class="right">
             <!-- Logo ENERGIENOVA -->
-            <img class="logo-nova"
-                 src="{{ public_path('assets/img/nova/cdc_files/Image_002.png') }}"
-                 alt="ENERGIENOVA" />
+            <img class="logo-nova" src="{{ public_path('assets/img/nova/cdc_files/Image_002.png') }}"
+              alt="ENERGIENOVA" />
           </td>
         </tr>
       </table>
 
       <p class="small">
-        Le dispositif national des certificats d’économies d’énergie (CEE) mis en place par le Ministère en charge de l’énergie impose à l’ensemble
-        des fournisseurs d’énergie (électricité, gaz, fioul domestique, chaleur ou froid, carburants automobiles), de réaliser des économies et de
+        Le dispositif national des certificats d’économies d’énergie (CEE) mis en place par le Ministère en charge de
+        l’énergie impose à l’ensemble
+        des fournisseurs d’énergie (électricité, gaz, fioul domestique, chaleur ou froid, carburants automobiles), de
+        réaliser des économies et de
         promouvoir les comportements vertueux auprès des consommateurs d’énergie.
       </p>
 
       <p class="small">
-        Dans le cadre de son partenariat avec la société EBS ENERGIE, la société (L’ENERGIENOVA) s’engage à vous apporter :
+        Dans le cadre de son partenariat avec la société EBS ENERGIE, la société (L’ENERGIENOVA) s’engage à vous
+        apporter :
       </p>
 
       <div class="row small">
@@ -310,7 +370,8 @@
 
         {{-- Checkbox dynamique pour audit --}}
         <span class="checkline">
-          <span class="box {{ isset($document->audit) && $document->audit ? 'filled' : '' }}"></span>
+          <span
+            class="box {{ (($document->audit ?? false) || (($document->audit_valeur ?? 0) > 0)) ? 'filled' : '' }}"></span>
           un audit ou conseil personnalisé comme écrit (valeur =&nbsp;&nbsp;
           <span class="value-field">
             {{ isset($document->audit_valeur) && $document->audit_valeur > 0 ? number_format($document->audit_valeur, 2, ',', ' ') . ' €' : '_____' }}
@@ -319,7 +380,8 @@
 
         {{-- Checkbox dynamique pour produit/service offert --}}
         <span class="checkline">
-          <span class="box {{ isset($document->produit_offert) && $document->produit_offert ? 'filled' : '' }}"></span>
+          <span
+            class="box {{ (($document->produit_offert ?? false) || !empty($document->produit_offert_nature) || (($document->produit_offert_valeur ?? 0) > 0)) ? 'filled' : '' }}"></span>
           un produit ou service offert&nbsp;:&nbsp;&nbsp;
           <span class="value-field">
             {{ $document->produit_offert_nature ?? '____________' }}
@@ -359,43 +421,55 @@
       </table>
 
       <p class="note-blue tiny">
-        au bénéfice de : (Ajouter d’éventuelles autres conditions à respecter, ou renvoyer à des conditions contractuelles)
+        au bénéfice de : (Ajouter d’éventuelles autres conditions à respecter, ou renvoyer à des conditions
+        contractuelles)
       </p>
 
       <div class="small">
         <div>•&nbsp;&nbsp;Nom : <b>{{ $document->beneficiaire_nom ?? 'RABATHERM HECS' }}</b></div>
         <div>•&nbsp;&nbsp;Prénom : <b>{{ $document->beneficiaire_prenom ?? '_______________________' }}</b></div>
-        <div>•&nbsp;&nbsp;Adresse : <b>{{ $document->adresse_travaux ?? '21 RUE D’ANJOU 92600 ASNIERES-SUR-SEINE' }}</b></div>
+        <div>•&nbsp;&nbsp;Adresse : <b>{{ $document->adresse_travaux ?? '21 RUE D’ANJOU 92600 ASNIERES-SUR-SEINE' }}</b>
+        </div>
         <div>•&nbsp;&nbsp;Téléphone : <b>{{ $document->beneficiaire_telephone ?? '01 84 80 90 08' }}</b></div>
-        <div>•&nbsp;&nbsp;Adresse e-mail : <b>{{ $document->beneficiaire_email ?? 'contact@rabatherm-hecs.fr' }}</b></div>
+        <div>•&nbsp;&nbsp;Adresse e-mail : <b>{{ $document->beneficiaire_email ?? 'contact@rabatherm-hecs.fr' }}</b>
+        </div>
       </div>
 
       <p class="small" style="margin-top:4mm;">
-        *Montant de prime valable 3 mois à compter de la date d’édition du devis <span style="color:#d10f0f; font-weight:800;">
+        *Montant de prime valable 3 mois à compter de la date d’édition du devis <span
+          style="color:#d10f0f; font-weight:800;">
           {{ $document->date_devis ? \Carbon\Carbon::parse($document->date_devis)->format('d/m/Y') : 'Non renseignée' }}
         </span>
       </p>
 
       <p class="tiny muted">
-        Les montants de prime indiqués ci-dessus sont définis selon les fiches d’opérations standardisées disponibles sur le site du Ministère en charge
-        de l’énergie, et pourront être actualisés en fonction des paramètres relatifs aux travaux réalisés et de la situation fiscale du ménage.
+        Les montants de prime indiqués ci-dessus sont définis selon les fiches d’opérations standardisées disponibles
+        sur le site du Ministère en charge
+        de l’énergie, et pourront être actualisés en fonction des paramètres relatifs aux travaux réalisés et de la
+        situation fiscale du ménage.
         <br><br>
-        Le présent engagement est pris dans le cadre de la période 5 (2022-2025) du dispositif des certificats d’économies d’énergie (CEE), institué
-        par le Titre II du Livre II du Code de l’Énergie. Cet engagement est non cumulable avec une autre offre liée au dispositif des Certificats
+        Le présent engagement est pris dans le cadre de la période 5 (2022-2025) du dispositif des certificats
+        d’économies d’énergie (CEE), institué
+        par le Titre II du Livre II du Code de l’Énergie. Cet engagement est non cumulable avec une autre offre liée au
+        dispositif des Certificats
         d’Économies d’Énergie.
         <br><br>
-        Cet engagement est valable pour les travaux réalisés jusqu’à 1 an après la date d’édition du devis (date de factures des travaux faisant foi).
+        Cet engagement est valable pour les travaux réalisés jusqu’à 1 an après la date d’édition du devis (date de
+        factures des travaux faisant foi).
         <br><br>
-        Dans le cadre de la réglementation, un contrôle qualité des travaux sur site par un contact pourra être demandé. Un refus de ce contrôle sur site
+        Dans le cadre de la réglementation, un contrôle qualité des travaux sur site par un contact pourra être demandé.
+        Un refus de ce contrôle sur site
         ou par contact via EBS ENERGIE ou un prestataire d’EBS ENERGIE conduira au refus de cette prime par EBS ENERGIE.
       </p>
 
       <p class="small" style="margin-top:4mm;">
-        Date de cette proposition : <b>{{ $document->date_signature ? \Carbon\Carbon::parse($document->date_signature)->format('d/m/Y') : 'Non renseignée' }}</b>
+        Date de cette proposition :
+        <b>{{ $document->date_signature ? \Carbon\Carbon::parse($document->date_signature)->format('d/m/Y') : 'Non renseignée' }}</b>
       </p>
 
       <p class="tiny note-blue">
-        Le présent document doit être signé au plus tard quatorze jours après la date d’engagement de l’opération, et en tout état de cause avant la date
+        Le présent document doit être signé au plus tard quatorze jours après la date d’engagement de l’opération, et en
+        tout état de cause avant la date
         de début des travaux.
       </p>
 
@@ -411,10 +485,11 @@
             <td class="sig-mid tiny">
               Tampon et signature de la société
               <div>
-                @if($document->cachet_image ?? false)
+                @if(!empty($document->cachet_image) && file_exists(Storage::path($document->cachet_image)))
                   <img class="stamp" src="{{ Storage::path($document->cachet_image) }}" alt="Cachet">
                 @else
-                  <img class="stamp" src="{{ public_path('assets/img/nova/cdc_files/Image_008.png') }}" alt="Cachet ENERGIENOVA">
+                  <img class="stamp" src="{{ public_path('assets/img/nova/cdc_files/Image_008.png') }}"
+                    alt="Cachet ENERGIENOVA">
                 @endif
               </div>
             </td>
@@ -442,38 +517,38 @@
         <tr>
           <td class="left">
             <!-- Logo CEE -->
-            <img class="logo-cee"
-                 src="{{ public_path('assets/img/nova/cdc_files/Image_003.jpg') }}"
-                 alt="CEE" />
+            <img class="logo-cee" src="{{ public_path('assets/img/nova/cdc_files/Image_003.jpg') }}" alt="CEE" />
           </td>
 
           <td class="mid">
             <!-- Logo EBS ENERGIE -->
-            <img class="logo-ebs"
-                 src="{{ public_path('assets/img/nova/cdc_files/Image_001.jpg') }}"
-                 alt="EBS ENERGIE" />
+            <img class="logo-ebs" src="{{ public_path('assets/img/nova/cdc_files/Image_001.jpg') }}"
+              alt="EBS ENERGIE" />
           </td>
 
           <td class="right">
             <!-- Logo ENERGIENOVA -->
-            <img class="logo-nova"
-                 src="{{ public_path('assets/img/nova/cdc_files/Image_002.png') }}"
-                 alt="ENERGIENOVA" />
+            <img class="logo-nova" src="{{ public_path('assets/img/nova/cdc_files/Image_002.png') }}"
+              alt="ENERGIENOVA" />
           </td>
         </tr>
       </table>
-      
+
       <div class="warn small">///</div>
       <p class="small">
-        Faites réaliser plusieurs devis afin de prendre une décision éclairée. Attention, seules les propositions remises avant
-        l’acceptation du devis ou du bon de commande sont valables, et vous ne pouvez pas cumuler plusieurs offres CEE différentes
+        Faites réaliser plusieurs devis afin de prendre une décision éclairée. Attention, seules les propositions
+        remises avant
+        l’acceptation du devis ou du bon de commande sont valables, et vous ne pouvez pas cumuler plusieurs offres CEE
+        différentes
         pour la même opération.
       </p>
 
       <div class="warn small" style="margin-top:4mm;">///</div>
       <p class="small">
-        Seul le professionnel est responsable de la conformité des travaux que vous lui confiez. Vérifiez ses qualifications techniques
-        et l’éligibilité des produits proposés avant d’engager vos travaux. Un contrôle des travaux effectués dans votre logement pourra
+        Seul le professionnel est responsable de la conformité des travaux que vous lui confiez. Vérifiez ses
+        qualifications techniques
+        et l’éligibilité des produits proposés avant d’engager vos travaux. Un contrôle des travaux effectués dans votre
+        logement pourra
         être réalisé sur demande de EBS ENERGIE ou des autorités publiques.
       </p>
 
@@ -492,9 +567,12 @@
         </div>
 
         <div style="margin-top:3mm;">
-          En cas de litige avec le porteur de l’offre ou son partenaire, vous pouvez faire appel gratuitement au médiateur de la consommation
-          (6° de l’article L. 611-1 du code de la consommation) <b>Médiation de la Consommation et Patrimoine</b> dont nous relevons via le site :
-          <span style="text-decoration: underline;">www.mcpmediation.org</span> ou par voie postale : <b>12 Square Desnouettes - 75015 PARIS</b>
+          En cas de litige avec le porteur de l’offre ou son partenaire, vous pouvez faire appel gratuitement au
+          médiateur de la consommation
+          (6° de l’article L. 611-1 du code de la consommation) <b>Médiation de la Consommation et Patrimoine</b> dont
+          nous relevons via le site :
+          <span style="text-decoration: underline;">www.mcpmediation.org</span> ou par voie postale : <b>12 Square
+            Desnouettes - 75015 PARIS</b>
           ou par téléphone au <b>01 40 61 03 33</b>
         </div>
       </div>
@@ -509,4 +587,5 @@
   </div>
 
 </body>
+
 </html>

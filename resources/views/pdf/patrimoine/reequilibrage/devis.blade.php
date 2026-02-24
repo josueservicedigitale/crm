@@ -88,14 +88,12 @@
       vertical-align: middle;
     }
 
-
     .logoBox {
       width: 100mm;
-      height: 22mm;
+      height: 30mm;
       display: flex;
       align-items: center;
       justify-content: center;
-
     }
 
     .logoBox img {
@@ -137,7 +135,7 @@
     }
 
     .refbar td.value.right {
-      text-align: center;
+      text-align: left;
     }
 
     /* ===========================
@@ -299,7 +297,6 @@
     }
 
     /* grande zone texte */
-
     .lines {
       margin-top: 6mm;
     }
@@ -440,7 +437,6 @@
             <td class="logoBox">
               <img src="{{ public_path('assets/img/patrimoine/patr.png') }}" alt="Logo">
             </td>
-
           </tr>
         </table>
 
@@ -448,7 +444,7 @@
         <table class="refbar">
           <tr>
             <td style="width:26mm;">REF DEVIS</td>
-            <td class="value right" style="width:100mm;">{{ $document->reference_devis }}</td>
+            <td class="value right" style="width:100mm;">ENR-2025-D-RQ-{{ $document->reference_devis }}</td>
           </tr>
           <tr>
             <td>DATE DEVIS</td>
@@ -473,40 +469,45 @@
           </td>
 
           <td style="width:50%;">
-            <span class="labelSmall" style="color: #38bdf8;">BÉNÉFICIAIRE</span>
-            <span class="strong">{{ $document->society }}</span><br>
-            {{ $document->adresse_beneficiaire ?? '' }}<br>
-            {{ $document->ville_beneficiaire ?? '' }}<br><br>
 
             <table class="metaGrid">
               <tr>
+                <td class="k">BÉNÉFICIAIRE</td>
+                <td>RABATHERM HECS</td>
+              </tr><br>
+              <tr>
+                <td class="k"></td>
+                <td>21 RUE D'ANJOU <br>92600 ASNIERES-SUR-SEINE</td>
+              </tr>
+              <tr>
                 <td class="k">SIRET</td>
-                <td>{{ $document->reference }}</td>
+                <td>44261333700033</td>
               </tr>
               <tr>
                 <td class="k">MAIL</td>
-                <td>{{ $document->email_beneficiaire ?? '' }}</td>
+                <td>contact@rabatherm-hecs.fr</td>
               </tr>
               <tr>
                 <td class="k">TEL</td>
-                <td>{{ $document->tel_beneficiaire ?? '' }}</td>
+                <td>01 84 80 90 08</td>
               </tr>
               <tr>
                 <td class="k">REPRÉSENTÉ PAR</td>
-                <td>{{ $document->representant ?? '' }}</td>
+                <td>M. Offel De Villaucourt Charles</td>
               </tr>
               <tr>
                 <td class="k">FONCTION</td>
-                <td>{{ $document->fonction ?? '' }}</td>
+                <td>Gérant</td>
               </tr>
             </table>
+
           </td>
         </tr>
       </table>
 
       <!-- OBJET -->
       <div style="font-size:7.6pt; line-height:1.35; margin-top:1mm;">
-        <span class="strong" style="color: #38bdf8;" text-transform:uppercase;">OBJET :</span>
+        <span class="strong" style="color:#38bdf8; text-transform:uppercase;">OBJET :</span>
         Opération entrant dans le dispositif de prime C.E.E. (Certificat d’Economie d’Energie),
         conforme aux recommandations de la fiche technique N°BAR-SE-104 de C.E.E. décrites par le ministère de la
         Transition énergétique.
@@ -514,38 +515,39 @@
 
       <!-- DESIGNATION BOX -->
       <div class="box">
-        <div class="boxTitle" style="color: #38bdf8;">DESIGNATION</div>
+        <div class="boxTitle" style="color:#38bdf8;">DESIGNATION</div>
 
         Réglage des organes d’équilibrage d’une installation de chauffage à eau chaude, opération entrant dans le
         dispositif de prime C.E.E.
         (Certificat d’Economie d’Energie), conforme aux recommandations de la fiche BAR-SE-104.
         <br><br>
 
-        <div><span class="strong" style="color: #38bdf8;" text-transform:uppercase;">SITE DES TRAVAUX :</span>
+        <div><span class="strong" style="color:#38bdf8; text-transform:uppercase;">SITE DES TRAVAUX :</span>
           {{ $document->adresse_travaux }}
         </div>
 
-        <div><span class="strong" style="color: #38bdf8;" text-transform:uppercase;">NUMÉRO IMMATRICULATION DE
+        <div><span class="strong" style="color:#38bdf8; text-transform:uppercase;">NUMÉRO IMMATRICULATION DE
             COPROPRIÉTÉ :</span>
           {{ $document->numero_immatriculation ?? '' }} &nbsp;-&nbsp; {{ $document->nom_residence ?? '' }}
         </div>
 
-        <div><span class="strong" style="color: #38bdf8;" text-transform:uppercase;">PARCELLE CADASTRALE :</span></div>
+        <div><span class="strong" style="color:#38bdf8; text-transform:uppercase;">PARCELLE CADASTRALE :</span>
+        </div>
         <div style="margin-top:1mm;">
           1&nbsp;&nbsp;Parcelle {{ $document->parcelle_1 ?? '' }} Feuille {{ $document->parcelle_2 ?? '' }}
         </div>
 
         <div style="margin-top:3mm;">
-          <span class="strong" style="color: #38bdf8;" text-transform:uppercase;">DATE DES TRAVAUX :</span>
+          <span class="strong" style="color:#38bdf8; text-transform:uppercase;">DATE DES TRAVAUX :</span>
           {{ $document->date_travaux ?? '' }}<br>
-          <span class="strong" style="color: #38bdf8;" text-transform:uppercase;">DATE DE DÉSEMBOUAGE :</span>
+          <span class="strong" style="color:#38bdf8; text-transform:uppercase;">DATE DE DÉSEMBOUAGE :</span>
           {{ $document->dates_previsionnelles ?? '' }}<br>
-          <span class="strong" style="color: #38bdf8;" text-transform:uppercase;">CONTACT SUR SITE :</span>
-          {{ $document->contact_site ?? '' }}<br>
-          <span class="strong" style="color: #38bdf8;" text-transform:uppercase;">SECTEUR :</span> Résidentiel<br>
-          <span class="strong" style="color: #38bdf8;" text-transform:uppercase;">NOMBRE DE BÂTIMENTS :</span>
+          <span class="strong" style="color:#38bdf8; text-transform:uppercase;">CONTACT SUR SITE :</span> Gérant M.
+          Offel De Villaucourt Charles, Tél : 01 84 80 90 08 - contact@rabatherm-hecs.fr<br>
+          <span class="strong" style="color:#38bdf8; text-transform:uppercase;">SECTEUR :</span> Résidentiel<br>
+          <span class="strong" style="color:#38bdf8; text-transform:uppercase;">NOMBRE DE BÂTIMENTS :</span>
           {{ $document->nombre_batiments ?? '' }}<br>
-          <span class="strong" style="color: #38bdf8;" text-transform:uppercase;">DÉTAILS :</span>
+          <span class="strong" style="color:#38bdf8; text-transform:uppercase;">DÉTAILS :</span>
           {{ $document->details_batiments ?? '' }}
         </div>
       </div>
@@ -571,23 +573,27 @@
               Installation existante depuis plus de 2 ans : OUI
               <br><br>
               <ul>
-                <li><span class="strong" style="color: #38bdf8;"">KWH CUMAC :</span> {{ $document->wh_cumac ?? '' }}</li>
-                <li><span class=" strong" style="color: #38bdf8;"">PRIME CEE :</span> {{ number_format($document->prime_cee ?? 0, 2, ',', ' ') }} €</li>
+                <li><span class="strong" style="color:#38bdf8;">KWH CUMAC :</span> {{ $document->wh_cumac ?? '' }}</li>
+                <li><span class="strong" style="color:#38bdf8;">PRIME CEE :</span>
+                  {{ number_format($document->prime_cee ?? 0, 2, ',', ' ') }} €</li>
               </ul>
             </td>
-            <td></td><td></td><td></td><td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
           </tr>
         </tbody>
       </table>
 
-      <div class=" footer">
-                    PATRIMOINE ENERGIE au capital de 6 000 € - Code APE 4322B SIRET : 52301525300041 - rcs Pau- N° TVA
-                    Intracom : FR58523015253<br>
-                    7 B RUE JEANNE D'ARC, 76000 ROUEN. Tél. : 02 78 77 66 14 Mail : patrimoinenergie76@gmail.com
-    </div>
-    <div class="pageno">p. 1/3</div>
+      <div class="footer">
+        PATRIMOINE ENERGIE au capital de 6 000 € - Code APE 4322B SIRET : 52301525300041 - rcs Pau- N° TVA Intracom :
+        FR58523015253<br>
+        7 B RUE JEANNE D'ARC, 76000 ROUEN. Tél. : 02 78 77 66 14 Mail : patrimoinenergie76@gmail.com
+      </div>
+      <div class="pageno">p. 1/3</div>
 
-  </div>
+    </div>
   </div>
 
   <!-- ===================== PAGE 2 ===================== -->
@@ -600,14 +606,13 @@
             <td class="logoBox">
               <img src="{{ public_path('assets/img/patrimoine/patr.png') }}" alt="Logo">
             </td>
-
           </tr>
         </table>
 
         <table class="refbar">
           <tr>
             <td style="width:26mm;">REF DEVIS</td>
-            <td class="value right" style="width:100mm;">{{ $document->reference_devis }}</td>
+            <td class="value right" style="width:100mm;">ENR-2025-D-RQ-016{{ $document->reference_devis }}</td>
           </tr>
           <tr>
             <td>DATE DEVIS</td>
@@ -629,10 +634,9 @@
         <tbody>
           <tr>
             <td>
-              Matériel(s) fourni(s) et mis en place par notre société
-              {{ $document->society ?? 'RABATHERM HECS' }},<br><br>
-              Représentée par : {{ $document->representant ?? '' }}<br>
-              SIRET : {{ $document->siret_beneficiaire ?? '' }}<br><br>
+              Matériel(s) fourni(s) et mis en place par notre société RABATHERM HECS,<br><br>
+              Représentée par : M. Offel De Villaucourt Charles<br>
+              SIRET : 44261333700033<br><br>
 
               <div class="lines">
                 <div class="item">
@@ -681,13 +685,17 @@
             </td>
 
             <td class="colPU" style="text-align:center;">
-              <div style="margin-top:38mm;">{{ number_format($document->pu_1 ?? 0, 2, ',', ' ') }}</div>
-              <div style="margin-top:8mm;">{{ number_format($document->pu_2 ?? 0, 2, ',', ' ') }}</div>
+              <div style="margin-top:38mm;">
+                {{ number_format(($document->prime_cee ?? 0) * 0.75, 2, ',', ' ') }}
+              </div>
+              <div style="margin-top:8mm;">
+                {{ number_format(($document->prime_cee ?? 0) * 0.25, 2, ',', ' ') }}
+              </div>
             </td>
 
             <td class="colTHT" style="text-align:center;">
-              <div style="margin-top:38mm;">{{ number_format($document->total_1 ?? 0, 2, ',', ' ') }}</div>
-              <div style="margin-top:8mm;">{{ number_format($document->total_2 ?? 0, 2, ',', ' ') }}</div>
+              <div style="margin-top:38mm;">{{ number_format(($document->prime_cee ?? 0) * 0.75, 2, ',', ' ') }}</div>
+              <div style="margin-top:8mm;">{{ number_format(($document->prime_cee ?? 0) * 0.25, 2, ',', ' ') }}</div>
             </td>
 
             <td class="colTVA" style="text-align:center;">
@@ -724,7 +732,7 @@
         <table class="refbar">
           <tr>
             <td style="width:26mm;">REF DEVIS</td>
-            <td class="value right" style="width:100mm;">{{ $document->reference_devis }}</td>
+            <td class="value right" style="width:100mm;">ENR-2025-D-RQ-{{ $document->reference_devis }}</td>
           </tr>
           <tr>
             <td>DATE DEVIS</td>
@@ -745,8 +753,7 @@
               <br><br>
               Le montant de cette contribution financière, hors champ d’application de la TVA, est susceptible de varier
               en fonction des travaux effectivement réalisés et du volume des CEE attribués à l’opération et est estimé
-              à <span class="strong" style="color: #38bdf8;">{{ number_format($document->prime_cee ?? 0, 2, ',', ' ') }}
-                €</span>.
+              à <span class="strong">{{ number_format($document->prime_cee ?? 0, 2, ',', ' ') }} €</span>.
             </div>
           </td>
 
@@ -755,7 +762,7 @@
               <table>
                 <tr>
                   <td class="k">TOTAL HT</td>
-                  <td class="v">{{ number_format($document->montant_ht ?? 0, 2, ',', ' ') }} €</td>
+                  <td class="v">{{ number_format($document->prime_cee ?? 0, 2, ',', ' ') }} €</td>
                 </tr>
                 <tr>
                   <td class="k">TVA à {{ $document->tva_rate ?? '5,5' }} %</td>

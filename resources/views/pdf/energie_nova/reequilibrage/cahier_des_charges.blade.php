@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Formulaire CEE - EBS ENERGIE</title>
+
+    <style>
+        @page { margin: 12mm 12mm 12mm 12mm; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body{
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 9.5pt;
+            color:#111;
+        }
+
+        .page{ page-break-after: always; }
+        .page:last-child{ page-break-after: auto; }
+
+        .frame{
+            margin: 5mm;
+            border: 1px solid #2b2b2b;
+            padding: 10mm 10mm 8mm 10mm;
+            height: 260mm;
+        }
+
+        .hdr{ width:100%; border-collapse: collapse; table-layout: fixed; }
+        .hdr td{ vertical-align: middle; }
+
+        .left{ width: 60mm; text-align: left; }
+        .mid{ width: auto; text-align: center; }
+        .right{ width: 60mm; text-align: right; }
+
+        .logo-cee{ height:18mm; }
+        .logo-ebs{ height:14mm; display:block; margin:0 auto; }
+        .logo-nova{ height:18mm; }
+
+        p{ line-height: 1.35; margin: 2mm 0; }
+        .small{ font-size: 8.3pt; }
+        .tiny{ font-size: 7.7pt; }
+        .muted{ color:#4b4b4b; }
+
+        .row{ margin: 2mm 0; }
+
+        .checkline{ display: block; margin: 1.4mm 0; line-height: 1.35; }
+        .box{
+            display: inline-block;
+            width: 3.8mm;
+            height: 3.8mm;
+            border: 1px solid #333;
+            vertical-align: -0.6mm;
+            margin-right: 2.5mm;
+            background:#fff;
+        }
+        .box.filled{ background:#333; }
+
+        .tbl{
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            margin: 4mm 0 3mm 0;
+            font-size: 8.4pt;
+        }
+        .tbl th, .tbl td{
+            border: 1px solid #333;
+            padding: 2.5mm 2.5mm;
+            vertical-align: top;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
+        .tbl th{
+            background: #f3f3f3;
+            font-weight: 800;
+            text-align: center;
+        }
+        .tbl .c1{ width: 35%; }
+        .tbl .c2{ width: 15%; text-align:center; font-weight:700; color:#0a49b5; }
+        .tbl .c3{ width: 50%; color:#0a49b5; }
+
+        .note-blue{ color:#0a49b5; margin-top: 1mm; margin-bottom: 2mm; }
+
+        .bottom-area{ margin-top: 6mm; }
+
+        .sig-grid{
+            width:100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            margin-top: 2mm;
+        }
+        .sig-grid td{ border:none; vertical-align: top; padding: 0; }
+        .sig-left{ width: 45%; }
+        .sig-mid{ width: 30%; text-align:center; }
+        .sig-right{ width: 25%; }
+
+        .stamp{ height: auto; margin-top: 2mm; max-height: 25mm; }
+
+        .footer-code{
+            position: fixed;
+            bottom: 10mm;
+            left: 0; right: 0;
+            text-align: center;
+            font-size: 7.3pt;
+            color: #333;
+        }
+        .footer-num{
+            position: fixed;
+            bottom: 10mm;
+            left: 0;
+            right: 5mm;
+            text-align: right;
+            font-size: 9pt;
+        }
+
+        .warn{ color:#d10f0f; font-weight: 800; margin-top: 40mm; }
+
+        .bluebox{
+            border: 1px solid #1a1a1a;
+            background: #8cc7f3;
+            padding: 5mm 5mm;
+            margin-top: 14mm;
+            font-size: 8.2pt;
+            line-height: 1.35;
+            color:#062a43;
+        }
+        .bluebox a{ color:#062a43; text-decoration: underline; }
+
+        .icon-mini{
+            float:right;
+            width: 10mm;
+            height: 10mm;
+            border: 1px solid rgba(0,0,0,.25);
+            margin-left: 4mm;
+            background: rgba(255,255,255,.35);
+            text-align:center;
+            line-height: 10mm;
+            font-weight: 800;
+            color: rgba(0,0,0,.45);
+        }
+
+        .value-field{
+            font-weight: bold;
+            color: #0a49b5;
+            border-bottom: 1px dashed #0a49b5;
+            padding: 0 2px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ===================== PAGE 1 ===================== -->
+    <div class="page">
+        <div class="frame">
+
+            <table class="hdr">
+                <tr>
+                    <td class="left">
+                        <img class="logo-cee" src="{{ public_path('assets/img/nova/cdc_files/Image_003.jpg') }}" alt="CEE" />
+                    </td>
+
+                    <td class="mid">
+                        <img class="logo-ebs" src="{{ public_path('assets/img/nova/cdc_files/Image_001.jpg') }}" alt="EBS ENERGIE" />
+                    </td>
+
+                    <td class="right">
+                        <img class="logo-nova" src="{{ public_path('assets/img/nova/cdc_files/Image_002.png') }}" alt="ENERGIENOVA" />
+                    </td>
+                </tr>
+            </table>
+
+            <p class="small">
+                Le dispositif national des certificats d’économies d’énergie (CEE) mis en place par le Ministère en
+                charge de l’énergie impose à l’ensemble des fournisseurs d’énergie (...) de promouvoir les comportements vertueux auprès des consommateurs d’énergie.
+            </p>
+
+            <p class="small">
+                Dans le cadre de son partenariat avec la société EBS ENERGIE, la société (L’ENERGIENOVA) s’engage à vous apporter :
+            </p>
+
+            <div class="row small">
+                <span class="checkline">
+                    <span class="box {{ ($document->prime_cee ?? 0) > 0 ? 'filled' : '' }}"></span>
+                    une prime d’un montant de&nbsp;&nbsp;
+                    <span class="value-field">
+                        {{ ($document->prime_cee ?? 0) > 0 ? number_format($document->prime_cee, 2, ',', ' ') . ' €' : '_____' }}
+                    </span> ;
+                </span>
+
+                <span class="checkline">
+                    <span class="box {{ ($document->bon_achat ?? 0) > 0 ? 'filled' : '' }}"></span>
+                    un bon d’achat pour des produits de consommation courante d’un montant de&nbsp;&nbsp;
+                    <span class="value-field">
+                        {{ ($document->bon_achat ?? 0) > 0 ? number_format($document->bon_achat, 2, ',', ' ') . ' €' : '_____' }}
+                    </span> ;
+                </span>
+
+                <span class="checkline">
+                    <span class="box {{ ($document->pret_bonifie ?? 0) > 0 ? 'filled' : '' }}"></span>
+                    un prêt bonifié d’un montant de&nbsp;&nbsp;
+                    <span class="value-field">
+                        {{ ($document->pret_bonifie ?? 0) > 0 ? number_format($document->pret_bonifie, 2, ',', ' ') . ' €' : '_____' }}
+                    </span>
+                    euros proposé par&nbsp;&nbsp;
+                    <span class="value-field">
+                        {{ $document->pret_organisme ?? '_____' }}
+                    </span>
+                    au taux effectif global (TEG) de&nbsp;&nbsp;
+                    <span class="value-field">
+                        {{ isset($document->pret_teg) ? $document->pret_teg . ' %' : '_____' }}
+                    </span> ;
+                </span>
+
+                <span class="checkline">
+                    <span class="box {{ !empty($document->audit) ? 'filled' : '' }}"></span>
+                    un audit ou conseil personnalisé comme écrit (valeur =&nbsp;&nbsp;
+                    <span class="value-field">
+                        {{ ($document->audit_valeur ?? 0) > 0 ? number_format($document->audit_valeur, 2, ',', ' ') . ' €' : '_____' }}
+                    </span>) ;
+                </span>
+
+                <span class="checkline">
+                    <span class="box {{ !empty($document->produit_offert) ? 'filled' : '' }}"></span>
+                    un produit ou service offert&nbsp;:&nbsp;&nbsp;
+                    <span class="value-field">
+                        {{ $document->produit_offert_nature ?? '____________' }}
+                    </span>
+                    d’une valeur de&nbsp;&nbsp;
+                    <span class="value-field">
+                        {{ ($document->produit_offert_valeur ?? 0) > 0 ? number_format($document->produit_offert_valeur, 2, ',', ' ') . ' €' : '_____' }}
+                    </span>
+                </span>
+            </div>
+
+            <p class="small">dans le cadre des travaux suivants (1 ligne par opération) :</p>
+
+            <table class="tbl">
+                <tr>
+                    <th class="c1">Nature des travaux</th>
+                    <th class="c2">Fiche CEE</th>
+                    <th class="c3">Conditions à respecter</th>
+                </tr>
+                <tr>
+                    <td class="c1">
+                        <span style="color:#0a49b5; font-weight:800;">
+                            {{ $document->nature_travaux ?? "Réglage des organes d’équilibrage d’une installation de chauffage à eau chaude" }}
+                        </span>
+                    </td>
+                    <td class="c2">{{ $document->fiche_cee ?? 'BAR-SE-104' }}</td>
+                    <td class="c3">
+                        Voir le site du Ministère (...) :
+                        <br>
+                        <span style="text-decoration: underline;">
+                            www.ecologique-solidaire.gouv.fr/operations-standardisees-deconomies-denergie
+                        </span>
+                    </td>
+                </tr>
+            </table>
+
+            <p class="note-blue tiny">au bénéfice de :</p>
+
+            <div class="small">
+                <div>•&nbsp;&nbsp;Nom : <b>{{ $document->beneficiaire_nom ?? 'RABATHERM HECS' }}</b></div>
+                <div>•&nbsp;&nbsp;Prénom : <b>{{ $document->beneficiaire_prenom ?? '_______________________' }}</b></div>
+                <div>•&nbsp;&nbsp;Adresse : <b>{{ $document->adresse_travaux ?? '_______________________' }}</b></div>
+                <div>•&nbsp;&nbsp;Téléphone : <b>{{ $document->beneficiaire_telephone ?? '_______________________' }}</b></div>
+                <div>•&nbsp;&nbsp;Adresse e-mail : <b>{{ $document->beneficiaire_email ?? '_______________________' }}</b></div>
+            </div>
+
+            <p class="small" style="margin-top:4mm;">
+                *Montant de prime valable 3 mois à compter de la date d’édition du devis
+                <span style="color:#d10f0f; font-weight:800;">
+                    {{ !empty($document->date_devis) ? \Carbon\Carbon::parse($document->date_devis)->format('d/m/Y') : 'Non renseignée' }}
+                </span>
+            </p>
+
+            <p class="tiny muted">
+                Les montants de prime indiqués ci-dessus (...) refus de cette prime par EBS ENERGIE.
+            </p>
+
+            <p class="small" style="margin-top:4mm;">
+                Date de cette proposition :
+                <b>{{ !empty($document->date_signature) ? \Carbon\Carbon::parse($document->date_signature)->format('d/m/Y') : 'Non renseignée' }}</b>
+            </p>
+
+            <p class="tiny note-blue">
+                Le présent document doit être signé au plus tard quatorze jours après la date d’engagement de l’opération,
+                et en tout état de cause avant la date de début des travaux.
+            </p>
+
+            <div class="bottom-area">
+                <table class="sig-grid">
+                    <tr>
+                        <td class="sig-left tiny">
+                            Signature:<br>
+                            NOM Prénom :
+                            <span style="color:#0a49b5;">{{ $document->signataire_nom ?? 'HAMLET TAMOYAN' }}</span><br>
+                            Fonction :
+                            <span style="color:#0a49b5;">{{ $document->signataire_fonction ?? 'Président' }}</span>
+                        </td>
+
+                        <td class="sig-mid tiny">
+                            Tampon et signature de la société
+                            <div>
+                                @if(!empty($document->cachet_image))
+                                    <img class="stamp" src="{{ Storage::path($document->cachet_image) }}" alt="Cachet">
+                                @else
+                                    <img class="stamp" src="{{ public_path('assets/img/nova/cdc_files/Image_008.png') }}" alt="Cachet ENERGIENOVA">
+                                @endif
+                            </div>
+                        </td>
+
+                        <td class="sig-right tiny"></td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="footer-code">
+                FORM_CONF_CDC_BAR_109_EBS Energie_INDIRECT HCDP_2024 09 01
+            </div>
+            <div class="footer-num">
+                Page 1 / 2
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ===================== PAGE 2 ===================== -->
+    <div class="page">
+        <div class="frame">
+
+            <table class="hdr">
+                <tr>
+                    <td class="left">
+                        <img class="logo-cee" src="{{ public_path('assets/img/nova/cdc_files/Image_003.jpg') }}" alt="CEE" />
+                    </td>
+
+                    <td class="mid">
+                        <img class="logo-ebs" src="{{ public_path('assets/img/nova/cdc_files/Image_001.jpg') }}" alt="EBS ENERGIE" />
+                    </td>
+
+                    <td class="right">
+                        <img class="logo-nova" src="{{ public_path('assets/img/nova/cdc_files/Image_002.png') }}" alt="ENERGIENOVA" />
+                    </td>
+                </tr>
+            </table>
+
+            <div class="warn small">///</div>
+            <p class="small">
+                Faites réaliser plusieurs devis afin de prendre une décision éclairée. (...)
+            </p>
+
+            <div class="warn small" style="margin-top:4mm;">///</div>
+            <p class="small">
+                Seul le professionnel est responsable de la conformité des travaux (...)
+            </p>
+
+            <div class="bluebox">
+                <div class="icon-mini">≡</div>
+
+                <div style="font-weight:800; text-decoration: underline;">
+                    Où se renseigner pour bénéficier de cette offre ? :
+                    <span style="text-decoration: underline;">https://www.ebu-energie.com</span>
+                    &nbsp;(+33)01 43 92 92 32
+                </div>
+
+                <div style="margin-top:3mm; font-weight:800; text-decoration: underline;">
+                    Où s’informer sur le site vous les travaux d’économies d’énergie ? :
+                    Site du réseau FAIRE : <span style="text-decoration: underline;">https://www.faire.gouv.fr</span>
+                </div>
+
+                <div style="margin-top:3mm;">
+                    En cas de litige (...) <span style="text-decoration: underline;">www.mcpmediation.org</span>
+                </div>
+            </div>
+
+            <div class="footer-code">
+                FORM_CONF_CDC_BAR_109_EBS Energie_INDIRECT HCDP_2024 09 01
+            </div>
+            <div class="footer-num">
+                Page 2 / 2
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

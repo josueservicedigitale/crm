@@ -319,7 +319,7 @@
           </ul>
 
           <div class="signature">
-            <div class="place">Fait à Paris, le {{ $document->date_certification ?? '01/10/2025' }}</div>
+            <div class="place">Fait à Paris, le {{ $document->date_signature ?? '01/10/2025' }}</div>
             <div class="sig-name">M. TAMOYAN Hamlet</div>
             <div class="sig-role">Président de <span class="brand-green">PATRIMOINE ENERGIE</span></div>
 

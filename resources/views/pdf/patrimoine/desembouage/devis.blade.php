@@ -141,22 +141,22 @@
       padding: 0;
     }
 
-     .brand-logo {
-    width: 100mm;
-    height: 22mm;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-   
-}
+    .brand-logo {
+      width: 100mm;
+      height: 22mm;
+      display: flex;
+      align-items: center;
+      justify-content: center;
 
-.brand-logo img {
-    max-width: 100%;
-    max-height: 100%;
-    width: auto;
-    height: auto;
-    display: block;
-}
+    }
+
+    .brand-logo img {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      display: block;
+    }
 
     .brand-name {
       color: var(--green);
@@ -322,7 +322,7 @@
     /* Footer */
     .footer {
       position: fixed;
-      bottom: 0;
+      bottom: 3mm;
       left: 0;
       right: 0;
       text-align: center;
@@ -331,7 +331,11 @@
     }
 
     .pageno {
-      margin-top: 2mm;
+
+      position: fixed;
+
+      bottom: 10mm;
+      right: 15mm;
       text-align: right;
       font-size: 8pt;
       color: #1b1b1b;
@@ -424,7 +428,7 @@
               <table class="refbox">
                 <tr>
                   <td class="k">REF DEVIS</td>
-                  <td>{{ $document->reference_devis }}</td>
+                  <td>ENR-2025-29-D{{ $document->reference_devis }}</td>
                 </tr>
                 <tr>
                   <td class="k">DATE DEVIS</td>
@@ -455,16 +459,16 @@
           <td>
             <h4 style="color: #38bdf8;">BÉNÉFICIAIRE</h4>
             <div class="line strong" style="color: #38bdf8;">PATRIMOINE</div>
-            <div class="line">{{ $document->activity }}</div>
+            <div class="line">PATRIMOINE</div>
             <div class="line">15 RUE GERMINAL,
               93250 VILLEMOMBLE</div>
             <br>
             <div class="line"><span class="strong" style="color: #38bdf8;">SIRET</span> : : 53192087400017</div>
-            <div class="line"><span class="strong" style="color: #38bdf8;">MAIL</span> {{ $document->email_beneficiaire ?? '' }}</div>
-            <div class="line"><span class="strong" style="color: #38bdf8;">TEL</span> {{ $document->tel_beneficiaire ?? '' }}</div>
+            <div class="line"><span class="strong" style="color: #38bdf8;">MAIL</span> patrimoinenergie76@gmail.com</div>
+            <div class="line"><span class="strong" style="color: #38bdf8;">TEL</span> 02 78 77 66 14</div>
             <br>
-            <div class="line"><span class="strong" style="color: #38bdf8;">REPRÉSENTÉ PAR</span> {{ $document->representant ?? '' }}</div>
-            <div class="line"><span class="strong" style="color: #38bdf8;">FONCTION</span> {{ $document->fonction ?? '' }}</div>
+            <div class="line"><span class="strong" style="color: #38bdf8;">REPRÉSENTÉ PAR</span> M. TAMOYAN Hamlet</div>
+            <div class="line"><span class="strong" style="color: #38bdf8;">FONCTION</span> Président</div>
           </td>
         </tr>
       </table>
@@ -489,14 +493,14 @@
 
         <div class="para"><span class="strong" style="color: #38bdf8;">PARCELLE CADASTRALE :</span></div>
         <div class="para">1&nbsp;&nbsp;Parcelle {{ $document->parcelle_1 }} Feuille
-          {{ $document->parcelle_2 }}&nbsp;&nbsp;&nbsp;&nbsp;2</div>
+          2&nbsp;&nbsp;&nbsp;&nbsp;{{ $document->parcelle_2 }}</div>
         <div class="para">
           3&nbsp;&nbsp;{{ $document->parcelle_3 }}&nbsp;&nbsp;&nbsp;&nbsp;4&nbsp;&nbsp;{{ $document->parcelle_4 }}</div>
 
         <br>
         <div class="para"><span class="strong" style="color: #38bdf8;">DATE PRÉVISIONNELLE DES TRAVAUX :</span>
           {{ $document->dates_previsionnelles }}</div>
-        <div class="para"><span class="strong" style="color: #38bdf8;">CONTACT SUR SITE :</span> {{ $document->contact_site ?? 'Gérant' }}</div>
+        <div class="para"><span class="strong" style="color: #38bdf8;">CONTACT SUR SITE :</span> 02 78 77 66 14 - patrimoinenergie76@gmail.com</div>
         <div class="para"><span class="strong" style="color: #38bdf8;">SECTEUR :</span> Résidentiel</div>
         <div class="para"><span class="strong" style="color: #38bdf8;">NOMBRE DE BÂTIMENTS :</span> {{ $document->nombre_batiments }} Bâtiments
         </div>
@@ -564,7 +568,7 @@
               <table class="refbox">
                 <tr>
                   <td class="k">REF DEVIS</td>
-                  <td>{{ $document->reference_devis }}</td>
+                  <td>ENR-2025-29-D{{ $document->reference_devis }}</td>
                 </tr>
                 <tr>
                   <td class="k">DATE DEVIS</td>
@@ -604,7 +608,7 @@
               </ul>
 
               <div class="para" style="margin-top:10px;">
-                <span class="strong" style="color: #38bdf8;"">KWH CUMAC :</span> {{ $document->wh_cumac }}
+                <span class="strong" style="color: #38bdf8;">KWH CUMAC :</span> {{ $document->wh_cumac }}
               </div>
               <div class="para">
                 <span class="strong" style="color: #38bdf8;">PRIME CEE :</span>
@@ -703,7 +707,7 @@
               <table class="refbox">
                 <tr>
                   <td class="k">REF DEVIS</td>
-                  <td>{{ $document->reference_devis }}</td>
+                  <td>ENR-2025-29-D{{ $document->reference_devis }}</td>
                 </tr>
                 <tr>
                   <td class="k">DATE DEVIS</td>
@@ -841,7 +845,7 @@
               <table class="refbox">
                 <tr>
                   <td class="k">REF DEVIS</td>
-                  <td>{{ $document->reference_devis }}</td>
+                  <td>ENR-2025-29-D{{ $document->reference_devis }}</td>
                 </tr>
                 <tr>
                   <td class="k">DATE DEVIS</td>
@@ -903,8 +907,12 @@
                     <div class="paybox">
                       <div class="title" style="color: #38bdf8;">CONDITIONS DE PAIEMENT</div>
                       <div class="para">
-                        Prime versée sous réserve de validation, documents CEE nécessaires, et respect des exigences de
-                        l’opération.
+                        « Les travaux prévus feront l’objet d’une contribution financière de EBS ENERGIE (SIREN 533 333
+                        118), versée sous forme de prime, directement ou via ses mandataires, sous réserve de la
+                        fourniture exclusive des documents nécessaires à la valorisation des opérations CEE et de la
+                        validation de l’éligibilité du dossier par EBS ENERGIE et l’autorité compétente. Le montant
+                        estimé, hors TVA, peut varier selon les travaux réalisés et le volume de CEE attribué, et est
+                        évalué à {{ number_format($document->prime_cee, 2, ',', ' ') }} euros. »
                       </div>
 
                       <div class="subTitle" style="margin-top:3mm; color: #38bdf8;">Gestion des déchets</div>

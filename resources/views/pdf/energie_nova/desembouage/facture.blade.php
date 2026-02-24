@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Facture - ENERGIE NOVA</title>
+  <title>FACTURE - ENERGIE NOVA</title>
 
   <style>
     /* ===========================
@@ -187,7 +187,7 @@
       width: 40%;
       background: var(--blue);
       color: #fff;
-      font-weight: 750;
+      font-weight: 800;
       text-transform: uppercase;
     }
 
@@ -331,10 +331,12 @@
     }
 
     .pageno {
-    position: fixed;
-    right: 15mm;
-    text-align: right;
-     bottom: 3mm;
+
+      position: fixed;
+
+      bottom: 10mm;
+      right: 15mm;
+      text-align: right;
       font-size: 8pt;
       color: #1b1b1b;
     }
@@ -425,7 +427,7 @@
             <td class="refbox-wrap" style="text-align:right;">
               <table class="refbox">
                 <tr>
-                  <td class="k">REF Facture</td>
+                  <td class="k">REF FACTURE</td>
                   <td>ENR-2025-29-F{{ $document->reference_facture }}</td>
                 </tr>
                 <tr>
@@ -912,7 +914,6 @@
                         validation de l’éligibilité du dossier par EBS ENERGIE et l’autorité compétente. Le montant
                         estimé, hors TVA, peut varier selon les travaux réalisés et le volume de CEE attribué, et est
                         évalué à {{ number_format($document->prime_cee, 2, ',', ' ') }} euros. »
-
                       </div>
 
                       <div class="subTitle" style="margin-top:3mm;">Gestion des déchets</div>

@@ -98,6 +98,28 @@ class StoreDocumentRequest extends FormRequest
             'produits_utilises' => 'nullable|json',
             'checkboxes' => 'nullable|json',
             'images' => 'nullable|json',
+
+
+            'bon_achat' => 'nullable|numeric|min:0',
+            'pret_bonifie' => 'nullable|numeric|min:0',
+            'pret_organisme' => 'nullable|string|max:255',
+            'pret_teg' => 'nullable|numeric|min:0',
+
+            'audit' => 'nullable|boolean',
+            'audit_valeur' => 'nullable|numeric|min:0',
+
+            'produit_offert' => 'nullable|boolean',
+            'produit_offert_nature' => 'nullable|string|max:255',
+            'produit_offert_valeur' => 'nullable|numeric|min:0',
+
+            'beneficiaire_nom' => 'nullable|string|max:255',
+            'beneficiaire_prenom' => 'nullable|string|max:255',
+            'beneficiaire_telephone' => 'nullable|string|max:255',
+            'beneficiaire_email' => 'nullable|email|max:255',
+
+            'signataire_nom' => 'nullable|string|max:255',
+            'signataire_fonction' => 'nullable|string|max:255',
+
         ];
     }
 
