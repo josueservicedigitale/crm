@@ -113,7 +113,7 @@
 
         <!-- Date -->
         <div class="date-block">
-            Fait le : 20/11/2025<br><br>
+            Fait le : {{ $document->date_signature ?? 'BIEN RENSEIGNER' }}<br><br>
             à ASNIERES-SUR-SEINE
         </div>
 

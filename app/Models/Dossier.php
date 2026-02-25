@@ -4,6 +4,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
+use App\Models\Corbeille;
+use Illuminate\Support\Facades\Auth;
 
 class Dossier extends Model
 {
@@ -57,7 +59,22 @@ class Dossier extends Model
             if (empty($dossier->couleur)) {
                 $dossier->couleur = '#FFB700'; // Or INVESTCALORIS
             }
+            
         });
+        static::deleted(function ($dossier) {
+        // Évite double log si forceDelete (optionnel)
+        if (!$dossier->trashed()) return;
+
+        Corbeille::create([
+            'type_element' => self::class,
+            'element_id' => $dossier->id,
+            'donnees' => $dossier->toArray(),
+            'supprime_par' => Auth::id(),
+            'supprime_le' => now(),
+            'expire_le' => now()->addDays(config('app.jours_conservation_corbeille', 30)),
+        ]);
+    });
+        
     }
 
     // =============================
@@ -174,10 +191,14 @@ class Dossier extends Model
         return implode(' / ', $path);
     }
 
-    public function getUrlPartageAttribute()
-    {
-        return $this->est_visible ? route('back.dossiers.public', $this->slug) : null;
-    }
+ public function getUrlPartageAttribute()
+{
+    if (!$this->est_visible) return null;
+
+    return \Route::has('back.dossiers.public')
+        ? route('back.dossiers.public', $this->slug)
+        : null;
+}
 
     public function getIconeClasseAttribute()
     {

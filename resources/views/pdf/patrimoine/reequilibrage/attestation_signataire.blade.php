@@ -113,7 +113,7 @@
 
         <!-- Date -->
         <div class="date-block">
-            Fait le : {{ $document->date_signature }}<br><br>
+            Fait le : {{ $document->date_signature ?? 'BIEN RENSEIGNER' }}<br><br>
             à VILLEMOMBLE
         </div>
 

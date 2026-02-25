@@ -116,7 +116,7 @@
 
         <!-- Date -->
         <div class="date-block">
-            Fait le : {{ $document->date_signature ?? '01/10/2025' }}<br><br>
+            Fait le : {{ $document->date_signature ?? 'BIEN RENSEIGNER' }}<br><br>
             à ASNIERES-SUR-SEINE
         </div>
 

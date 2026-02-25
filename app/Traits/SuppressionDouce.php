@@ -24,7 +24,7 @@ trait SuppressionDouce
                 'donnees' => $modele->toJson(),
                 'supprime_par' => auth()->id(),
                 'supprime_le' => now(),
-                'expire_le' => now()->addJours(config('app.jours_conservation_corbeille', 30)),
+                'expire_le' => now()->addDays(config('app.jours_conservation_corbeille', 30)),
             ]);
         });
     }

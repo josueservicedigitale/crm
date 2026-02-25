@@ -76,29 +76,29 @@ Route::prefix('back')->name('back.')->middleware('auth')->group(function () {
     // 2.4 ROUTES DOSSIERS (ORDRE CRITIQUE)
     // =====================================================================
     Route::prefix('dossiers')->name('dossiers.')->group(function () {
-        // ✅ ROUTES FIXES (sans paramètres) - EN PREMIER
-        Route::get('/create', [DossierController::class, 'create'])->name('create');
-        Route::get('/', [DossierController::class, 'index'])->name('index');
-        Route::post('/', [DossierController::class, 'store'])->name('store');
-        
-        // ✅ ROUTES AVEC PARAMÈTRES (slug d'abord, puis id)
-        Route::get('/{slug}', [DossierController::class, 'show'])->name('show');
-        Route::get('/{id}/edit', [DossierController::class, 'edit'])->name('edit');
-        Route::put('/{id}', [DossierController::class, 'update'])->name('update');
-        Route::delete('/{id}', [DossierController::class, 'destroy'])->name('destroy');
-        
-        // Routes upload/téléchargement (avec id)
-        Route::post('/{id}/upload', [DossierController::class, 'upload'])->name('upload');
-        Route::get('/{id}/download', [DossierController::class, 'downloadDossier'])->name('download');
-        Route::post('/{id}/toggle-visibilite', [DossierController::class, 'toggleVisibilite'])->name('toggle-visibilite');
-        Route::post('/{id}/partager', [DossierController::class, 'partager'])->name('partager');
-    });
+    // Routes fixes
+    Route::get('/create', [DossierController::class, 'create'])->name('create');
+    Route::get('/', [DossierController::class, 'index'])->name('index');
+    Route::post('/', [DossierController::class, 'store'])->name('store');
 
+    // Routes avec paramètres spécifiques en **premier**
+    Route::get('/{id}/edit', [DossierController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [DossierController::class, 'update'])->name('update');
+    Route::delete('/{id}', [DossierController::class, 'destroy'])->name('destroy');
+    Route::post('/{id}/upload', [DossierController::class, 'upload'])->name('upload');
+    Route::get('/{id}/download', [DossierController::class, 'downloadDossier'])->name('download');
+    Route::post('/{id}/toggle-visibilite', [DossierController::class, 'toggleVisibilite'])->name('toggle-visibilite');
+    Route::post('/{id}/partager', [DossierController::class, 'partager'])->name('partager');
+
+    // Route générique **à la fin**
+    Route::get('/{slug}', [DossierController::class, 'show'])->name('show');
+});
     // =====================================================================
     // 2.5 ROUTES FICHIERS
     // =====================================================================
     Route::prefix('fichiers')->name('fichiers.')->group(function () {
         Route::get('/{id}/download', [DossierController::class, 'downloadFichier'])->name('download');
+        Route::delete('/{id}', [DossierController::class, 'destroyFichier'])->name('destroy');
     });
 
     // =====================================================================

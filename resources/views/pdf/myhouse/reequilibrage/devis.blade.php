@@ -127,7 +127,7 @@
         }
 
         .devis-bar {
-            margin-top: 2mm;
+            margin-top: 1mm;
             background-color: #80A150;
             width: 100%;
             border-collapse: collapse;
@@ -168,7 +168,7 @@
         }
 
         .infos .right {
-            width: 42%;
+            width: 40%;
         }
 
         .muted {
@@ -206,20 +206,20 @@
             border-left: 1px solid var(--border);
             border-right: 1px solid var(--border);
             vertical-align: top;
-            padding: 4mm 3mm;
+            padding: 5mm 4mm;
         }
 
         .main-table thead th {
-            background: var(--green);
+            background-color: #7aa84a;
             color: #fff;
             font-weight: bold;
             text-align: left;
-            padding: 2.6mm 3mm;
+            padding: 3mm 4mm;
         }
 
         /* largeurs colonnes (comme capture) */
         .col-detail {
-            width: 63%;
+            width: 60%;
         }
 
         .col-qte {
@@ -228,17 +228,17 @@
         }
 
         .col-pu {
-            width: 10%;
+            width: 15%;
             text-align: center;
         }
 
         .col-total {
-            width: 10%;
+            width: 15%;
             text-align: center;
         }
 
         .col-tva {
-            width: 8%;
+            width: 10%;
             text-align: center;
         }
 
@@ -261,12 +261,10 @@
             margin: 0 0 1mm 0;
         }
 
-        /* Page 1 : numéros alignés verticalement au bon endroit */
         .numbers {
             font-size: 8.5pt;
             line-height: 1.35;
-            text-align: right;
-            padding-top: 0;
+            text-align: center;
         }
 
         .numbers .sp {
@@ -329,7 +327,7 @@
        PAGE 2 CONTENT (bas)
     ========================== */
         .p2-content {
-            margin-top: 80mm;
+            margin-top: 40mm;
             /* grand blanc comme capture */
         }
 
@@ -427,15 +425,17 @@
         .footer-text {
             text-align: center;
             font-size: 7.8pt;
-            color: #111;
+            color: #0c0b0b;
             line-height: 1.25;
         }
 
-        .page-no {
+        .pageno {
+            position: fixed;
+            bottom: 10mm;
+            right: 10mm;
             text-align: right;
-            font-size: 8pt;
-            margin-top: 1mm;
-            color: #111;
+            font-size: 7pt;
+            color: #2b2b2b;
         }
     </style>
 </head>
@@ -457,7 +457,7 @@
 
                 <table class="devis-bar">
                     <tr>
-                        <td>DEVIS {{ $document->reference_devis }}</td>
+                        <td>DEVIS M'YHOUSE-2025-{{ $document->reference_devis }}</td>
                     </tr>
                 </table>
             </div>
@@ -470,9 +470,23 @@
 
                         <div class="mt2 muted b" style="text-transform:uppercase;">Adresse des travaux :</div>
                         <div class="muted">{{ $document->adresse_travaux }}</div>
+                        @php
+                            $parcelles = [
+                                $document->parcelle_1,
+                                $document->parcelle_2,
+                                $document->parcelle_3,
+                                $document->parcelle_4,
+                            ];
 
-                        <div class="mt2 muted"><span class="b">Parcelle cadastrale :</span>
-                            {{ $document->parcelle_cadastrale ?? '' }}</div>
+                            $parcelles = array_filter($parcelles); // Supprime les null / vides
+                        @endphp
+
+                        @if(count($parcelles))
+                            <div class="mt2 muted">
+                                <span class="b">Parcelle(s) cadastrale(s) :</span>
+                                {{ implode(' - ', $parcelles) }}
+                            </div>
+                        @endif
                         <div class="muted"><span class="b">N° immatriculation :</span>
                             {{ $document->numero_immatriculation ?? '' }}</div>
                         <div class="muted"><span class="b">Nombre bâtiments :</span>
@@ -481,25 +495,26 @@
                             {{ $document->details_batiments ?? '' }}</div>
                         <div class="muted"><span class="b">Nom de résidence :</span>
                             {{ $document->nom_residence ?? '' }}</div>
-                        <div class="muted"><span class="b">Date travaux :</span> {{ $document->date_travaux ?? '' }}
-                        </div>
-                        <div class="muted"><span class="b">Date de désembouage :</span>
+
+                        <div class="muted"><span class="b">Date travaux :</span>
                             {{ $document->dates_previsionnelles ?? '' }}</div>
                     </td>
 
                     <td class="right">
                         <div class="b" style="text-transform:uppercase;">
-                            {{ $document->fournisseur_nom ?? 'BBR MAINTENANCE' }}
+                            BBR MAINTENANCE
                         </div>
-                        <div class="mt2 muted"><span class="b">Siret :</span> {{ $document->fournisseur_siret ?? '' }}
+                        <div class="mt2 muted"><span class="b">Siret :</span>93146162800030
                         </div>
-                        <div class="muted"><span class="b">Adresse :</span> {{ $document->fournisseur_adresse ?? '' }}
+                        <div class="muted"><span class="b">Adresse :</span> 78 AVENUE DES CHAMPS ELYSEES
                         </div>
-                        <div class="muted"><span class="b">Tel :</span> {{ $document->fournisseur_tel ?? '' }}</div>
-                        <div class="muted"><span class="b">Mail :</span> {{ $document->fournisseur_email ?? '' }}</div>
+                        <div class="muted"><span class="b">Adresse :</span> 75008 PARIS
+                        </div>
+                        <div class="muted"><span class="b">Tel :</span> 01 85 09 74 35</div>
+                        <div class="muted"><span class="b">Mail :</span> tech@bbrmaintenance.fr</div>
                         <div class="muted"><span class="b">Représenté par :</span>
-                            {{ $document->fournisseur_representant ?? '' }}</div>
-                        <div class="muted"><span class="b">Fonction :</span> {{ $document->fournisseur_fonction ?? '' }}
+                            M.Poulin Thomas</div>
+                        <div class="muted"><span class="b">Fonction :</span> Directeur des Services Techniques
                         </div>
                     </td>
                 </tr>
@@ -580,26 +595,29 @@
 
                         <td class="numbers">
                             <div class="sp"></div>
-                            <div class="row">{{ number_format($document->ligne1_pu_ht ?? 5315.68, 2, ',', ' ') }} €
+                            <div class="row">
+                                {!! str_replace(' ', '&nbsp;', number_format((($document->prime_cee ?? 7087.58) * 0.75), 2, ',', ' ')) !!}&nbsp;€
                             </div>
-                            <div class="row">{{ number_format($document->ligne2_pu_ht ?? 1771.90, 2, ',', ' ') }} €
+                            <div class="row">
+                                {!! str_replace(' ', '&nbsp;', number_format((($document->prime_cee ?? 7087.58) * 0.25), 2, ',', ' ')) !!}&nbsp;€
                             </div>
                         </td>
 
                         <td class="numbers">
                             <div class="sp"></div>
-                            <div class="row">{{ number_format($document->ligne1_total_ht ?? 5315.68, 2, ',', ' ') }} €
+                            <div class="row">
+                                {!! str_replace(' ', '&nbsp;', number_format((($document->prime_cee ?? 7087.58) * 0.75), 2, ',', ' ')) !!}&nbsp;€
                             </div>
-                            <div class="row">{{ number_format($document->ligne2_total_ht ?? 1771.90, 2, ',', ' ') }} €
+                            <div class="row">
+                                {!! str_replace(' ', '&nbsp;', number_format((($document->prime_cee ?? 7087.58) * 0.25), 2, ',', ' ')) !!}&nbsp;€
                             </div>
                         </td>
 
                         <td class="numbers" style="text-align:center;">
                             <div class="sp"></div>
-                            <div class="row">5,5 %</div>
-                            <div class="row">5,5 %</div>
+                            <div class="row">5,5&nbsp;%</div>
+                            <div class="row">5,5&nbsp;%</div>
                         </td>
-                    </tr>
                 </tbody>
             </table>
 
@@ -611,9 +629,8 @@
                     Tél. : {{ $document->client_tel ?? "05 59 60 21 51" }} Mail :
                     {{ $document->client_email ?? "contact@myhouse64.fr" }}
                 </div>
-                <div class="page-no">1/2</div>
             </div>
-
+            <div class="pageno">p. 1/2</div>
         </div>
     </div>
     <!-- ===================== PAGE 2 ===================== -->
@@ -631,7 +648,7 @@
 
                 <table class="devis-bar">
                     <tr>
-                        <td>DEVIS {{ $document->reference_devis }}</td>
+                        <td>DEVIS M'YHOUSE-2025-{{ $document->reference_devis }}</td>
                     </tr>
                 </table>
 
@@ -684,6 +701,12 @@
                             <td class="sign">
                                 <div class="b">Signature, date, cachet commercial & mention « Bon pour accord » :</div>
                                 <div>Nom, prénom et fonction du signataire</div>
+
+                                <!-- IMAGE CACHET -->
+                                <div style="margin-top:15px;">
+                                    <img src="{{ public_path('assets/img/house/Facture_files/Image_005.png') }}"
+                                        alt="Cachet" style="height:auto; width: auto;">
+                                </div>
                             </td>
 
                             <td class="tot">
@@ -717,7 +740,6 @@
 
                     <div class="pay-mode">Mode de paiement : Chèques, virement ou espèce</div>
                 </div>
-
             </div>
 
             <div class="footer-line">
@@ -728,8 +750,8 @@
                     Tél. : {{ $document->client_tel ?? "05 59 60 21 51" }} Mail :
                     {{ $document->client_email ?? "contact@myhouse64.fr" }}
                 </div>
-                <div class="page-no">2/2</div>
             </div>
+            <div class="pageno">p. 2/2</div>
         </div>
     </div>
 

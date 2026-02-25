@@ -46,6 +46,17 @@
             </div>
         </div>
 
+        @if ($errors->any())
+  <div class="alert alert-danger">
+    {!! implode('<br>', $errors->all()) !!}
+  </div>
+@endif
+
+@if (session('success'))
+  <div class="alert alert-success">
+    {{ session('success') }}
+  </div>
+@endif
         <!-- Tableau des utilisateurs -->
         <div class="table-responsive">
             <table class="table table-hover table-dark">

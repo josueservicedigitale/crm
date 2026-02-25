@@ -9,9 +9,9 @@ use Illuminate\Database\Eloquent\Model;
 class Corbeille extends Model
 {
     use HasFactory;
-    
+
     protected $table = 'corbeille';
-    
+
     protected $fillable = [
         'type_element',
         'element_id',
@@ -20,13 +20,13 @@ class Corbeille extends Model
         'supprime_le',
         'expire_le'
     ];
-    
+
     protected $casts = [
         'donnees' => 'array',
         'supprime_le' => 'datetime',
         'expire_le' => 'datetime',
     ];
-    
+
     /**
      * Relation avec l'utilisateur qui a supprimé
      */
@@ -34,7 +34,7 @@ class Corbeille extends Model
     {
         return $this->belongsTo(User::class, 'supprime_par');
     }
-    
+
     /**
      * Récupérer l'élément supprimé
      */
@@ -42,7 +42,7 @@ class Corbeille extends Model
     {
         return $this->morphTo('element', 'type_element', 'element_id');
     }
-    
+
     /**
      * Obtenir le nom affichable du type d'élément
      */
@@ -57,11 +57,13 @@ class Corbeille extends Model
             'App\Models\Facture' => 'Facture',
             'App\Models\Attestation' => 'Attestation',
             'App\Models\Rapport' => 'Rapport',
+            'App\Models\Dossier' => 'Dossier',
+            'App\Models\Fichier' => 'Fichier',
         ];
-        
+
         return $types[$this->type_element] ?? 'Élément';
     }
-    
+
     /**
      * Vérifier si l'élément a expiré
      */
@@ -70,10 +72,10 @@ class Corbeille extends Model
         if (!$this->expire_le) {
             return false;
         }
-        
+
         return $this->expire_le->isPast();
     }
-    
+
     /**
      * Nombre de jours restants avant expiration
      */
@@ -82,7 +84,7 @@ class Corbeille extends Model
         if (!$this->expire_le) {
             return null;
         }
-        
+
         return now()->diffInDays($this->expire_le, false);
     }
 }

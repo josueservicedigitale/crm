@@ -314,6 +314,37 @@ class DossierController extends Controller
         return $disk->download($fichier->chemin, $fichier->nom_original);
     }
 
+    public function destroyFichier($id)
+{
+    $fichier = Fichier::with('dossier')->findOrFail($id);
+
+    // Autorisation : il faut pouvoir écrire dans le dossier
+    if (!$fichier->dossier || !$fichier->dossier->peutEcrire(Auth::id())) {
+        abort(403);
+    }
+
+    try {
+        // Supprimer le fichier physique
+        if ($fichier->chemin && Storage::disk('public')->exists($fichier->chemin)) {
+            Storage::disk('public')->delete($fichier->chemin);
+        }
+
+        // Supprimer en DB
+        $fichier->delete();
+
+        // Mettre à jour stats dossier
+        $fichier->dossier->mettreAJourStats();
+
+        return back()->with('success', 'Fichier supprimé.');
+    } catch (\Throwable $e) {
+        Log::error('❌ Erreur suppression fichier', [
+            'fichier_id' => $id,
+            'error' => $e->getMessage(),
+        ]);
+
+        return back()->withErrors('Erreur : ' . $e->getMessage());
+    }
+}
     /**
      * Télécharger tout un dossier en ZIP
      */

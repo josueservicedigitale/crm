@@ -81,16 +81,6 @@ class PdfFillService
         $document->pdf_generated_at = now();
         $document->save();
         
-        // 6️⃣ Ajouter aux dossiers (optionnel, ne bloque pas)
-        try {
-            $this->ajouterAuxDossiersUtilisateur($document, $fullPath);
-        } catch (\Exception $e) {
-            Log::error('❌ Erreur ajout aux dossiers (non bloquante)', [
-                'error' => $e->getMessage(),
-                'document_id' => $document->id
-            ]);
-        }
-        
         return $document->file_path;
         
     } catch (\Exception $e) {
@@ -103,123 +93,7 @@ class PdfFillService
         throw $e;
     }
 }
-    /**
-     * ✅ NOUVEAU : Ajouter le PDF aux dossiers de l'utilisateur
-     */
-    private function ajouterAuxDossiersUtilisateur(Document $document, string $pdfPath)
-    {
-        $userId = Auth::id();
-        if (!$userId) {
-            Log::warning('⚠️ Utilisateur non connecté, impossible d\'ajouter aux dossiers');
-            return;
-        }
-
-        try {
-            // 1️⃣ Créer ou récupérer le dossier racine "Mes PDF générés"
-            $dossierRacine = Dossier::firstOrCreate(
-                [
-                    'user_id' => $userId,
-                    'nom' => 'Mes PDF générés',
-                    'parent_id' => null,
-                ],
-                [
-                    'slug' => 'mes-pdf-generes-' . $userId . '-' . uniqid(),
-                    'description' => 'Tous vos PDF générés automatiquement',
-                    'couleur' => '#0d6efd',
-                    'icon' => 'fa-file-pdf',
-                    'est_visible' => false, // Privé par défaut
-                ]
-            );
-
-            // 2️⃣ Créer ou récupérer le sous-dossier par société
-            $societe = Societe::where('code', $document->society)->first();
-            $nomSociete = $societe ? ($societe->nom_formate ?? $societe->nom) : $document->society;
-            
-            $dossierSociete = Dossier::firstOrCreate(
-                [
-                    'user_id' => $userId,
-                    'nom' => $nomSociete,
-                    'parent_id' => $dossierRacine->id,
-                ],
-                [
-                    'slug' => Str::slug($nomSociete) . '-' . uniqid(),
-                    'societe_id' => $societe?->id,
-                    'couleur' => $societe?->couleur ?? '#0d6efd',
-                    'icon' => $societe?->icon ?? 'fa-building',
-                    'est_visible' => false,
-                ]
-            );
-
-            // 3️⃣ Créer ou récupérer le sous-dossier par activité
-            $activite = Activite::where('code', $document->activity)->first();
-            $nomActivite = $activite ? ($activite->nom_formate ?? $activite->nom) : $document->activity;
-            
-            $dossierActivite = Dossier::firstOrCreate(
-                [
-                    'user_id' => $userId,
-                    'nom' => $nomActivite,
-                    'parent_id' => $dossierSociete->id,
-                ],
-                [
-                    'slug' => Str::slug($nomActivite) . '-' . uniqid(),
-                    'activite_id' => $activite?->id,
-                    'couleur' => $activite?->couleur ?? '#ffc107',
-                    'icon' => $activite?->icon ?? 'fa-tasks',
-                    'est_visible' => false,
-                ]
-            );
-
-            // 4️⃣ Créer ou récupérer le sous-dossier par type de document
-            $typeName = $this->getTypeName($document->type);
-            
-            $dossierType = Dossier::firstOrCreate(
-                [
-                    'user_id' => $userId,
-                    'nom' => $typeName,
-                    'parent_id' => $dossierActivite->id,
-                ],
-                [
-                    'slug' => Str::slug($typeName) . '-' . uniqid(),
-                    'couleur' => $this->getTypeColor($document->type),
-                    'icon' => $this->getTypeIcon($document->type),
-                    'est_visible' => false,
-                ]
-            );
-
-            // 5️⃣ Enregistrer le fichier dans le dossier
-            $fichier = Fichier::create([
-                'nom' => basename($pdfPath),
-                'nom_original' => $document->reference . '.pdf',
-                'extension' => 'pdf',
-                'mime_type' => 'application/pdf',
-                'taille' => Storage::disk('public')->size($pdfPath),
-                'chemin' => $pdfPath,
-                'url' => Storage::url($pdfPath),
-                'dossier_id' => $dossierType->id,
-                'user_id' => $userId,
-                'document_id' => $document->id,
-                'est_visible' => $dossierType->est_visible, // Hérite de la visibilité du dossier
-            ]);
-
-            // 6️⃣ Mettre à jour les statistiques des dossiers
-            foreach ([$dossierType, $dossierActivite, $dossierSociete, $dossierRacine] as $dossier) {
-                $dossier->mettreAJourStats();
-            }
-
-            Log::info('✅ PDF ajouté aux dossiers', [
-                'fichier_id' => $fichier->id,
-                'dossier_id' => $dossierType->id,
-                'chemin' => $dossierType->chemin_complet
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('❌ Erreur ajout aux dossiers', [
-                'error' => $e->getMessage(),
-                'document_id' => $document->id
-            ]);
-        }
-    }
-
+  
     /**
      * 🎯 Préparer toutes les données du document de manière dynamique
      */

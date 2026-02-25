@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class Fichier extends Model
@@ -50,18 +51,33 @@ class Fichier extends Model
         static::deleted(function ($fichier) {
             // Supprimer le fichier physique
             Storage::disk('public')->delete($fichier->chemin);
-            
+
             // Mettre à jour les stats du dossier
             if ($fichier->dossier) {
                 $fichier->dossier->mettreAJourStats();
             }
         });
     }
+    protected static function booted()
+    {
+        static::deleted(function ($fichier) {
+            if (!$fichier->trashed())
+                return;
 
+            Corbeille::create([
+                'type_element' => self::class,
+                'element_id' => $fichier->id,
+                'donnees' => $fichier->toArray(),
+                'supprime_par' => Auth::id(),
+                'supprime_le' => now(),
+                'expire_le' => now()->addDays(config('app.jours_conservation_corbeille', 30)),
+            ]);
+        });
+    }
     // =============================
     // RELATIONS
     // =============================
-    
+
     public function dossier()
     {
         return $this->belongsTo(Dossier::class);
@@ -80,26 +96,27 @@ class Fichier extends Model
     // =============================
     // ACCESSORS
     // =============================
-    
+
     public function getTailleFormateeAttribute()
     {
         $size = $this->taille;
         $units = ['o', 'Ko', 'Mo', 'Go'];
         $i = 0;
-        
+
         while ($size >= 1024 && $i < 3) {
             $size /= 1024;
             $i++;
         }
-        
+
         return round($size, 2) . ' ' . $units[$i];
     }
 
     public function getIconeAttribute()
     {
-        if ($this->est_image) return 'fa-file-image';
-        
-        return match($this->extension) {
+        if ($this->est_image)
+            return 'fa-file-image';
+
+        return match ($this->extension) {
             'pdf' => 'fa-file-pdf',
             'doc', 'docx' => 'fa-file-word',
             'xls', 'xlsx' => 'fa-file-excel',
@@ -126,7 +143,7 @@ class Fichier extends Model
     // =============================
     // MÉTHODES
     // =============================
-    
+
     public function estAccessiblePar($userId)
     {
         return $this->dossier && $this->dossier->estAccessiblePar($userId);
