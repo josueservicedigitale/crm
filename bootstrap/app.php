@@ -1,6 +1,5 @@
 <?php
 
-
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -13,24 +12,21 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+
         $middleware->web(append: [
             \App\Http\Middleware\LogUserActivity::class,
-            \App\Http\Middleware\TrustCloudflare::class,
-            $middleware->append(\App\Http\Middleware\TrustProxies::class)
         ]);
+
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })
     ->withSchedule(function (Schedule $schedule) {
-        // Nettoyer la corbeille tous les jours à minuit
+
         $schedule->command('corbeille:nettoyer --jours=30 --force')
             ->dailyAt('00:00')
             ->description('Nettoyage automatique de la corbeille')
-            ->onOneServer()
             ->appendOutputTo(storage_path('logs/corbeille-nettoyage.log'));
 
-        // Vous pouvez aussi ajouter d'autres tâches planifiées ici
-        // $schedule->command('autre:commande')->hourly();
     })
     ->create();

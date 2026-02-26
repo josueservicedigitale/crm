@@ -16,6 +16,8 @@
 
 <!-- Customized Bootstrap Stylesheet -->
 <link href="{{ asset('assets/css/bootstrap.min.css') }}" rel="stylesheet">
+<script src="//unpkg.com/alpinejs" defer></script>
+
 
 <!-- Template Stylesheet -->
 <link href="{{ asset('assets/css/style.css') }}" rel="stylesheet">

@@ -110,63 +110,69 @@
             </div>
         @endif
 
-        <!-- Filtres rapides -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header bg-light">
-                        <h6 class="card-title mb-0">Filtres</h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="row g-3">
-                            <div class="col-md-4">
-                                <form method="GET" action="{{ route('back.document.list', [$activity, $society, $type]) }}">
-                                    <div class="input-group">
-                                        <input type="text" name="search" class="form-control"
-                                            placeholder="Rechercher par référence, nom, adresse..."
-                                            value="{{ request('search') }}">
-                                        <button class="btn btn-primary" type="submit">
-                                            <i class="fa fa-search"></i>
-                                        </button>
-                                        @if(request('search'))
-                                            <a href="{{ route('back.document.list', [$activity, $society, $type]) }}"
-                                                class="btn btn-outline-secondary">
-                                                <i class="fa fa-times"></i>
-                                            </a>
-                                        @endif
-                                    </div>
-                                </form>
-                            </div>
-                            @if($type === 'all')
-                                <div class="col-md-4">
-                                    <div class="btn-group w-100">
-                                        <a href="{{ route('back.document.list', [$activity, $society, 'devis']) }}"
-                                            class="btn btn-outline-info">
-                                            Devis
-                                        </a>
-                                        <a href="{{ route('back.document.list', [$activity, $society, 'facture']) }}"
-                                            class="btn btn-outline-success">
-                                            Factures
-                                        </a>
-                                        <a href="{{ route('back.document.list', [$activity, $society, 'rapport']) }}"
-                                            class="btn btn-outline-warning">
-                                            Rapports
-                                        </a>
-                                    </div>
-                                </div>
-                            @endif
-                            <div class="col-md-4">
-                                <div class="d-flex justify-content-end">
-                                    <a href="{{ route('back.documents.creation-rapide') }}" class="btn btn-primary">
-                                        <i class="fa fa-plus me-1"></i> Nouveau document
+       <!-- Filtres rapides -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h6 class="card-title mb-0">Filtres</h6>
+            </div>
+
+            <div class="card-body">
+                <div class="row g-3 align-items-center">
+
+                    {{-- 🔎 Recherche --}}
+                    <div class="col-md-5">
+                        <form method="GET" action="{{ route('back.document.list', [$activity, $society, $type]) }}">
+                            <div class="input-group">
+                                <input type="text" name="search" class="form-control"
+                                       placeholder="Rechercher par référence, nom, adresse..."
+                                       value="{{ request('search') }}">
+
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="fa fa-search"></i>
+                                </button>
+
+                                @if(request('search'))
+                                    <a href="{{ route('back.document.list', [$activity, $society, $type]) }}"
+                                       class="btn btn-outline-secondary" title="Effacer">
+                                        <i class="fa fa-times"></i>
                                     </a>
-                                </div>
+                                @endif
                             </div>
+                        </form>
+                    </div>
+
+                    {{-- 🧾 Filtres type --}}
+                    <div class="col-md-7">
+                        <div class="btn-group w-100">
+                            <a href="{{ route('back.document.list', [$activity, $society, 'all']) }}"
+                               class="btn {{ $type === 'all' ? 'btn-primary' : 'btn-outline-primary' }}">
+                                Tous
+                            </a>
+
+                            <a href="{{ route('back.document.list', [$activity, $society, 'devis']) }}"
+                               class="btn {{ $type === 'devis' ? 'btn-info text-white' : 'btn-outline-info' }}">
+                                Devis
+                            </a>
+
+                            <a href="{{ route('back.document.list', [$activity, $society, 'facture']) }}"
+                               class="btn {{ $type === 'facture' ? 'btn-success' : 'btn-outline-success' }}">
+                                Factures
+                            </a>
+
+                            <a href="{{ route('back.document.list', [$activity, $society, 'rapport']) }}"
+                               class="btn {{ $type === 'rapport' ? 'btn-warning' : 'btn-outline-warning' }}">
+                                Rapports
+                            </a>
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>
+    </div>
+</div>
 
         <!-- Tableau des documents -->
         <div class="row">
@@ -268,12 +274,6 @@
                                                 </td>
                                                 <td>
                                                     <div class="btn-group btn-group-sm">
-                                                        <!-- Voir le document -->
-                                                        <a href="{{ route('back.document.show', [$doc->activity, $doc->society, $doc->type, $doc->id]) }}"
-                                                            class="btn btn-outline-primary" title="Voir le PDF">
-                                                            <i class="fa fa-eye"></i>
-                                                        </a>
-
                                                         <!-- Prévisualiser -->
                                                         <div class="btn-group btn-group-sm">
                                                             <!-- 📄 APERÇU PDF - S'ouvre dans un nouvel onglet -->
@@ -297,13 +297,6 @@
                                                                 <i class="fa fa-download"></i>
                                                                 <span class="d-none d-lg-inline ms-1">Télécharger</span>
                                                             </a>
-
-                                                            <!-- 📧 ENVOYER - Ouvre le modal d'envoi -->
-                                                            <button type="button" class="btn btn-outline-secondary"
-                                                                onclick="sendDocument({{ $doc->id }})" title="Envoyer par email">
-                                                                <i class="fa fa-envelope"></i>
-                                                                <span class="d-none d-lg-inline ms-1">Envoyer</span>
-                                                            </button>
                                                         </div>
 
 

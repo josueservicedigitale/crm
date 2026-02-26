@@ -724,7 +724,14 @@ private function getBootstrapColor($hexColor)
         'attestation_realisation' => 'Attestation de réalisation',
         'attestation_signataire' => 'Attestation signataire'
     ];
-    
+    $typeIcons = [
+    'devis' => 'fa-file-signature',
+    'facture' => 'fa-file-invoice-dollar',
+    'rapport' => 'fa-chart-pie',
+    'cahier_des_charges' => 'fa-book',
+    'attestation_realisation' => 'fa-stamp',
+    'attestation_signataire' => 'fa-stamp',
+];
     // Option B: Si tu veux encore plus de flexibilité, depuis une table
     // $types = TypeDocument::where('est_actif', true)->pluck('nom', 'code')->toArray();
 
@@ -734,7 +741,7 @@ private function getBootstrapColor($hexColor)
         'types_disponibles' => count($types)
     ]);
 
-    return view('back.documents.creation-rapide', compact('activites', 'societes', 'types'));
+return view('back.documents.creation-rapide', compact('activites', 'societes', 'types', 'typeIcons'));
 }
 
 
@@ -1390,80 +1397,69 @@ private function generateReference($society, $type)
     // =========================================================================
     // GESTION DES DOCUMENTS EXISTANTS
     // =========================================================================
-    public function listDocuments($activity, $society, $type)
-    {
-        // NORMALISER ICI
-        $normalizedSociety = $this->normalizeSociety($society);
 
-        // Si type = "all", on récupère tous les types
-        if ($type === 'all') {
-            $query = Document::where('activity', $activity)
-                ->where('society', $normalizedSociety);  // ← CORRECTION: retirer "operator:"
-        } else {
-            $query = Document::where('activity', $activity)
-                ->where('society', $normalizedSociety)  // ← CORRECTION: retirer "operator:"
-                ->where('type', $type);
-        }
+public function listDocuments(Request $request, $activity, $society, $type)
+{
+    // NORMALISER ICI
+    $normalizedSociety = $this->normalizeSociety($society);
 
-        $documents = $query->with(['user', 'parent'])
-            ->latest()
-            ->paginate(20);
+    // 🔎 Récupérer la recherche (GET ?search=...)
+    $search = trim((string) $request->query('search', ''));
 
-        // Statistiques - ADAPTÉES À VOTRE STRUCTURE DE TABLE
-        if ($type === 'all') {
-            $stats = [
-                'total' => Document::where('activity', $activity)
-                    ->where('society', $normalizedSociety)  // ← CORRECTION
-                    ->count(),
-                'devis' => Document::where('activity', $activity)
-                    ->where('society', $normalizedSociety)  // ← CORRECTION
-                    ->where('type', 'devis')
-                    ->count(),
-                'factures' => Document::where('activity', $activity)
-                    ->where('society', $normalizedSociety)  // ← CORRECTION
-                    ->where('type', 'facture')
-                    ->count(),
-                'rapports' => Document::where('activity', $activity)
-                    ->where('society', $normalizedSociety)  // ← CORRECTION
-                    ->where('type', 'rapport')
-                    ->count(),
-                'cahiers' => Document::where('activity', $activity)
-                    ->where('society', $normalizedSociety)  // ← CORRECTION
-                    ->where('type', 'cahier_des_charges')
-                    ->count(),
-                'attestations' => Document::where('activity', $activity)
-                    ->where('society', $normalizedSociety)  // ← CORRECTION
-                    ->whereIn('type', ['attestation_realisation', 'attestation_signataire'])
-                    ->count(),
-            ];
-        } else {
-            // Pour un type spécifique, simplifions sans 'statut'
-            $stats = [
-                'total' => Document::where('activity', $activity)  // ← CORRECTION: retirer "operator:"
-                    ->where('society', $normalizedSociety)
-                    ->where('type', $type)
-                    ->count(),
-                'ce_mois' => Document::where('activity', $activity)
-                    ->where('society', $normalizedSociety)
-                    ->where('type', $type)
-                    ->whereMonth('created_at', now()->month)
-                    ->count(),
-                'cette_semaine' => Document::where('activity', $activity)
-                    ->where('society', $normalizedSociety)
-                    ->where('type', $type)
-                    ->where('created_at', '>=', now()->subWeek())
-                    ->count(),
-            ];
-        }
+    // Base query
+    $query = Document::where('activity', $activity)
+        ->where('society', $normalizedSociety);
 
-        return view('back.dossiers.list_documents', compact(
-            'documents',
-            'activity',
-            'society',
-            'type',
-            'stats'
-        ));
+    // Filtre type
+    if ($type !== 'all') {
+        $query->where('type', $type);
     }
+
+    // ✅ Filtre recherche (minimum 2 caractères)
+    if ($search !== '' && mb_strlen($search) >= 2) {
+        $query->where(function ($q) use ($search) {
+            $q->where('reference', 'LIKE', "%{$search}%")
+              ->orWhere('nom_residence', 'LIKE', "%{$search}%")
+              ->orWhere('adresse_travaux', 'LIKE', "%{$search}%");
+        });
+    }
+
+    // Documents
+    $documents = $query->with(['user', 'parent'])
+        ->latest()
+        ->paginate(20)
+        ->withQueryString(); // ✅ garde search/type/activity/society dans pagination
+
+    // Statistiques (mêmes que toi)
+    if ($type === 'all') {
+        $stats = [
+            'total' => Document::where('activity', $activity)->where('society', $normalizedSociety)->count(),
+            'devis' => Document::where('activity', $activity)->where('society', $normalizedSociety)->where('type', 'devis')->count(),
+            'factures' => Document::where('activity', $activity)->where('society', $normalizedSociety)->where('type', 'facture')->count(),
+            'rapports' => Document::where('activity', $activity)->where('society', $normalizedSociety)->where('type', 'rapport')->count(),
+            'cahiers' => Document::where('activity', $activity)->where('society', $normalizedSociety)->where('type', 'cahier_des_charges')->count(),
+            'attestations' => Document::where('activity', $activity)->where('society', $normalizedSociety)
+                ->whereIn('type', ['attestation_realisation', 'attestation_signataire'])->count(),
+        ];
+    } else {
+        $stats = [
+            'total' => Document::where('activity', $activity)->where('society', $normalizedSociety)->where('type', $type)->count(),
+            'ce_mois' => Document::where('activity', $activity)->where('society', $normalizedSociety)->where('type', $type)
+                ->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count(),
+            'cette_semaine' => Document::where('activity', $activity)->where('society', $normalizedSociety)->where('type', $type)
+                ->where('created_at', '>=', now()->subWeek())->count(),
+        ];
+    }
+
+    return view('back.dossiers.list_documents', compact(
+        'documents',
+        'activity',
+        'society',
+        'type',
+        'stats',
+        'search' // ✅ utile si tu veux l’afficher dans le blade
+    ));
+}
     public function searchDocument(Request $request, $activity, $society, $type)
     {
         $request->validate([

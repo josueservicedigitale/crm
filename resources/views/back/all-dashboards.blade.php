@@ -62,7 +62,7 @@
                             </div>
                         </div>
                         <div class="mt-3">
-                           @foreach($activitesAvecStats as $key => $activite)
+                            @foreach($activitesAvecStats as $key => $activite)
                                 <span class="badge bg-light text-dark me-1">
                                     <i class="fa {{ $activite['icon'] }} me-1"></i>{{ $activite['nom'] }}
                                 </span>
@@ -358,55 +358,7 @@
             </div>
         </div>
 
-        <!-- Section 4 : Actions rapides -->
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="card shadow-sm border-0">
-                    <div class="card-header bg-light">
-                        <h5 class="mb-0">
-                            <i class="fa fa-bolt me-2 text-danger"></i>
-                            Actions Rapides
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row g-3">
-                            <div class="col-md-3">
-                                <a href="{{ route('back.documents.creation-rapide') }}"
-                                    class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
-                                    <i class="fa fa-plus-circle fa-2x mb-2"></i>
-                                    <span>Création rapide</span>
-                                    <small class="text-muted mt-1">Document en 1 clic</small>
-                                </a>
-                            </div>
-                            <div class="col-md-3">
-                                <a href="{{ route('back.documents.tous') }}"
-                                    class="btn btn-outline-info w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
-                                    <i class="fa fa-folder-open fa-2x mb-2"></i>
-                                    <span>Tous les documents</span>
-                                    <small class="text-muted mt-1">Vue complète</small>
-                                </a>
-                            </div>
-                            <div class="col-md-3">
-                                <a href="{{ route('back.activites.index') }}"
-                                    class="btn btn-outline-success w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
-                                    <i class="fa fa-tasks fa-2x mb-2"></i>
-                                    <span>Gérer les activités</span>
-                                    <small class="text-muted mt-1">Configurations</small>
-                                </a>
-                            </div>
-                            <div class="col-md-3">
-                                <a href="{{ route('back.societes.index') }}"
-                                    class="btn btn-outline-warning w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
-                                    <i class="fa fa-building fa-2x mb-2"></i>
-                                    <span>Gérer les sociétés</span>
-                                    <small class="text-muted mt-1">Informations</small>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+
     </div>
 
     <style>

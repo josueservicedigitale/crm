@@ -56,27 +56,27 @@
                                 <i class="fa fa-file-alt me-2 text-info"></i>Type de document
                             </label>
                             <div class="row g-3">
-                                @foreach($types as $code => $nom)
-                                <div class="col-md-4 col-sm-6">
-                                    <div class="form-check card-type p-3 rounded border" 
-                                         data-type="{{ $code }}"
-                                         style="cursor: pointer; transition: all 0.2s;">
-                                        <input class="form-check-input" 
-                                               type="radio" 
-                                               name="type" 
-                                               id="type_{{ $code }}" 
-                                               value="{{ $code }}"
-                                               required>
-                                        <label class="form-check-label w-100" for="type_{{ $code }}">
-                                            <div class="d-flex align-items-center">
-                                                <i class="fa {{ $this->getTypeIcon($code) }} fa-lg me-2"></i>
-                                                <span>{{ $nom }}</span>
-                                            </div>
-                                        </label>
-                                    </div>
-                                </div>
-                                @endforeach
-                            </div>
+    @foreach($types as $code => $nom)
+        <div class="col-md-4 col-sm-6">
+            <div class="form-check card-type p-3 rounded border" 
+                 data-type="{{ $code }}"
+                 style="cursor: pointer; transition: all 0.2s;">
+                <input class="form-check-input" 
+                       type="radio" 
+                       name="type" 
+                       id="type_{{ $code }}" 
+                       value="{{ $code }}"
+                       required>
+                <label class="form-check-label w-100" for="type_{{ $code }}">
+                    <div class="d-flex align-items-center">
+                        <i class="fa {{ $typeIcons[$code] ?? 'fa-file' }} fa-lg me-2"></i>
+                        <span>{{ $nom }}</span>
+                    </div>
+                </label>
+            </div>
+        </div>
+    @endforeach
+</div>
                         </div>
                     </div>
 

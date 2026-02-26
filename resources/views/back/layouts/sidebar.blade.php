@@ -1,5 +1,7 @@
 <!-- Sidebar Start -->
+
 <div class="sidebar pe-4 pb-3">
+    <br><br>
     <nav class="navbar bg-light navbar-light">
 
         <!-- Brand -->
@@ -208,10 +210,7 @@
                         class="dropdown-item">
                         <i class="fa fa-folder-open me-2"></i>Tous les documents
                     </a>
-                    <a href="{{ route('back.document.create', ['activity' => $currentActivity, 'society' => $currentSociety, 'type' => 'quick']) }}"
-                        class="dropdown-item">
-                        <i class="fa fa-plus-circle me-2"></i>Création rapide
-                    </a>
+                    
                     <div class="dropdown-divider"></div>
                     @foreach($documentTypes as $typeKey => $type)
                     <a href="{{ route('back.document.list', ['activity' => $currentActivity, 'society' => $currentSociety, 'type' => $typeKey]) }}"
@@ -278,11 +277,6 @@
                 <i class="fa fa-cog me-2"></i>Paramètres
             </a>
 
-            <!-- Widgets / Forms / Tables / Charts -->
-            <!-- <a href="#" class="nav-item nav-link"><i class="fa fa-th me-2"></i>Widgets</a>
-            <a href="#" class="nav-item nav-link"><i class="fa fa-keyboard me-2"></i>Forms</a>
-            <a href="#" class="nav-item nav-link"><i class="fa fa-table me-2"></i>Tables</a>
-            <a href="#" class="nav-item nav-link"><i class="fa fa-chart-bar me-2"></i>Charts</a> -->
 
             <!-- Pages -->
             <div class="nav-item dropdown">

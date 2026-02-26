@@ -274,6 +274,12 @@ class DashboardController extends Controller
                         $doc->type,
                         $doc->id
                     ]),
+                    'url_delete' => route('back.document.destroy', [
+                        $doc->activity,
+                        $doc->society,
+                        $doc->type,
+                        $doc->id
+                    ]),
                 ];
             });
 

@@ -95,7 +95,7 @@
     </div>
 @endsection
 
-@push('scripts')
+@push('js')
     <script>
         // Activation des tooltips Bootstrap (si non déjà fait globalement)
         document.addEventListener('DOMContentLoaded', function () {

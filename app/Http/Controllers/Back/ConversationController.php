@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Events\MessageSent;
 use App\Events\UserTyping;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
 
 class ConversationController extends Controller
 {
@@ -61,52 +63,75 @@ class ConversationController extends Controller
      * Envoyer un message texte
      */
 
-    
-public function sendMessage(Request $request, $conversationId)
+public function sendMessage(Request $request, Conversation $conversation)
 {
-    try {
-        // ✅ Gérer à la fois le texte et les fichiers
-        $conversation = Conversation::findOrFail($conversationId);
+    // ✅ IMPORTANT : autoriser body nullable ET file nullable
+    $data = $request->validate([
+        'body' => ['nullable', 'string', 'max:5000'],
+        'file' => ['nullable', 'file', 'max:10240'], // 10MB
+        'reply_to_id' => ['nullable', 'integer', Rule::exists('messages', 'id')],
+    ]);
 
-        if (!$conversation->users->contains(auth()->id())) {
-            return response()->json(['error' => 'Non autorisé'], 403);
-        }
-
-        // Si c'est un upload de fichier (multipart/form-data)
-        if ($request->hasFile('file')) {
-            return $this->uploadFile($request, $conversationId);
-        }
-
-        // Sinon, message texte
-        $request->validate([
-            'body' => 'required|string|max:5000'
-        ]);
-
-        $message = Message::create([
-            'conversation_id' => $conversationId,
-            'user_id' => auth()->id(),
-            'body' => $request->body,
-            'created_at' => now(),
-        ]);
-
-        $message->load('user');
-
-        broadcast(new MessageSent($message))->toOthers();
-
-        return response()->json($message);
-
-    } catch (\Exception $e) {
-        Log::error('❌ Erreur envoi message:', [
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
-        ]);
-
-        return response()->json([
-            'error' => 'Erreur lors de l\'envoi du message: ' . $e->getMessage()
-        ], 500);
+    if (empty(trim($data['body'] ?? '')) && !$request->hasFile('file')) {
+        return response()->json(['message' => 'Message vide'], 422);
     }
-}
-    /**
+
+    // (optionnel) vérifier que l’utilisateur fait partie de la conversation
+    if (!$conversation->users->contains(auth()->id())) {
+        abort(403);
+    }
+
+    $filePayload = [
+        'file_path' => null,
+        'file_name' => null,
+        'file_type' => null,
+        'file_size' => null,
+    ];
+
+    if ($request->hasFile('file')) {
+        $file = $request->file('file');
+
+        $path = $file->store("conversations/{$conversation->id}", 'public');
+
+        $filePayload = [
+            'file_path' => $path,
+            'file_name' => $file->getClientOriginalName(),
+            'file_type' => $file->getMimeType(),
+            'file_size' => $file->getSize(),
+        ];
+    }
+
+    $message = $conversation->messages()->create([
+        'user_id' => auth()->id(),
+        'body' => trim($data['body'] ?? ''),
+        'reply_to_id' => $data['reply_to_id'] ?? null,
+        ...$filePayload,
+    ]);
+
+    // Recharge replyTo pour l’affichage
+    $message->load('replyTo');
+
+    // Retour JSON complet pour Alpine
+    return response()->json([
+        'id' => $message->id,
+        'user_id' => $message->user_id,
+        'body' => $message->body,
+        'created_at' => $message->created_at->toISOString(),
+        'reply_to_id' => $message->reply_to_id,
+        'reply_to' => $message->replyTo ? [
+            'id' => $message->replyTo->id,
+            'user_id' => $message->replyTo->user_id,
+            'body' => $message->replyTo->body,
+            'file_name' => $message->replyTo->file_name,
+        ] : null,
+
+        'file_path' => $message->file_path,
+        'file_name' => $message->file_name,
+        'file_type' => $message->file_type,
+        'file_size' => $message->file_size,
+        'file_url' => $message->file_path ? asset('storage/'.$message->file_path) : null,
+    ]);
+} /**
      * ✅ NOUVELLE MÉTHODE : Upload de fichier
      */
     /**
@@ -328,4 +353,38 @@ public function uploadFile(Request $request, $conversationId)
             'count' => $unreadCount
         ]);
     }
+
+    public function updateMessage(Request $request, Conversation $conversation, Message $message)
+{
+    if ($message->conversation_id !== $conversation->id) abort(404);
+    if ($message->user_id !== auth()->id()) abort(403);
+
+    $data = $request->validate([
+        'body' => ['required', 'string', 'max:5000'],
+    ]);
+
+    $message->update(['body' => $data['body']]);
+
+    return response()->json([
+        'id' => $message->id,
+        'body' => $message->body,
+        'updated_at' => $message->updated_at?->toISOString(),
+    ]);
+}
+
+public function deleteMessage(Request $request, Conversation $conversation, Message $message)
+{
+    if ($message->conversation_id !== $conversation->id) abort(404);
+    if ($message->user_id !== auth()->id()) abort(403);
+
+    // si tu veux supprimer aussi le fichier
+    if ($message->file_path) {
+        Storage::disk('public')->delete($message->file_path);
+    }
+
+    $id = $message->id;
+    $message->delete();
+
+    return response()->json(['deleted' => true, 'id' => $id]);
+}
 }

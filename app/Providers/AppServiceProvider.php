@@ -3,8 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Support\Facades\URL;
-use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\View;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,11 +19,13 @@ class AppServiceProvider extends ServiceProvider
         // Pagination Bootstrap 5
         Paginator::useBootstrapFive();
 
-        if (request()->isSecure()) {
-            URL::forceScheme('https');
-        }
+        // ✅ PAS DE forceScheme en local
+        // (Tu remettras URL::forceScheme('https') seulement en production)
 
         // Sidebar data
+         if (request()->header('x-forwarded-proto') === 'https' || request()->isSecure()) {
+        URL::forceScheme('https');
+    }
         View::composer('back.layouts.sidebar', function ($view) {
 
             $activites = \App\Models\Activite::active()

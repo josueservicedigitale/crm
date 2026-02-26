@@ -60,39 +60,43 @@ Route::prefix('back')->name('back.')->middleware('auth')->group(function () {
         // Routes FIXES (sans paramètres)
         Route::get('/', [ConversationController::class, 'index'])->name('index');
         Route::get('/messages/dropdown', [ConversationController::class, 'dropdown'])->name('dropdown');
-        
+
         // Routes avec paramètre {user} (plus spécifique que {conversation})
         Route::get('/users/{user}/conversation', [ConversationController::class, 'startWithUser'])->name('start');
-        
+
         // Routes avec paramètre {conversation}
         Route::get('/{conversation}', [ConversationController::class, 'show'])->name('show');
         Route::post('/{conversation}/send', [ConversationController::class, 'sendMessage'])->name('send');
         Route::post('/{conversation}/upload', [ConversationController::class, 'uploadFile'])->name('upload');
         Route::post('/{conversation}/typing', [ConversationController::class, 'typing'])->name('typing');
         Route::post('/{conversation}/read', [ConversationController::class, 'markAsRead'])->name('read');
+
+        // ✅ modifier / supprimer
+        Route::patch('/{conversation}/messages/{message}', [ConversationController::class, 'updateMessage'])->name('messages.update');
+        Route::delete('/{conversation}/messages/{message}', [ConversationController::class, 'deleteMessage'])->name('messages.delete');
     });
 
     // =====================================================================
     // 2.4 ROUTES DOSSIERS (ORDRE CRITIQUE)
     // =====================================================================
     Route::prefix('dossiers')->name('dossiers.')->group(function () {
-    // Routes fixes
-    Route::get('/create', [DossierController::class, 'create'])->name('create');
-    Route::get('/', [DossierController::class, 'index'])->name('index');
-    Route::post('/', [DossierController::class, 'store'])->name('store');
+        // Routes fixes
+        Route::get('/create', [DossierController::class, 'create'])->name('create');
+        Route::get('/', [DossierController::class, 'index'])->name('index');
+        Route::post('/', [DossierController::class, 'store'])->name('store');
 
-    // Routes avec paramètres spécifiques en **premier**
-    Route::get('/{id}/edit', [DossierController::class, 'edit'])->name('edit');
-    Route::put('/{id}', [DossierController::class, 'update'])->name('update');
-    Route::delete('/{id}', [DossierController::class, 'destroy'])->name('destroy');
-    Route::post('/{id}/upload', [DossierController::class, 'upload'])->name('upload');
-    Route::get('/{id}/download', [DossierController::class, 'downloadDossier'])->name('download');
-    Route::post('/{id}/toggle-visibilite', [DossierController::class, 'toggleVisibilite'])->name('toggle-visibilite');
-    Route::post('/{id}/partager', [DossierController::class, 'partager'])->name('partager');
+        // Routes avec paramètres spécifiques en **premier**
+        Route::get('/{id}/edit', [DossierController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [DossierController::class, 'update'])->name('update');
+        Route::delete('/{id}', [DossierController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/upload', [DossierController::class, 'upload'])->name('upload');
+        Route::get('/{id}/download', [DossierController::class, 'downloadDossier'])->name('download');
+        Route::post('/{id}/toggle-visibilite', [DossierController::class, 'toggleVisibilite'])->name('toggle-visibilite');
+        Route::post('/{id}/partager', [DossierController::class, 'partager'])->name('partager');
 
-    // Route générique **à la fin**
-    Route::get('/{slug}', [DossierController::class, 'show'])->name('show');
-});
+        // Route générique **à la fin**
+        Route::get('/{slug}', [DossierController::class, 'show'])->name('show');
+    });
     // =====================================================================
     // 2.5 ROUTES FICHIERS
     // =====================================================================
@@ -109,7 +113,7 @@ Route::prefix('back')->name('back.')->middleware('auth')->group(function () {
         Route::get('/create', [SocieteController::class, 'create'])->name('create');
         Route::get('/', [SocieteController::class, 'index'])->name('index');
         Route::post('/', [SocieteController::class, 'store'])->name('store');
-        
+
         // Routes avec paramètre {societe}
         Route::get('/{societe}', [SocieteController::class, 'show'])->name('show');
         Route::get('/{societe}/edit', [SocieteController::class, 'edit'])->name('edit');
@@ -130,7 +134,7 @@ Route::prefix('back')->name('back.')->middleware('auth')->group(function () {
         Route::get('/stats', [ActiviteController::class, 'stats'])->name('stats');
         Route::get('/', [ActiviteController::class, 'index'])->name('index');
         Route::post('/', [ActiviteController::class, 'store'])->name('store');
-        
+
         // Routes avec paramètre {activite}
         Route::get('/{activite}', [ActiviteController::class, 'show'])->name('show');
         Route::get('/{activite}/edit', [ActiviteController::class, 'edit'])->name('edit');
@@ -148,7 +152,7 @@ Route::prefix('back')->name('back.')->middleware('auth')->group(function () {
         Route::get('/create', [UserController::class, 'create'])->name('create');
         Route::get('/', [UserController::class, 'index'])->name('index');
         Route::post('/', [UserController::class, 'store'])->name('store');
-        
+
         // Routes avec paramètre {id}
         Route::get('/{id}/edit', [UserController::class, 'edit'])->name('edit');
         Route::put('/{id}', [UserController::class, 'update'])->name('update');
@@ -168,7 +172,7 @@ Route::prefix('back')->name('back.')->middleware('auth')->group(function () {
         Route::post('/restaurer-defauts', [ParametreController::class, 'restaurerDefauts'])->name('restaurer-defauts');
         Route::get('/', [ParametreController::class, 'index'])->name('index');
         Route::post('/', [ParametreController::class, 'store'])->name('store');
-        
+
         // Routes avec paramètre {parametre} (avec contrainte numérique)
         Route::get('/{parametre}', [ParametreController::class, 'show'])->name('show')->where('parametre', '[0-9]+');
         Route::get('/{parametre}/modifier', [ParametreController::class, 'edit'])->name('edit')->where('parametre', '[0-9]+');
@@ -183,7 +187,7 @@ Route::prefix('back')->name('back.')->middleware('auth')->group(function () {
         // Routes FIXES
         Route::post('/read-all', [NotificationController::class, 'markAllAsRead'])->name('read-all');
         Route::get('/', [NotificationController::class, 'index'])->name('index');
-        
+
         // Routes avec paramètre {id}
         Route::post('/{id}/read', [NotificationController::class, 'markAsRead'])->name('read');
     });
@@ -200,10 +204,10 @@ Route::prefix('back')->name('back.')->middleware('auth')->group(function () {
         Route::get('/telecharger-rapport', [CorbeilleController::class, 'telechargerRapport'])->name('telecharger-rapport');
         Route::post('/actions-groupées', [CorbeilleController::class, 'actionsGroupées'])->name('actions-groupées');
         Route::get('/', [CorbeilleController::class, 'index'])->name('index');
-        
+
         // Routes avec paramètre {type}
         Route::get('/type/{type}', [CorbeilleController::class, 'parType'])->name('par-type');
-        
+
         // Routes avec paramètre {id}
         Route::get('/{id}/afficher', [CorbeilleController::class, 'afficher'])->name('afficher');
         Route::post('/{id}/restaurer', [CorbeilleController::class, 'restaurer'])->name('restaurer');
