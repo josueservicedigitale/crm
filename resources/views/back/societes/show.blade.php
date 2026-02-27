@@ -155,8 +155,8 @@
                             <div class="stat-icon mb-2">
                                 <i class="fas fa-file-alt fa-2x text-primary"></i>
                             </div>
-                            <h2 class="fw-bold text-primary mb-0">{{ $stats['total'] ?? 0 }}</h2>
-                            <p class="text-muted mb-0">Total Documents</p>
+                            <h2 class="fw-bold text-dark mb-0">{{ $stats['total'] ?? 0 }}</h2>
+                            <p class="text-white mb-0">Total Documents</p>
                         </div>
                     </div>
 
@@ -427,7 +427,7 @@
                                     @endif
                                 </div>
                                 <div class="card-footer bg-transparent border-0 pt-0">
-                                    <a href="{{ route('back.societes.documents', $societe) }}?search={{ urlencode($client['adresse']) }}"
+                                    <a href="{{ route('back.search.global', $societe) }}?search={{ urlencode($client['adresse']) }}"
                                        class="btn btn-sm btn-outline-primary w-100">
                                         <i class="fas fa-search me-1"></i>Voir documents
                                     </a>
