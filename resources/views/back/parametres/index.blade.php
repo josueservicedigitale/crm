@@ -255,51 +255,78 @@
 
 <!-- Modal Aide -->
 <div class="modal fade" id="aideModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">
-                    <i class="fas fa-question-circle me-2"></i>Aide - Paramètres
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <h6>📋 Types de paramètres :</h6>
-                <div class="table-responsive">
-                    <table class="table table-sm table-bordered">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Type</th>
-                                <th>Description</th>
-                                <th>Exemple</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr><td>Texte court</td><td>Pour les champs courts</td><td>Nom, titre, email</td></tr>
-                            <tr><td>Texte long</td><td>Pour les descriptions</td><td>Description, notes</td></tr>
-                            <tr><td>Nombre entier</td><td>Sans décimales</td><td>Jours, compteurs</td></tr>
-                            <tr><td>Nombre décimal</td><td>Avec décimales</td><td>TVA, montants</td></tr>
-                            <tr><td>Oui/Non</td><td>Booléen</td><td>Activer/Désactiver</td></tr>
-                            <tr><td>Liste déroulante</td><td>Choix multiples</td><td>Options prédéfinies</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                
-                <h6 class="mt-4">🎯 Conseils d'utilisation :</h6>
-                <ul class="list-unstyled">
-                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Utilisez des clés descriptives (ex: "nom_application", "jours_conservation")</li>
-                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Les paramètres système sont protégés contre les modifications</li>
-                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Toutes les modifications sont mises en cache pour de meilleures performances</li>
-                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Vous pouvez restaurer les paramètres par défaut à tout moment</li>
-                </ul>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-            </div>
-        </div>
-    </div>
-</div>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">
+          <i class="fas fa-question-circle me-2"></i>Aide - Paramètres
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
 
+      <div class="modal-body">
+        <h6>📋 Types de paramètres :</h6>
+        <div class="table-responsive">
+          <table class="table table-sm table-bordered">
+            <thead class="table-light">
+              <tr>
+                <th>Type</th>
+                <th>Description</th>
+                <th>Exemple</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Texte court</td><td>Pour les champs courts</td><td>Nom, titre, email</td></tr>
+              <tr><td>Texte long</td><td>Pour les descriptions</td><td>Description, notes</td></tr>
+              <tr><td>Nombre entier</td><td>Sans décimales</td><td>Jours, compteurs</td></tr>
+              <tr><td>Nombre décimal</td><td>Avec décimales</td><td>TVA, montants</td></tr>
+              <tr><td>Oui/Non</td><td>Booléen</td><td>Activer/Désactiver</td></tr>
+              <tr><td>Liste déroulante</td><td>Choix multiples</td><td>Options prédéfinies</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h6 class="mt-4">🎯 Conseils d'utilisation :</h6>
+        <ul class="list-unstyled">
+          <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Utilisez des clés descriptives (ex: "nom_application", "jours_conservation")</li>
+          <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Les paramètres système sont protégés contre les modifications</li>
+          <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Toutes les modifications sont mises en cache pour de meilleures performances</li>
+          <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Vous pouvez restaurer les paramètres par défaut à tout moment</li>
+        </ul>
+
+        <!-- ✅ RECOMMANDATION + WHATSAPP -->
+        <div class="alert alert-info d-flex align-items-center justify-content-between gap-3 mt-4 mb-0">
+          <div class="me-2">
+            <div class="fw-semibold">
+              <i class="fas fa-headset me-2"></i>Recommandation
+            </div>
+            <div class="small">
+              En cas de problème technique (bug, erreur d’affichage, accès, lenteur…),
+              contactez directement le développeur pour une assistance rapide.
+            </div>
+          </div>
+
+          <!-- WhatsApp cliquable -->
+          <a
+            href="https://wa.me/212772376608?text=Bonjour%20Josu%C3%A9%2C%20j%E2%80%99ai%20un%20probl%C3%A8me%20technique%20sur%20les%20Param%C3%A8tres.%20Pouvez-vous%20m%E2%80%99aider%20%3F"
+            target="_blank"
+            rel="noopener"
+            class="btn btn-success d-inline-flex align-items-center gap-2"
+            title="Contacter le développeur sur WhatsApp"
+          >
+            <i class="fab fa-whatsapp fs-4"></i>
+            <span class="d-none d-md-inline">WhatsApp</span>
+          </a>
+        </div>
+        <!-- /RECOMMANDATION -->
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
 <!-- Modal Restaurer -->
 <div class="modal fade" id="restaurerModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">

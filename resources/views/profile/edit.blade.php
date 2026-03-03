@@ -13,7 +13,7 @@
                     <i class="fas fa-user-circle me-2"></i>Mon Profil
                 </h1>
                 <div>
-                    <span class="badge bg-info">Membre depuis : {{ Auth::user()->created_at->format('d/m/Y') }}</span>
+                    <span class="badge bg-info">Membre depuis : {{ $user->created_at->format('d/m/Y') }}</span>
                 </div>
             </div>
             <p class="text-muted">Gérez vos informations personnelles, votre mot de passe et votre compte.</p>
@@ -28,7 +28,7 @@
                 <div class="card-body text-center">
                     <!-- Avatar -->
                     <div class="position-relative d-inline-block mb-3">
-                        <img src="{{ Auth::user()->avatar ? asset('storage/' . Auth::user()->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) . '&background=3b82f6&color=fff' }}" 
+                        <img src="{{ $user->avatar ? asset('storage/' . $user->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=3b82f6&color=fff' }}" 
                              alt="Avatar" 
                              class="rounded-circle border border-4 border-primary"
                              style="width: 150px; height: 150px; object-fit: cover;">
@@ -42,18 +42,18 @@
                     </div>
                     
                     <!-- Informations utilisateur -->
-                    <h4 class="mb-1">{{ Auth::user()->name }}</h4>
-                    <p class="text-muted mb-2">{{ Auth::user()->email }}</p>
+                    <h4 class="mb-1">{{ $user->name }}</h4>
+                    <p class="text-muted mb-2">{{ $user->email }}</p>
                     
-                    @if(Auth::user()->telephone)
+                    @if($user->telephone)
                     <p class="mb-3">
-                        <i class="fas fa-phone me-1"></i> {{ Auth::user()->telephone }}
+                        <i class="fas fa-phone me-1"></i> {{ $user->telephone }}
                     </p>
                     @endif
                     
                     <!-- Rôle -->
-                    <span class="badge bg-{{ Auth::user()->estAdministrateur() ? 'danger' : 'success' }} mb-3">
-                        {{ Auth::user()->estAdministrateur() ? 'Administrateur' : 'Utilisateur' }}
+                    <span class="badge bg-{{ $user->estAdministrateur() ? 'danger' : 'success' }} mb-3">
+                        {{ $user->estAdministrateur() ? 'Administrateur' : 'Utilisateur' }}
                     </span>
                     
                     <!-- Dernière connexion -->
@@ -61,7 +61,7 @@
                         <small>
                             <i class="fas fa-clock me-1"></i>
                             Dernière connexion : 
-                            {{ Auth::user()->derniere_connexion ? Auth::user()->derniere_connexion->format('d/m/Y H:i') : 'Jamais' }}
+                            {{ $user->derniere_connexion ? $user->derniere_connexion->format('d/m/Y H:i') : 'Jamais' }}
                         </small>
                     </div>
                 </div>
@@ -147,7 +147,7 @@
                                                class="form-control @error('name') is-invalid @enderror" 
                                                id="name" 
                                                name="name" 
-                                               value="{{ old('name', Auth::user()->name) }}"
+                                               value="{{ old('name', $user->name) }}"
                                                required>
                                         @error('name')
                                             <div class="invalid-feedback">{{ $message }}</div>
@@ -166,7 +166,7 @@
                                                class="form-control @error('email') is-invalid @enderror" 
                                                id="email" 
                                                name="email" 
-                                               value="{{ old('email', Auth::user()->email) }}"
+                                               value="{{ old('email', $user->email) }}"
                                                required>
                                         @error('email')
                                             <div class="invalid-feedback">{{ $message }}</div>
@@ -185,7 +185,7 @@
                                                class="form-control @error('telephone') is-invalid @enderror" 
                                                id="telephone" 
                                                name="telephone" 
-                                               value="{{ old('telephone', Auth::user()->telephone) }}"
+                                               value="{{ old('telephone', $user->telephone) }}"
                                                placeholder="06 12 34 56 78">
                                         @error('telephone')
                                             <div class="invalid-feedback">{{ $message }}</div>
