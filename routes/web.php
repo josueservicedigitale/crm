@@ -282,5 +282,5 @@ Route::get('back/{activity}/{society}/{type}/ask-reference', [DocumentController
     ->name('back.document.ask-reference');
 
 Route::post('back/{activity}/{society}/{type}/search-reference', [DocumentController::class, 'searchByReference'])
-    ->name('back.document.search');
+    ->name('back.documents.search');
 require __DIR__ . '/auth.php';
