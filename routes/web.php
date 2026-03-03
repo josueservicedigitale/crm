@@ -278,4 +278,9 @@ Route::post('/logout-other-sessions', function (Request $request) {
 // =========================================================================
 // 4. AUTH ROUTES
 // =========================================================================
+Route::get('back/{activity}/{society}/{type}/ask-reference', [DocumentController::class, 'askReference'])
+    ->name('back.document.ask-reference');
+
+Route::post('back/{activity}/{society}/{type}/search-reference', [DocumentController::class, 'searchByReference'])
+    ->name('back.document.search');
 require __DIR__ . '/auth.php';

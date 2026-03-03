@@ -41,4 +41,16 @@
     }
 }
 
+
+.sticky-search-wrapper {
+    position: sticky;
+    top: 15px; /* distance du haut */
+    z-index: 1020;
+}
+
+.sticky-search-wrapper .card {
+    background: #ffffff;
+}
+
+
 </style>

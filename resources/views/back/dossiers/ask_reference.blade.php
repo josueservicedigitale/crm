@@ -13,7 +13,7 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-body">
-                    <form action="{{ route('back.document.search', [$activity, $society, $type]) }}" method="POST">
+                    <form action="{{ route('back.documents.search', [$activity, $society, $type]) }}" method="POST">
                         @csrf
                         
                         <div class="mb-3">
