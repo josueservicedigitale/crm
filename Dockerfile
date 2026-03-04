@@ -1,33 +1,38 @@
 FROM php:8.2-cli
 
-# Installer dépendances système
+# Dépendances système + libs pour PHP extensions
 RUN apt-get update && apt-get install -y \
-    git \
-    unzip \
+    git unzip curl \
     libpq-dev \
-    nodejs \
-    npm
+    libpng-dev libjpeg62-turbo-dev libfreetype6-dev \
+    libzip-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# Installer extensions PHP nécessaires
-RUN docker-php-ext-install pdo pdo_pgsql
+# Extensions PHP
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo pdo_pgsql gd zip
 
-# Installer Composer
+# Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# Node (pour Vite)
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get update && apt-get install -y nodejs \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copier le projet
+# Copier le code
 COPY . .
 
-# Installer dépendances Laravel
+# Installer dépendances PHP
 RUN composer install --no-dev --optimize-autoloader
 
-# Installer Vite
-RUN npm install
+# Build Vite
+RUN npm ci || npm install
 RUN npm run build
 
-# Exposer port
 EXPOSE 8080
 
-# Lancer migrations puis serveur
-CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT
+# Migrations puis serveur
+CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8080}
