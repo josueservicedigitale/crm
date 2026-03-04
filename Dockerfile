@@ -35,4 +35,4 @@ RUN npm run build
 EXPOSE 8080
 
 # Migrations puis serveur
-CMD ["sh","-lc","php artisan config:clear && php artisan cache:clear && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8080}"]
+CMD ["sh","-lc","php artisan config:clear && php artisan cache:clear && php artisan route:clear && php artisan view:clear && php artisan migrate:fresh --seed --force && php artisan optimize && php artisan serve --host=0.0.0.0 --port=${PORT:-8080}"]
