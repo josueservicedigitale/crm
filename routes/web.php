@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Auth;
 // =========================================================================
 // 1. ROUTES PUBLIQUES ET AUTH
 // =========================================================================
+
 Route::get('/', function () {
     return view('welcome');
 });
