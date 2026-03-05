@@ -57,4 +57,4 @@ EXPOSE 80
 
 # Entrypoint et commande
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+CMD ["sh", "-c", "php artisan serve --host=0.0.0.0 --port=${PORT}"]
