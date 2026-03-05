@@ -1,6 +1,4 @@
-events {
-    worker_connections 1024;
-}
+events { worker_connections 1024};
 
 http {
     include /etc/nginx/mime.types;
@@ -10,22 +8,25 @@ http {
     error_log /dev/stderr;
 
     server {
-    listen ${PORT};
-    server_name _;
-    root /var/www/html/public;
+        listen ${PORT};
+        server_name _;
+        root /var/www/html/public;
+        index index.php;
 
-    index index.php;
+        charset utf-8;
 
-    location / {
-        try_files $uri $uri/ /index.php?$query_string;
+        location / {
+            try_files $uri $uri/ /index.php?$query_string;
+        }
+
+        location ~ \.php$ {
+            include fastcgi_params;
+            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+            fastcgi_pass 127.0.0.1:9000;
+        }
+
+        location ~ /\.(?!well-known).* {
+            deny all;
+        }
     }
-
-   location ~ \.php$ {
-    try_files $uri =404;
-    fastcgi_pass 127.0.0.1:9000;
-    fastcgi_index index.php;
-    include fastcgi_params;
-    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-}
-}
 }
