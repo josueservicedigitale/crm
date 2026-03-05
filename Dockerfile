@@ -13,9 +13,11 @@ RUN apt-get update && apt-get install -y \
     nginx \
     supervisor \
     libpq-dev \
+    gettext-base \
     && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
+    
 
 # Installer les extensions PHP
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd pdo_pgsql
@@ -36,7 +38,7 @@ RUN composer install --no-interaction --optimize-autoloader --no-dev && \
 RUN npm install && npm run build
 
 # Configurations Nginx et Supervisor
-COPY docker/nginx.conf /etc/nginx/nginx.conf
+COPY docker/nginx.conf.template /etc/nginx/nginx.conf.template
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Script d'entrée pour les migrations
