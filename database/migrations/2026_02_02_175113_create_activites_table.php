@@ -7,29 +7,8 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
-    private function disableFkChecks(): void
-{
-    $driver = DB::getDriverName();
-    if ($driver === 'mysql') {
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-    } elseif ($driver === 'pgsql') {
-        DB::statement('SET session_replication_role = replica;');
-    }
-}
-
-private function enableFkChecks(): void
-{
-    $driver = DB::getDriverName();
-    if ($driver === 'mysql') {
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
-    } elseif ($driver === 'pgsql') {
-        DB::statement('SET session_replication_role = origin;');
-    }
-}
     public function up(): void
     {
-        // ⚠️ En prod, on ne drop pas une table automatiquement.
-        // Si tu veux vraiment recreer, fais-le via migrate:fresh en local.
         if (!Schema::hasTable('activites')) {
             Schema::create('activites', function (Blueprint $table) {
                 $table->id();
@@ -45,7 +24,6 @@ private function enableFkChecks(): void
             });
         }
 
-        // Seed seulement si table vide (évite doublons au redeploy)
         if (DB::table('activites')->count() === 0) {
             DB::table('activites')->insert([
                 [
@@ -55,7 +33,7 @@ private function enableFkChecks(): void
                     'est_active' => true,
                     'couleur' => '#3B82F6',
                     'icon' => 'fa-broom',
-                    'user_id' => 1,
+                    'user_id' => null,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ],
@@ -66,7 +44,7 @@ private function enableFkChecks(): void
                     'est_active' => true,
                     'couleur' => '#10B981',
                     'icon' => 'fa-tools',
-                    'user_id' => 1,
+                    'user_id' => null,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ],
@@ -77,7 +55,7 @@ private function enableFkChecks(): void
                     'est_active' => true,
                     'couleur' => '#F59E0B',
                     'icon' => 'fa-fire',
-                    'user_id' => 1,
+                    'user_id' => null,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ],
