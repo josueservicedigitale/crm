@@ -7,21 +7,42 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
-    /**
-     * Exécuter les migrations.
-     */
+    private function disableFkChecks(): void
+    {
+        $driver = DB::getDriverName();
+
+        if ($driver === 'mysql') {
+            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        }
+
+        if ($driver === 'pgsql') {
+            DB::statement('SET session_replication_role = replica;');
+        }
+    }
+
+    private function enableFkChecks(): void
+    {
+        $driver = DB::getDriverName();
+
+        if ($driver === 'mysql') {
+            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        }
+
+        if ($driver === 'pgsql') {
+            DB::statement('SET session_replication_role = origin;');
+        }
+    }
+
     public function up(): void
     {
-        // 1. Désactiver les contraintes de clés étrangères
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        
-        // 2. Sauvegarder les données existantes
-        $existingUsers = DB::table('users')->get();
-        
-        // 3. Supprimer la table existante
+        $this->disableFkChecks();
+
+        $existingUsers = Schema::hasTable('users')
+            ? DB::table('users')->get()
+            : collect();
+
         Schema::dropIfExists('users');
-        
-        // 4. Recréer la table avec la nouvelle structure
+
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
@@ -36,51 +57,47 @@ return new class extends Migration
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();
-            
-            // Index pour les performances
+
             $table->index('email');
             $table->index('role');
             $table->index('est_actif');
             $table->index('deleted_at');
         });
-        
-        // 5. Réinsérer les données existantes
-        foreach ($existingUsers as $user) {
-            DB::table('users')->insert([
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'email_verified_at' => $user->email_verified_at,
-                'password' => $user->password,
-                'telephone' => $user->telephone ?? null,
-                'avatar' => $user->avatar ?? null,
-                'role' => $user->role ?? 'user',
-                'est_actif' => isset($user->est_actif) ? $user->est_actif : true,
-                'derniere_connexion' => $user->derniere_connexion ?? null,
-                'remember_token' => $user->remember_token,
-                'created_at' => $user->created_at,
-                'updated_at' => $user->updated_at,
-                'deleted_at' => $user->deleted_at ?? null,
-            ]);
+
+        if ($existingUsers->isNotEmpty()) {
+            foreach ($existingUsers as $user) {
+                DB::table('users')->insert([
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'email_verified_at' => $user->email_verified_at,
+                    'password' => $user->password,
+                    'telephone' => $user->telephone ?? null,
+                    'avatar' => $user->avatar ?? null,
+                    'role' => $user->role ?? 'user',
+                    'est_actif' => isset($user->est_actif) ? (bool) $user->est_actif : true,
+                    'derniere_connexion' => $user->derniere_connexion ?? null,
+                    'remember_token' => $user->remember_token ?? null,
+                    'created_at' => $user->created_at ?? now(),
+                    'updated_at' => $user->updated_at ?? now(),
+                    'deleted_at' => $user->deleted_at ?? null,
+                ]);
+            }
         }
-        
-        // 6. Réactiver les contraintes de clés étrangères
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
+        $this->enableFkChecks();
     }
 
-    /**
-     * Inverser les migrations.
-     */
     public function down(): void
     {
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        
-        // Sauvegarder les données
-        $existingUsers = DB::table('users')->get();
-        
-        // Recréer l'ancienne structure (simplifiée)
+        $this->disableFkChecks();
+
+        $existingUsers = Schema::hasTable('users')
+            ? DB::table('users')->get()
+            : collect();
+
         Schema::dropIfExists('users');
-        
+
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
@@ -90,21 +107,22 @@ return new class extends Migration
             $table->rememberToken();
             $table->timestamps();
         });
-        
-        // Réinsérer les données (sans les nouveaux champs)
-        foreach ($existingUsers as $user) {
-            DB::table('users')->insert([
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'email_verified_at' => $user->email_verified_at,
-                'password' => $user->password,
-                'remember_token' => $user->remember_token,
-                'created_at' => $user->created_at,
-                'updated_at' => $user->updated_at,
-            ]);
+
+        if ($existingUsers->isNotEmpty()) {
+            foreach ($existingUsers as $user) {
+                DB::table('users')->insert([
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'email_verified_at' => $user->email_verified_at,
+                    'password' => $user->password,
+                    'remember_token' => $user->remember_token ?? null,
+                    'created_at' => $user->created_at ?? now(),
+                    'updated_at' => $user->updated_at ?? now(),
+                ]);
+            }
         }
-        
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
+        $this->enableFkChecks();
     }
 };
