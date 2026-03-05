@@ -30,8 +30,8 @@ WORKDIR /var/www/html
 COPY . .
 
 # Installer les dépendances PHP (sans les dev en production)
-RUN composer install --no-interaction --optimize-autoloader --no-dev
-
+RUN composer install --no-interaction --optimize-autoloader --no-dev && \
+    rm -f /var/www/html/.env
 # Installer les dépendances Node et builder les assets
 RUN npm install && npm run build
 
