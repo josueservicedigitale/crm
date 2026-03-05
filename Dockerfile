@@ -1,38 +1,55 @@
-FROM php:8.2-cli
+# Utiliser l'image PHP officielle avec FPM
+FROM php:8.2-fpm as php
 
-# Dépendances système + libs pour PHP extensions
+# Installer les dépendances système, extensions PHP, et Node.js
 RUN apt-get update && apt-get install -y \
-    git unzip curl \
+    git \
+    curl \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    zip \
+    unzip \
+    nginx \
+    supervisor \
     libpq-dev \
-    libpng-dev libjpeg62-turbo-dev libfreetype6-dev \
-    libzip-dev \
-    && rm -rf /var/lib/apt/lists/*
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Extensions PHP
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo pdo_pgsql gd zip
+# Installer les extensions PHP
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd pdo_pgsql
 
-# Composer
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+# Installer Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Node (pour Vite)
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get update && apt-get install -y nodejs \
-    && rm -rf /var/lib/apt/lists/*
+# Définir le répertoire de travail
+WORKDIR /var/www/html
 
-WORKDIR /app
-
-# Copier le code
+# Copier les fichiers de l'application
 COPY . .
 
-# Installer dépendances PHP
-RUN composer install --no-dev --optimize-autoloader
+# Installer les dépendances PHP (sans les dev en production)
+RUN composer install --no-interaction --optimize-autoloader --no-dev
 
-# Build Vite
-RUN npm ci || npm install
-RUN npm run build
+# Installer les dépendances Node et builder les assets
+RUN npm install && npm run build
 
-EXPOSE 8080
+# Configurations Nginx et Supervisor
+COPY docker/nginx.conf /etc/nginx/nginx.conf
+COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Migrations puis serveur
-CMD ["sh","-lc","php artisan config:clear && php artisan cache:clear && php artisan route:clear && php artisan view:clear && php artisan migrate:fresh --seed --force && php artisan optimize && php artisan serve --host=0.0.0.0 --port=${PORT:-8080}"]
+# Script d'entrée pour les migrations
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+# Permissions
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Exposer le port 80
+EXPOSE 80
+
+# Entrypoint et commande
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
