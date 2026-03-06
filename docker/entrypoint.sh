@@ -3,6 +3,8 @@ set -e
 
 # Générer la configuration Nginx finale en remplaçant la variable ${PORT}
 envsubst '${PORT}' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
+echo "=== Generated nginx.conf ==="
+cat /etc/nginx/nginx.conf
 
 # Tester la configuration Nginx (crash si erreur)
 nginx -t
