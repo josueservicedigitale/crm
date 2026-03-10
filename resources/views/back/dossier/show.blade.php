@@ -32,11 +32,11 @@
                         <div class="d-flex align-items-center gap-3">
                             <div class="avatar avatar-xl rounded-circle d-flex align-items-center justify-content-center"
                                 style="
-                                                            --dossier-color: {{ $dossier->couleur }};
-                                                            background-color: var(--dossier-color)20;
-                                                            width: 80px;
-                                                            height: 80px;
-                                                        ">
+                                                                    --dossier-color: {{ $dossier->couleur }};
+                                                                    background-color: var(--dossier-color)20;
+                                                                    width: 80px;
+                                                                    height: 80px;
+                                                                ">
 
                                 <i class="fas {{ $dossier->icone_classe }} fa-3x" style="color: var(--dossier-color);">
                                 </i>
@@ -55,6 +55,10 @@
                                         </span>
                                     @endif
 
+
+                                    <span class="badge bg-{{ $dossier->statut_badge_class }}">
+                                        <i class="fas fa-flag me-1"></i>{{ ucfirst($dossier->statut) }}
+                                    </span>
                                     @if($dossier->societe)
                                         <span class="badge bg-primary bg-opacity-10 text-primary">
                                             <i class="fas fa-building me-1"></i>{{ $dossier->societe->nom }}
@@ -86,15 +90,32 @@
                                     <i class="fas fa-{{ $dossier->est_visible ? 'lock' : 'globe' }} me-1"></i>
                                     {{ $dossier->est_visible ? 'Rendre privé' : 'Rendre public' }}
                                 </button>
-
-                                <form action="{{ route('back.dossiers.destroy', $dossier->id) }}" method="POST" class="d-inline"
-                                    onsubmit="return confirm('Supprimer le dossier « {{ addslashes($dossier->nom) }} » et tout son contenu (fichiers + sous-dossiers) ?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-outline-danger" title="Supprimer">
-                                        <i class="fas fa-trash me-1"></i>Supprimer
-                                    </button>
-                                </form>
+                                @if(auth()->user()?->role === 'admin')
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-outline-secondary dropdown-toggle"
+                                            data-bs-toggle="dropdown">
+                                            <i class="fas fa-flag me-1"></i>Statut
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item change-statut" href="#" data-statut="brouillon"
+                                                    data-id="{{ $dossier->id }}">Brouillon</a></li>
+                                            <li><a class="dropdown-item change-statut" href="#" data-statut="valide"
+                                                    data-id="{{ $dossier->id }}">Validé</a></li>
+                                            <li><a class="dropdown-item change-statut" href="#" data-statut="ferme"
+                                                    data-id="{{ $dossier->id }}">Fermé</a></li>
+                                        </ul>
+                                    </div>
+                                @endif
+                                @if(auth()->user()?->role === 'admin' && $dossier->statut === 'ferme')
+                                    <form action="{{ route('back.dossiers.destroy', $dossier->id) }}" method="POST" class="d-inline"
+                                        onsubmit="return confirm('Supprimer le dossier « {{ addslashes($dossier->nom) }} » et tout son contenu ?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-outline-danger" title="Supprimer">
+                                            <i class="fas fa-trash me-1"></i>Supprimer
+                                        </button>
+                                    </form>
+                                @endif
                             @endif
                             <a href="{{ route('back.dossiers.download', $dossier->id) }}" class="btn btn-outline-success"
                                 data-bs-toggle="tooltip" title="Télécharger en ZIP">
@@ -400,6 +421,30 @@
                 $('#previewImage').attr('src', url);
             });
         });
+
+        $(document).on('click', '.change-statut', function (e) {
+    e.preventDefault();
+
+    const dossierId = $(this).data('id');
+    const statut = $(this).data('statut');
+
+    $.ajax({
+        url: `/back/dossiers/${dossierId}/changer-statut`,
+        method: 'POST',
+        data: {
+            _token: '{{ csrf_token() }}',
+            statut: statut
+        },
+        success: function (response) {
+            if (response.success) {
+                location.reload();
+            }
+        },
+        error: function (xhr) {
+            alert(xhr.responseJSON?.message || 'Erreur lors du changement de statut');
+        }
+    });
+});
     </script>
 @endpush
 

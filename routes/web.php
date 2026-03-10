@@ -94,6 +94,7 @@ Route::prefix('back')->name('back.')->middleware('auth')->group(function () {
         Route::get('/{id}/download', [DossierController::class, 'downloadDossier'])->name('download');
         Route::post('/{id}/toggle-visibilite', [DossierController::class, 'toggleVisibilite'])->name('toggle-visibilite');
         Route::post('/{id}/partager', [DossierController::class, 'partager'])->name('partager');
+        Route::post('/{id}/changer-statut', [DossierController::class, 'changerStatut'])->name('changer-statut');
 
         // Route générique **à la fin**
         Route::get('/{slug}', [DossierController::class, 'show'])->name('show');

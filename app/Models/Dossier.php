@@ -26,7 +26,8 @@ class Dossier extends Model
         'taille_totale',
         'couleur',
         'icon',
-        'metadata'
+        'metadata',
+        'statut',
     ];
 
     protected $casts = [
@@ -51,36 +52,40 @@ class Dossier extends Model
             if (empty($dossier->slug)) {
                 $dossier->slug = Str::slug($dossier->nom) . '-' . uniqid();
             }
-            
+
             if (empty($dossier->icon)) {
                 $dossier->icon = 'fa-folder';
             }
-            
+
             if (empty($dossier->couleur)) {
                 $dossier->couleur = '#FFB700'; // Or INVESTCALORIS
             }
-            
+            if (empty($dossier->statut)) {
+                $dossier->statut = 'brouillon';
+            }
+
         });
         static::deleted(function ($dossier) {
-        // Évite double log si forceDelete (optionnel)
-        if (!$dossier->trashed()) return;
+            // Évite double log si forceDelete (optionnel)
+            if (!$dossier->trashed())
+                return;
 
-        Corbeille::create([
-            'type_element' => self::class,
-            'element_id' => $dossier->id,
-            'donnees' => $dossier->toArray(),
-            'supprime_par' => Auth::id(),
-            'supprime_le' => now(),
-            'expire_le' => now()->addDays(config('app.jours_conservation_corbeille', 30)),
-        ]);
-    });
-        
+            Corbeille::create([
+                'type_element' => self::class,
+                'element_id' => $dossier->id,
+                'donnees' => $dossier->toArray(),
+                'supprime_par' => Auth::id(),
+                'supprime_le' => now(),
+                'expire_le' => now()->addDays(config('app.jours_conservation_corbeille', 30)),
+            ]);
+        });
+
     }
 
     // =============================
     // RELATIONS
     // =============================
-    
+
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -119,14 +124,14 @@ class Dossier extends Model
     public function utilisateursPartages()
     {
         return $this->belongsToMany(User::class, 'dossier_user')
-                    ->withPivot('permission')
-                    ->withTimestamps();
+            ->withPivot('permission')
+            ->withTimestamps();
     }
 
     // =============================
     // SCOPES
     // =============================
-    
+
     public function scopeVisibles($query)
     {
         return $query->where('est_visible', true);
@@ -140,9 +145,9 @@ class Dossier extends Model
     public function scopePourUtilisateur($query, $userId)
     {
         return $query->where('user_id', $userId)
-                     ->orWhereHas('utilisateursPartages', function($q) use ($userId) {
-                         $q->where('user_id', $userId);
-                     });
+            ->orWhereHas('utilisateursPartages', function ($q) use ($userId) {
+                $q->where('user_id', $userId);
+            });
     }
 
     public function scopeParSociete($query, $societeId)
@@ -163,18 +168,18 @@ class Dossier extends Model
     // =============================
     // ACCESSORS
     // =============================
-    
+
     public function getTailleFormateeAttribute()
     {
         $size = $this->taille_totale;
         $units = ['o', 'Ko', 'Mo', 'Go'];
         $i = 0;
-        
+
         while ($size >= 1024 && $i < 3) {
             $size /= 1024;
             $i++;
         }
-        
+
         return round($size, 2) . ' ' . $units[$i];
     }
 
@@ -182,23 +187,24 @@ class Dossier extends Model
     {
         $path = [];
         $dossier = $this;
-        
+
         while ($dossier) {
             array_unshift($path, $dossier->nom);
             $dossier = $dossier->parent;
         }
-        
+
         return implode(' / ', $path);
     }
 
- public function getUrlPartageAttribute()
-{
-    if (!$this->est_visible) return null;
+    public function getUrlPartageAttribute()
+    {
+        if (!$this->est_visible)
+            return null;
 
-    return \Route::has('back.dossiers.public')
-        ? route('back.dossiers.public', $this->slug)
-        : null;
-}
+        return \Route::has('back.dossiers.public')
+            ? route('back.dossiers.public', $this->slug)
+            : null;
+    }
 
     public function getIconeClasseAttribute()
     {
@@ -208,17 +214,17 @@ class Dossier extends Model
     // =============================
     // MÉTHODES
     // =============================
-    
+
     public function estAccessiblePar($userId)
     {
         if ($this->user_id == $userId) {
             return true;
         }
-        
+
         if ($this->est_visible) {
             return true;
         }
-        
+
         return $this->utilisateursPartages()->where('user_id', $userId)->exists();
     }
 
@@ -227,9 +233,9 @@ class Dossier extends Model
         if ($this->user_id == $userId) {
             return 'admin';
         }
-        
+
         $partage = $this->utilisateursPartages()->where('user_id', $userId)->first();
-        
+
         return $partage ? $partage->pivot->permission : null;
     }
 
@@ -257,16 +263,33 @@ class Dossier extends Model
     }
 
     // Dans app/Models/Dossier.php
-public function getAncestors()
-{
-    $ancestors = collect();
-    $current = $this->parent;
-    
-    while ($current) {
-        $ancestors->prepend($current);
-        $current = $current->parent;
+    public function getAncestors()
+    {
+        $ancestors = collect();
+        $current = $this->parent;
+
+        while ($current) {
+            $ancestors->prepend($current);
+            $current = $current->parent;
+        }
+
+        return $ancestors;
     }
-    
-    return $ancestors;
-}
+
+    public function getStatutBadgeClassAttribute()
+    {
+        return match ($this->statut) {
+            'brouillon' => 'secondary',
+            'valide' => 'success',
+            'ferme' => 'dark',
+            default => 'secondary',
+        };
+    }
+
+    public function canBeDeletedBy($user)
+    {
+        return $user
+            && $user->role === 'admin'
+            && $this->statut === 'ferme';
+    }
 }

@@ -153,6 +153,7 @@ class DossierController extends Controller
             'est_visible' => $request->boolean('est_visible'),
             'couleur' => $request->couleur,
             'icon' => $request->icon,
+            'statut' => 'brouillon',
         ]);
 
         Log::info('📁 Nouveau dossier créé', [
@@ -223,24 +224,24 @@ class DossierController extends Controller
     /**
      * Supprimer un dossier
      */
-    public function destroy($id)
-    {
-        $dossier = Dossier::findOrFail($id);
+    // public function destroy($id)
+    // {
+    //     $dossier = Dossier::findOrFail($id);
 
-        if ($dossier->user_id !== Auth::id()) {
-            abort(403);
-        }
+    //     if ($dossier->user_id !== Auth::id()) {
+    //         abort(403);
+    //     }
 
-        $parentSlug = $dossier->parent?->slug;
+    //     $parentSlug = $dossier->parent?->slug;
 
-        $dossier->delete();
+    //     $dossier->delete();
 
-        $redirect = $parentSlug
-            ? route('back.dossiers.show', $parentSlug)
-            : route('back.dossiers.index');
+    //     $redirect = $parentSlug
+    //         ? route('back.dossiers.show', $parentSlug)
+    //         : route('back.dossiers.index');
 
-        return redirect($redirect)->with('success', 'Dossier supprimé');
-    }
+    //     return redirect($redirect)->with('success', 'Dossier supprimé');
+    // }
 
     /**
      * Upload de fichiers dans un dossier
@@ -445,4 +446,50 @@ class DossierController extends Controller
 
         return round($bytes, $precision) . ' ' . $units[$pow];
     }
+
+    public function changerStatut(Request $request, $id)
+{
+    $dossier = Dossier::findOrFail($id);
+
+    if (!auth()->check() || auth()->user()->role !== 'admin') {
+        abort(403, 'Seul un administrateur peut changer le statut.');
+    }
+
+    $request->validate([
+        'statut' => 'required|in:brouillon,valide,ferme',
+    ]);
+
+    $dossier->statut = $request->statut;
+    $dossier->save();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Statut mis à jour avec succès.',
+        'statut' => $dossier->statut,
+        'badge_class' => $dossier->statut_badge_class,
+    ]);
+}
+
+public function destroy($id)
+{
+    $dossier = Dossier::findOrFail($id);
+
+    if (!auth()->check() || auth()->user()->role !== 'admin') {
+        abort(403, 'Seul un administrateur peut supprimer un dossier.');
+    }
+
+    if ($dossier->statut !== 'ferme') {
+        return back()->withErrors('Seuls les dossiers fermés peuvent être supprimés.');
+    }
+
+    $parentSlug = $dossier->parent?->slug;
+
+    $dossier->delete();
+
+    $redirect = $parentSlug
+        ? route('back.dossiers.show', $parentSlug)
+        : route('back.dossiers.index');
+
+    return redirect($redirect)->with('success', 'Dossier supprimé avec succès.');
+}
 }
