@@ -174,15 +174,16 @@
                                     <p class="small text-muted mb-2">{{ $dossier->chemin_complet }}</p>
                                     <div>
                                         @if($dossier->societe)
-                                            <span class="badge bg-primary bg-opacity-10 text-primary me-1">
-                                                <i class="fas fa-building me-1"></i>{{ $dossier->societe->nom }}
-                                            </span>
-                                        @endif
-                                        @if($dossier->activite)
-                                            <span class="badge bg-info bg-opacity-10 text-info">
-                                                <i class="fas fa-tasks me-1"></i>{{ $dossier->activite->nom }}
-                                            </span>
-                                        @endif
+                                        <span class="badge bg-primary bg-opacity-10 text-dark">
+                                            <i class="fas fa-building me-1"></i>{{ $dossier->societe->nom }}
+                                        </span>
+                                    @endif
+
+                                    @if($dossier->activite)
+                                        <span class="badge bg-info bg-opacity-10 text-dark">
+                                            <i class="fas fa-tasks me-1"></i>{{ $dossier->activite->nom }}
+                                        </span>
+                                    @endif
                                     </div>
                                 </div>
                             </div>
