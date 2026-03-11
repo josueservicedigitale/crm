@@ -447,7 +447,7 @@ class DossierController extends Controller
         return round($bytes, $precision) . ' ' . $units[$pow];
     }
 
-    public function changerStatut(Request $request, $id)
+public function changerStatut(Request $request, $id)
 {
     $dossier = Dossier::findOrFail($id);
 

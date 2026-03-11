@@ -4,13 +4,13 @@
 
 @section('content')
     <div class="container-fluid pt-4 px-4">
-        <!-- Fil d'Ariane -->
         <div class="row mb-4">
             <div class="col-12">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ route('back.dossiers.index') }}"
-                                class="text-decoration-none">Dossiers</a></li>
+                        <li class="breadcrumb-item">
+                            <a href="{{ route('back.dossiers.index') }}" class="text-decoration-none">Dossiers</a>
+                        </li>
                         @foreach($dossier->getAncestors() as $ancetre)
                             <li class="breadcrumb-item">
                                 <a href="{{ route('back.dossiers.show', $ancetre->slug) }}" class="text-decoration-none">
@@ -24,41 +24,40 @@
             </div>
         </div>
 
-        <!-- En-tête du dossier -->
         <div class="row mb-4">
             <div class="col-12">
                 <div class="bg-white rounded shadow-sm p-4">
-                    <div class="d-flex align-items-start justify-content-between">
+                    <div class="d-flex align-items-start justify-content-between flex-wrap gap-3">
                         <div class="d-flex align-items-center gap-3">
                             <div class="avatar avatar-xl rounded-circle d-flex align-items-center justify-content-center"
                                 style="
-                                                                    --dossier-color: {{ $dossier->couleur }};
-                                                                    background-color: var(--dossier-color)20;
-                                                                    width: 80px;
-                                                                    height: 80px;
-                                                                ">
-
-                                <i class="fas {{ $dossier->icone_classe }} fa-3x" style="color: var(--dossier-color);">
-                                </i>
-
+                                    --dossier-color: {{ $dossier->couleur }};
+                                    background-color: var(--dossier-color)20;
+                                    width: 80px;
+                                    height: 80px;
+                                ">
+                                <i class="fas {{ $dossier->icone_classe }} fa-3x" style="color: var(--dossier-color);"></i>
                             </div>
+
                             <div>
                                 <h4 class="fw-bold mb-2">{{ $dossier->nom }}</h4>
-                                <div class="d-flex gap-3 mb-2">
+
+                                <div class="d-flex gap-2 mb-2 flex-wrap">
                                     @if($dossier->est_visible)
                                         <span class="badge bg-success">
                                             <i class="fas fa-globe me-1"></i>Public
                                         </span>
                                     @else
-                                        <span class="badge bg-warning">
+                                        <span class="badge bg-warning text-dark">
                                             <i class="fas fa-lock me-1"></i>Privé
                                         </span>
                                     @endif
 
-
-                                    <span class="badge bg-{{ $dossier->statut_badge_class }}">
-                                        <i class="fas fa-flag me-1"></i>{{ ucfirst($dossier->statut) }}
+                                    <span id="statut-badge" class="badge bg-{{ $dossier->statut_badge_class }}">
+                                        <i class="fas fa-flag me-1"></i>
+                                        <span id="statut-badge-text">{{ ucfirst($dossier->statut) }}</span>
                                     </span>
+
                                     @if($dossier->societe)
                                         <span class="badge bg-primary bg-opacity-10 text-primary">
                                             <i class="fas fa-building me-1"></i>{{ $dossier->societe->nom }}
@@ -71,43 +70,75 @@
                                         </span>
                                     @endif
                                 </div>
+
                                 @if($dossier->description)
                                     <p class="text-muted mb-0">{{ $dossier->description }}</p>
                                 @endif
                             </div>
                         </div>
-                        <div class="btn-group">
-                            @if($dossier->user_id == auth()->id())
-                                <a href="{{ route('back.dossiers.edit', $dossier->id) }}" class="btn btn-outline-warning"
-                                    data-bs-toggle="tooltip" title="Modifier">
+
+                        <div class="d-flex flex-wrap gap-2 align-items-start">
+                            @if($dossier->user_id == auth()->id() || auth()->user()?->role === 'admin')
+                                <a href="{{ route('back.dossiers.edit', $dossier->id) }}"
+                                    class="btn btn-outline-warning"
+                                    data-bs-toggle="tooltip"
+                                    title="Modifier">
                                     <i class="fas fa-edit me-1"></i>Modifier
                                 </a>
+                            @endif
+
+                            @if($dossier->user_id == auth()->id())
                                 <button type="button"
                                     class="btn btn-outline-{{ $dossier->est_visible ? 'warning' : 'success' }} toggle-visibilite"
-                                    data-id="{{ $dossier->id }}" data-visible="{{ $dossier->est_visible }}"
+                                    data-id="{{ $dossier->id }}"
+                                    data-visible="{{ $dossier->est_visible }}"
                                     data-bs-toggle="tooltip"
                                     title="{{ $dossier->est_visible ? 'Rendre privé' : 'Rendre public' }}">
                                     <i class="fas fa-{{ $dossier->est_visible ? 'lock' : 'globe' }} me-1"></i>
                                     {{ $dossier->est_visible ? 'Rendre privé' : 'Rendre public' }}
                                 </button>
-                                @if(auth()->user()?->role === 'admin')
-                                    <div class="btn-group">
-                                        <button type="button" class="btn btn-outline-secondary dropdown-toggle"
-                                            data-bs-toggle="dropdown">
-                                            <i class="fas fa-flag me-1"></i>Statut
-                                        </button>
-                                        <ul class="dropdown-menu">
-                                            <li><a class="dropdown-item change-statut" href="#" data-statut="brouillon"
-                                                    data-id="{{ $dossier->id }}">Brouillon</a></li>
-                                            <li><a class="dropdown-item change-statut" href="#" data-statut="valide"
-                                                    data-id="{{ $dossier->id }}">Validé</a></li>
-                                            <li><a class="dropdown-item change-statut" href="#" data-statut="ferme"
-                                                    data-id="{{ $dossier->id }}">Fermé</a></li>
-                                        </ul>
-                                    </div>
-                                @endif
+                            @endif
+
+                            @if(auth()->user()?->role === 'admin')
+                                <div class="btn-group">
+                                    <button type="button"
+                                        class="btn btn-outline-secondary dropdown-toggle"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false">
+                                        <i class="fas fa-flag me-1"></i>
+                                        <span id="statut-btn-label">{{ ucfirst($dossier->statut) }}</span>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                            <a class="dropdown-item change-statut" href="#"
+                                                data-id="{{ $dossier->id }}"
+                                                data-statut="brouillon">
+                                                Brouillon
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item change-statut" href="#"
+                                                data-id="{{ $dossier->id }}"
+                                                data-statut="valide">
+                                                Validé
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item change-statut" href="#"
+                                                data-id="{{ $dossier->id }}"
+                                                data-statut="ferme">
+                                                Fermé
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            @endif
+
+                            <span id="delete-dossier-wrapper">
                                 @if(auth()->user()?->role === 'admin' && $dossier->statut === 'ferme')
-                                    <form action="{{ route('back.dossiers.destroy', $dossier->id) }}" method="POST" class="d-inline"
+                                    <form action="{{ route('back.dossiers.destroy', $dossier->id) }}"
+                                        method="POST"
+                                        class="d-inline"
                                         onsubmit="return confirm('Supprimer le dossier « {{ addslashes($dossier->nom) }} » et tout son contenu ?');">
                                         @csrf
                                         @method('DELETE')
@@ -116,15 +147,17 @@
                                         </button>
                                     </form>
                                 @endif
-                            @endif
-                            <a href="{{ route('back.dossiers.download', $dossier->id) }}" class="btn btn-outline-success"
-                                data-bs-toggle="tooltip" title="Télécharger en ZIP">
+                            </span>
+
+                            <a href="{{ route('back.dossiers.download', $dossier->id) }}"
+                                class="btn btn-outline-success"
+                                data-bs-toggle="tooltip"
+                                title="Télécharger en ZIP">
                                 <i class="fas fa-download me-1"></i>ZIP
                             </a>
                         </div>
                     </div>
 
-                    <!-- Statistiques rapides -->
                     <div class="row mt-4 g-3">
                         <div class="col-md-3 col-6">
                             <div class="bg-light rounded p-3 text-center">
@@ -155,8 +188,7 @@
             </div>
         </div>
 
-        <!-- Upload de fichiers (si permission d'écriture) -->
-        @if($dossier->peutEcrire(auth()->id()))
+        @if($dossier->peutEcrire(auth()->id()) && $dossier->statut !== 'ferme')
             <div class="row mb-4">
                 <div class="col-12">
                     <div class="bg-white rounded shadow-sm p-4">
@@ -187,7 +219,6 @@
             </div>
         @endif
 
-        <!-- Sous-dossiers -->
         @if($enfants->count() > 0)
             <div class="row mb-4">
                 <div class="col-12">
@@ -220,7 +251,6 @@
             </div>
         @endif
 
-        <!-- Fichiers -->
         @if($fichiers->count() > 0)
             <div class="row">
                 <div class="col-12">
@@ -263,21 +293,26 @@
                                             <td>
                                                 <div class="btn-group btn-group-sm">
                                                     <a href="{{ route('back.fichiers.download', $fichier->id) }}"
-                                                        class="btn btn-outline-success" data-bs-toggle="tooltip"
+                                                        class="btn btn-outline-success"
+                                                        data-bs-toggle="tooltip"
                                                         title="Télécharger">
                                                         <i class="fas fa-download"></i>
                                                     </a>
 
                                                     @if($fichier->est_image)
-                                                        <button type="button" class="btn btn-outline-info preview-image"
-                                                            data-url="{{ $fichier->url }}" data-bs-toggle="modal"
-                                                            data-bs-target="#previewModal" title="Aperçu">
+                                                        <button type="button"
+                                                            class="btn btn-outline-info preview-image"
+                                                            data-url="{{ $fichier->url }}"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#previewModal"
+                                                            title="Aperçu">
                                                             <i class="fas fa-eye"></i>
                                                         </button>
                                                     @endif
 
-                                                    @if($dossier->peutEcrire(auth()->id()))
-                                                        <form action="{{ route('back.fichiers.destroy', $fichier->id) }}" method="POST"
+                                                    @if($dossier->peutEcrire(auth()->id()) && $dossier->statut !== 'ferme')
+                                                        <form action="{{ route('back.fichiers.destroy', $fichier->id) }}"
+                                                            method="POST"
                                                             class="d-inline"
                                                             onsubmit="return confirm('Retirer ce fichier : {{ addslashes($fichier->nom_original) }} ?')">
                                                             @csrf
@@ -302,7 +337,6 @@
             </div>
         @endif
 
-        <!-- Message si vide -->
         @if($enfants->count() == 0 && $fichiers->count() == 0)
             <div class="row">
                 <div class="col-12">
@@ -311,7 +345,7 @@
                             <i class="fas fa-folder-open fa-4x text-muted mb-3"></i>
                             <h5 class="text-muted">Dossier vide</h5>
                             <p class="text-muted mb-4">Ce dossier ne contient encore aucun élément</p>
-                            @if($dossier->peutEcrire(auth()->id()))
+                            @if($dossier->peutEcrire(auth()->id()) && $dossier->statut !== 'ferme')
                                 <button type="button" class="btn btn-primary" onclick="document.getElementById('fichiers').click()">
                                     <i class="fas fa-upload me-2"></i>Uploader des fichiers
                                 </button>
@@ -323,7 +357,6 @@
         @endif
     </div>
 
-    <!-- Modal de prévisualisation -->
     <div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
@@ -340,126 +373,127 @@
 @endsection
 
 @push('js')
-    <script>
-        $(document).ready(function () {
-            // Toggle visibilité
-            $('.toggle-visibilite').click(function () {
-                const btn = $(this);
-                const dossierId = btn.data('id');
-                $('#uploadProgress').removeClass('d-none');
-                $('#uploadProgress .progress-bar').css('width', '0%').text('0%');
-                $('#uploadBtn').prop('disabled', true);
+<script>
+$(document).ready(function () {
+    $('.toggle-visibilite').click(function () {
+        const dossierId = $(this).data('id');
 
-                $.ajax({
-                    url: `/back/dossiers/${dossierId}/toggle-visibilite`,
-                    method: 'POST',
-                    data: {
-                        _token: '{{ csrf_token() }}'
-                    },
-                    success: function (response) {
-                        if (response.success) {
-                            location.reload();
-                        }
-                    },
-                    error: function (xhr) {
-                        alert('Erreur: ' + xhr.responseJSON.message);
-                    }
-                });
-            });
-
-            // Upload de fichiers
-            $('#uploadForm').submit(function (e) {
-                e.preventDefault();
-
-                let input = document.getElementById('fichiers');
-                if (!input.files.length) {
-                    alert('Aucun fichier sélectionné !');
-                    return;
+        $.ajax({
+            url: `/back/dossiers/${dossierId}/toggle-visibilite`,
+            method: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}'
+            },
+            success: function (response) {
+                if (response.success) {
+                    location.reload();
                 }
-
-                let formData = new FormData();
-                for (let i = 0; i < input.files.length; i++) {
-                    formData.append('fichiers[]', input.files[i]);
-                }
-                formData.append('_token', '{{ csrf_token() }}');
-                $.ajax({
-                    url: '{{ route("back.dossiers.upload", $dossier->id) }}',
-                    method: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    xhr: function () {
-                        let xhr = new window.XMLHttpRequest();
-                        xhr.upload.addEventListener('progress', function (e) {
-                            if (e.lengthComputable) {
-                                let percent = Math.round((e.loaded / e.total) * 100);
-                                $('#uploadProgress .progress-bar').css('width', percent + '%').text(percent + '%');
-                            }
-                        });
-                        return xhr;
-                    },
-                    success: function (response) {
-
-                        <div class="alert alert-success">
-                            <i class="fas fa-check-circle me-2"></i>${response.message}
-                        </div>
-                        setTimeout(() => location.reload(), 1500);
-                    },
-                    error: function (xhr) {
-                        <div class="alert alert-danger">
-                            <i class="fas fa-exclamation-circle me-2"></i>Erreur: ${xhr.responseJSON?.message || 'Upload échoué'}
-                        </div>
-                        $('#uploadProgress').addClass('d-none');
-                        $('#uploadBtn').prop('disabled', false);
-                    }
-                });
-            });
-
-            // Prévisualisation d'image
-            $('.preview-image').click(function () {
-                let url = $(this).data('url');
-                $('#previewImage').attr('src', url);
-            });
-        });
-
-        $(document).on('click', '.change-statut', function (e) {
-    e.preventDefault();
-
-    const dossierId = $(this).data('id');
-    const statut = $(this).data('statut');
-
-    $.ajax({
-        url: `/back/dossiers/${dossierId}/changer-statut`,
-        method: 'POST',
-        data: {
-            _token: '{{ csrf_token() }}',
-            statut: statut
-        },
-        success: function (response) {
-            if (response.success) {
-                location.reload();
+            },
+            error: function (xhr) {
+                alert('Erreur: ' + (xhr.responseJSON?.message || 'Action impossible'));
             }
-        },
-        error: function (xhr) {
-            alert(xhr.responseJSON?.message || 'Erreur lors du changement de statut');
+        });
+    });
+
+    $('#uploadForm').submit(function (e) {
+        e.preventDefault();
+
+        let input = document.getElementById('fichiers');
+        if (!input || !input.files.length) {
+            alert('Aucun fichier sélectionné !');
+            return;
         }
+
+        let formData = new FormData();
+        for (let i = 0; i < input.files.length; i++) {
+            formData.append('fichiers[]', input.files[i]);
+        }
+        formData.append('_token', '{{ csrf_token() }}');
+
+        $('#uploadProgress').removeClass('d-none');
+        $('#uploadProgress .progress-bar').css('width', '0%').text('0%');
+        $('#uploadBtn').prop('disabled', true);
+
+        $.ajax({
+            url: '{{ route("back.dossiers.upload", $dossier->id) }}',
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            xhr: function () {
+                let xhr = new window.XMLHttpRequest();
+                xhr.upload.addEventListener('progress', function (e) {
+                    if (e.lengthComputable) {
+                        let percent = Math.round((e.loaded / e.total) * 100);
+                        $('#uploadProgress .progress-bar').css('width', percent + '%').text(percent + '%');
+                    }
+                });
+                return xhr;
+            },
+            success: function (response) {
+                $('#uploadResult').html(`
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i>${response.message}
+                    </div>
+                `);
+                setTimeout(() => location.reload(), 1200);
+            },
+            error: function (xhr) {
+                $('#uploadResult').html(`
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle me-2"></i>Erreur: ${xhr.responseJSON?.message || 'Upload échoué'}
+                    </div>
+                `);
+                $('#uploadProgress').addClass('d-none');
+                $('#uploadBtn').prop('disabled', false);
+            }
+        });
+    });
+
+    $('.preview-image').click(function () {
+        let url = $(this).data('url');
+        $('#previewImage').attr('src', url);
+    });
+
+    $(document).on('click', '.change-statut', function (e) {
+        e.preventDefault();
+
+        const dossierId = $(this).data('id');
+        const statut = $(this).data('statut');
+
+        $.ajax({
+            url: `/back/dossiers/${dossierId}/changer-statut`,
+            method: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                statut: statut
+            },
+            success: function (response) {
+                if (response.success) {
+                    location.reload();
+                }
+            },
+            error: function (xhr) {
+                alert(xhr.responseJSON?.message || 'Erreur lors du changement de statut');
+            }
+        });
     });
 });
-    </script>
+</script>
 @endpush
 
 @push('styles')
-    <style>
-        .upload-area {
-            border: 2px dashed #dee2e6;
-            border-radius: 8px;
-            padding: 20px;
-            transition: all 0.3s ease;
-        }
+<style>
+    .upload-area {
+        border: 2px dashed #dee2e6;
+        border-radius: 8px;
+        padding: 20px;
+        transition: all 0.3s ease;
+    }
 
-        .upload-area:hover {
-            border-color: #0d6efd;
-            background-color: #f8f9fa;
-        }
-    </style>
+    .upload-area:hover {
+        border-color: #0d6efd;
+        background-color: #f8f9fa;
+    }
+</style>
 @endpush
